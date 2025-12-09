@@ -54,7 +54,7 @@
         total-b: u0,
         settled: false,
         winning-outcome: none,
-        created-at: block-height,
+        created-at: burn-block-height,
         settled-at: none
       }
     )
@@ -109,7 +109,7 @@
     
     (map-set pools
       { pool-id: pool-id }
-      (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some block-height) })
+      (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
     )
     
     (ok true)

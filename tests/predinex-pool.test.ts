@@ -1,101 +1,85 @@
-import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.0/index.ts';
-import { assertEquals } from 'https://deno.land/std@0.90.0/testing/asserts.ts';
+import { describe, it, expect } from 'vitest';
+import { Cl } from '@stacks/transactions';
 
-Clarinet.test({
-  name: "Ensure that create-pool works",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    let deployer = accounts.get("deployer")!;
-    
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "predinex-pool",
-        "create-pool",
-        [
-          types.ascii("Bitcoin vs Ethereum"),
-          types.ascii("Will Bitcoin outperform Ethereum?"),
-          types.ascii("Bitcoin"),
-          types.ascii("Ethereum")
-        ],
-        deployer.address
-      )
-    ]);
-    
-    assertEquals(block.receipts.length, 1);
-    assertEquals(block.height, 2);
-  }
-});
+const accounts = simnet.getAccounts();
+const deployer = accounts.get("deployer")!;
 
-Clarinet.test({
-  name: "Ensure that place-bet works",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    let deployer = accounts.get("deployer")!;
-    
-    // Create pool first
-    chain.mineBlock([
-      Tx.contractCall(
-        "predinex-pool",
-        "create-pool",
-        [
-          types.ascii("Bitcoin vs Ethereum"),
-          types.ascii("Will Bitcoin outperform Ethereum?"),
-          types.ascii("Bitcoin"),
-          types.ascii("Ethereum")
-        ],
-        deployer.address
-      )
-    ]);
-    
-    // Place bet
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "predinex-pool",
-        "place-bet",
-        [
-          types.uint(0),
-          types.uint(0),
-          types.uint(1000000)
-        ],
-        deployer.address
-      )
-    ]);
-    
-    assertEquals(block.receipts.length, 1);
-  }
-});
+describe("predinex-pool contract", () => {
+  it("Ensure that create-pool works", () => {
+    const title = "Bitcoin vs Ethereum";
+    const description = "Will Bitcoin outperform Ethereum?";
+    const outcomeA = "Bitcoin";
+    const outcomeB = "Ethereum";
 
-Clarinet.test({
-  name: "Ensure that settle-pool works",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    let deployer = accounts.get("deployer")!;
-    
-    // Create pool
-    chain.mineBlock([
-      Tx.contractCall(
-        "predinex-pool",
-        "create-pool",
-        [
-          types.ascii("Bitcoin vs Ethereum"),
-          types.ascii("Will Bitcoin outperform Ethereum?"),
-          types.ascii("Bitcoin"),
-          types.ascii("Ethereum")
-        ],
-        deployer.address
-      )
-    ]);
-    
-    // Settle pool
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "predinex-pool",
-        "settle-pool",
-        [
-          types.uint(0),
-          types.uint(0)
-        ],
-        deployer.address
-      )
-    ]);
-    
-    assertEquals(block.receipts.length, 1);
-  }
+    const { result, events } = simnet.callPublicFn(
+      "predinex-pool",
+      "create-pool",
+      [
+        Cl.stringAscii(title),
+        Cl.stringAscii(description),
+        Cl.stringAscii(outcomeA),
+        Cl.stringAscii(outcomeB)
+      ],
+      deployer
+    );
+
+    // Expecting OK(u0)
+    expect(result).toBeOk(Cl.uint(0));
+  });
+
+  it("Ensure that place-bet works", () => {
+    // 1. Create pool
+    simnet.callPublicFn(
+      "predinex-pool",
+      "create-pool",
+      [
+        Cl.stringAscii("Pool 2"),
+        Cl.stringAscii("Desc"),
+        Cl.stringAscii("A"),
+        Cl.stringAscii("B")
+      ],
+      deployer
+    );
+
+    // 2. Place bet
+    // First argument is pool-id. Should be u0 if simnet resets.
+    const { result } = simnet.callPublicFn(
+      "predinex-pool",
+      "place-bet",
+      [
+        Cl.uint(0), // pool-id
+        Cl.uint(0), // outcome
+        Cl.uint(1000000) // amount
+      ],
+      deployer
+    );
+
+    expect(result).toBeOk(Cl.bool(true));
+  });
+
+  it("Ensure that settle-pool works", () => {
+    simnet.callPublicFn(
+      "predinex-pool",
+      "create-pool",
+      [
+        Cl.stringAscii("Pool 3"),
+        Cl.stringAscii("Desc"),
+        Cl.stringAscii("A"),
+        Cl.stringAscii("B")
+      ],
+      deployer
+    );
+
+    const { result } = simnet.callPublicFn(
+      "predinex-pool",
+      "settle-pool",
+      [
+        Cl.uint(0),
+        Cl.uint(0)
+      ],
+      deployer
+    );
+
+    expect(result).toBeOk(Cl.bool(true));
+  });
 });
