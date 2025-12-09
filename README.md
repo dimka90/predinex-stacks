@@ -51,7 +51,7 @@ stateDiagram-v2
         note right of FundsDistributed
           Winner is declared
           Marked as settled
-        end
+        end note
     }
     
     Settled --> [*]
