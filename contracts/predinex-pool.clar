@@ -11,6 +11,12 @@
 (define-constant ERR-NOT-SETTLED (err u412))
 (define-constant ERR-ALREADY-CLAIMED (err u410))
 (define-constant ERR-NO-WINNINGS (err u411))
+(define-constant ERR-POOL-NOT-EXPIRED (err u413))
+(define-constant ERR-INVALID-TITLE (err u420))
+(define-constant ERR-INVALID-DESCRIPTION (err u421))
+(define-constant ERR-INVALID-DURATION (err u423))
+
+(define-constant FEE-PERCENT u2) ;; 2% fee
 
 ;; Data structures
 (define-map pools
@@ -26,7 +32,8 @@
     settled: bool,
     winning-outcome: (optional uint),
     created-at: uint,
-    settled-at: (optional uint)
+    settled-at: (optional uint),
+    expiry: uint
   }
 )
 
@@ -48,8 +55,15 @@
 (define-data-var total-volume uint u0)
 
 ;; Create a new prediction pool
-(define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)))
+(define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
+    ;; Validation checks
+    (asserts! (> (len title) u0) ERR-INVALID-TITLE)
+    (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
+    (asserts! (> (len outcome-a) u0) ERR-INVALID-OUTCOME)
+    (asserts! (> (len outcome-b) u0) ERR-INVALID-OUTCOME)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+
     (map-insert pools
       { pool-id: pool-id }
       {
@@ -63,7 +77,8 @@
         settled: false,
         winning-outcome: none,
         created-at: burn-block-height,
-        settled-at: none
+        settled-at: none,
+        expiry: (+ burn-block-height duration)
       }
     )
     (var-set pool-counter (+ pool-id u1))
@@ -120,6 +135,18 @@
     (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
     (asserts! (or (is-eq winning-outcome u0) (is-eq winning-outcome u1)) ERR-INVALID-OUTCOME)
     
+    ;; Transfer fee
+    (let
+      (
+        (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+        (fee (/ (* total-pool-balance FEE-PERCENT) u100))
+      )
+      (if (> fee u0)
+        (try! (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)))
+        true
+      )
+    )
+
     (map-set pools
       { pool-id: pool-id }
       (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
@@ -146,6 +173,8 @@
         (user-winning-bet (if (is-eq winning-outcome u0) (get amount-a user-bet) (get amount-b user-bet)))
         (pool-winning-total (if (is-eq winning-outcome u0) (get total-a pool) (get total-b pool)))
         (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+        (fee (/ (* total-pool-balance FEE-PERCENT) u100))
+        (net-pool-balance (- total-pool-balance fee))
         (claimer tx-sender) ;; Capture the web3 user
       )
       
@@ -154,8 +183,8 @@
 
       (let
         (
-          ;; Calculate share: (user_bet_on_winner * total_pool) / total_bet_on_winner
-          (share (/ (* user-winning-bet total-pool-balance) pool-winning-total))
+          ;; Calculate share: (user_bet_on_winner * net_pool) / total_bet_on_winner
+          (share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
         )
         ;; Transfer share to user
         (try! (as-contract (stx-transfer? share tx-sender claimer)))
@@ -165,6 +194,38 @@
         
         (ok true)
       )
+    )
+  )
+)
+
+;; Request refund if pool expired and not settled
+(define-public (request-refund (pool-id uint))
+  (let 
+    (
+      (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+      (user-bet (unwrap! (map-get? user-bets { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
+      (claimer tx-sender)
+    )
+    ;; Check expiry
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    ;; Check not settled
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    ;; Check not already claimed/refunded
+    (asserts! (is-none (map-get? claims { pool-id: pool-id, user: tx-sender })) ERR-ALREADY-CLAIMED)
+
+    (let
+      (
+        (refund-amount (get total-bet user-bet))
+      )
+      (asserts! (> refund-amount u0) ERR-NO-WINNINGS)
+
+      ;; Transfer refund
+      (try! (as-contract (stx-transfer? refund-amount tx-sender claimer)))
+
+      ;; Mark as claimed
+      (map-set claims { pool-id: pool-id, user: claimer } true)
+
+      (ok true)
     )
   )
 )

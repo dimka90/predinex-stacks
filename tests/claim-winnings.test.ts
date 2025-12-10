@@ -10,7 +10,7 @@ describe("claim-winnings functionality", () => {
     it("allows winning bets to claim earnings", () => {
         // 1. Create Pool (ID 0)
         simnet.callPublicFn("predinex-pool", "create-pool",
-            [Cl.stringAscii("Win?"), Cl.stringAscii("Desc"), Cl.stringAscii("Yes"), Cl.stringAscii("No")], deployer);
+            [Cl.stringAscii("Win?"), Cl.stringAscii("Desc"), Cl.stringAscii("Yes"), Cl.stringAscii("No"), Cl.uint(100)], deployer);
 
         // 2. Wallet 1 bets 100 on Outcome 0 (Yes)
         // Needs STX first? Simnet accounts usually have STX.
