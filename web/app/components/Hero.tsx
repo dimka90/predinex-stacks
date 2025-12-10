@@ -31,7 +31,7 @@ export default function Hero() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link href="/create" className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-violet-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
+                    <Link href="/markets" className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-violet-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
                         Explore Markets
                         <ArrowRight className="w-4 h-4" />
                     </Link>
