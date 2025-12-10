@@ -6,7 +6,7 @@ This document outlines the planned features and improvements for the Predinex Pr
 - [x] **Claim Winnings**: Implement functionality for winners to withdraw their share of the pool. is cancelled or not settled by an expiry date.
 
 ## Phase 2: Economics & Incentives
-- [ ] **Platform Fees**: precise mechanism to take a small percentage (e.g., 2%) of the winning pool as a protocol fee.
+- [x] **Platform Fees**: precise mechanism to take a small percentage (e.g., 2%) of the winning pool as a protocol fee.
 - [ ] **Liquidity Incentives**: Rewards for early bettors to bootstrap pools.
 
 ## Phase 3: Advanced Market Features
