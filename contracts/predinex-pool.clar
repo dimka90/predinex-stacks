@@ -8,6 +8,9 @@
 (define-constant ERR-POOL-NOT-FOUND (err u404))
 (define-constant ERR-POOL-SETTLED (err u409))
 (define-constant ERR-INVALID-OUTCOME (err u422))
+(define-constant ERR-NOT-SETTLED (err u412))
+(define-constant ERR-ALREADY-CLAIMED (err u410))
+(define-constant ERR-NO-WINNINGS (err u411))
 
 ;; Data structures
 (define-map pools
@@ -25,6 +28,11 @@
     created-at: uint,
     settled-at: (optional uint)
   }
+)
+
+(define-map claims
+  { pool-id: uint, user: principal }
+  bool
 )
 
 (define-map user-bets
@@ -70,6 +78,11 @@
     (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
     (asserts! (> amount u0) ERR-INVALID-AMOUNT)
     
+    (let ((pool-principal (as-contract tx-sender)))
+        ;; Transfer STX from user to contract
+        (try! (stx-transfer? amount tx-sender pool-principal))
+    )
+
     ;; Update pool totals
     (if (is-eq outcome u0)
       (map-set pools
@@ -113,6 +126,46 @@
     )
     
     (ok true)
+  )
+)
+
+;; Claim winnings from a settled pool
+(define-public (claim-winnings (pool-id uint))
+  (let 
+    (
+      (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+      (user-bet (unwrap! (map-get? user-bets { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
+      (winning-outcome (unwrap! (get winning-outcome pool) ERR-NOT-SETTLED))
+    )
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    (asserts! (is-none (map-get? claims { pool-id: pool-id, user: tx-sender })) ERR-ALREADY-CLAIMED)
+
+    (let
+      (
+        (user-total-bet (get total-bet user-bet))
+        (user-winning-bet (if (is-eq winning-outcome u0) (get amount-a user-bet) (get amount-b user-bet)))
+        (pool-winning-total (if (is-eq winning-outcome u0) (get total-a pool) (get total-b pool)))
+        (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+        (claimer tx-sender) ;; Capture the web3 user
+      )
+      
+      (asserts! (> user-winning-bet u0) ERR-NO-WINNINGS)
+      (asserts! (> pool-winning-total u0) ERR-NO-WINNINGS)
+
+      (let
+        (
+          ;; Calculate share: (user_bet_on_winner * total_pool) / total_bet_on_winner
+          (share (/ (* user-winning-bet total-pool-balance) pool-winning-total))
+        )
+        ;; Transfer share to user
+        (try! (as-contract (stx-transfer? share tx-sender claimer)))
+        
+        ;; Mark as claimed
+        (map-set claims { pool-id: pool-id, user: claimer } true)
+        
+        (ok true)
+      )
+    )
   )
 )
 

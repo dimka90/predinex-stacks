@@ -7,7 +7,7 @@ cache_dir = './.cache'
 requirements = []
 [contracts.predinex-pool]
 path = 'contracts/predinex-pool.clar'
-clarity_version = 4
+clarity_version = 2
 epoch = 'latest'
 [repl.analysis]
 passes = ['check_checker']
