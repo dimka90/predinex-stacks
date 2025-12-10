@@ -2,8 +2,8 @@
 
 This document outlines the planned features and improvements for the Predinex Prediction Market.
 
-- [ ] **Data Validation**: Ensure pool creation parameters (dates, names) are valid.
-- [ ] **Refund Mechanism**: Allow users to withdraw bets if a pool is cancelled or not settled by an expiry date.
+- [x] **Data Validation**: Ensure pool creation parameters (dates, names) are valid.
+- [x] **Claim Winnings**: Implement functionality for winners to withdraw their share of the pool. is cancelled or not settled by an expiry date.
 
 ## Phase 2: Economics & Incentives
 - [ ] **Platform Fees**: precise mechanism to take a small percentage (e.g., 2%) of the winning pool as a protocol fee.

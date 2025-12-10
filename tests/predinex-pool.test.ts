@@ -18,7 +18,8 @@ describe("predinex-pool contract", () => {
         Cl.stringAscii(title),
         Cl.stringAscii(description),
         Cl.stringAscii(outcomeA),
-        Cl.stringAscii(outcomeB)
+        Cl.stringAscii(outcomeB),
+        Cl.uint(100) // duration
       ],
       deployer
     );
@@ -36,7 +37,8 @@ describe("predinex-pool contract", () => {
         Cl.stringAscii("Pool 2"),
         Cl.stringAscii("Desc"),
         Cl.stringAscii("A"),
-        Cl.stringAscii("B")
+        Cl.stringAscii("B"),
+        Cl.uint(100)
       ],
       deployer
     );
@@ -65,7 +67,8 @@ describe("predinex-pool contract", () => {
         Cl.stringAscii("Pool 3"),
         Cl.stringAscii("Desc"),
         Cl.stringAscii("A"),
-        Cl.stringAscii("B")
+        Cl.stringAscii("B"),
+        Cl.uint(100)
       ],
       deployer
     );
