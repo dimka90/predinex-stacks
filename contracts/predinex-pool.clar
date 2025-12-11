@@ -30,11 +30,10 @@
   { serialized-data: (buff 256) }
 )
 
-;; Principal registry with deconstructed info (using principal-destruct?)
+;; Principal registry for tracking users
 (define-map principal-registry
   { user: principal }
   { 
-    is-standard: bool,
     registered-at: uint
   }
 )
@@ -294,19 +293,6 @@
   )
 )
 
-;; [CLARITY 4] Analyze principal using principal-destruct?
-(define-read-only (analyze-principal (user principal))
-  (principal-destruct? user)
-)
-
-;; [CLARITY 4] Check if principal is a standard address (not contract)
-(define-read-only (is-standard-principal (user principal))
-  (match (principal-destruct? user)
-    ok-val (is-none (get name ok-val))
-    err-val false
-  )
-)
-
 ;; [CLARITY 4] Serialize pool totals for cross-contract calls using to-consensus-buff?
 (define-read-only (serialize-pool-totals (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
@@ -319,19 +305,16 @@
   )
 )
 
-;; [CLARITY 4] Public function to register user with principal analysis
+;; [CLARITY 4] Public function to register user
 (define-public (register-user)
-  (let (
-    (is-standard (is-standard-principal tx-sender))
-  )
+  (begin
     (map-set principal-registry
       { user: tx-sender }
       { 
-        is-standard: is-standard,
         registered-at: burn-block-height
       }
     )
-    (ok is-standard)
+    (ok true)
   )
 )
 
