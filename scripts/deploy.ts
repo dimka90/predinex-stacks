@@ -24,7 +24,7 @@ async function deployContract() {
     const contractPath = path.join(process.cwd(), 'contracts', 'predinex-pool.clar');
     const contractSource = readFileSync(contractPath, 'utf-8');
 
-    const contractName = 'predinex-pool';
+    const contractName = 'predinex-pool-v2';
 
     console.log(`Contract: ${contractName}`);
     console.log(`Reading from: ${contractPath}`);
