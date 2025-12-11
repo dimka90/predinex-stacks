@@ -17,6 +17,27 @@
 (define-constant ERR-INVALID-DURATION (err u423))
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
+(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
+(define-constant ERR-SERIALIZATION-FAILED (err u425))
+
+;; ============================================
+;; CLARITY 4 FEATURES - Builder Challenge
+;; ============================================
+
+;; Store serialized pool data for cross-contract calls (using to-consensus-buff?)
+(define-map pool-snapshots
+  { pool-id: uint }
+  { serialized-data: (buff 256) }
+)
+
+;; Principal registry with deconstructed info (using principal-destruct?)
+(define-map principal-registry
+  { user: principal }
+  { 
+    is-standard: bool,
+    registered-at: uint
+  }
+)
 
 ;; Data structures
 (define-map pools
@@ -250,4 +271,113 @@
 ;; Get total volume
 (define-read-only (get-total-volume)
   (var-get total-volume)
+)
+
+;; ============================================
+;; CLARITY 4 FUNCTIONS - Builder Challenge
+;; ============================================
+
+;; [CLARITY 4] Get pool ID as readable ASCII string using int-to-ascii
+(define-read-only (get-pool-id-string (pool-id uint))
+  (int-to-ascii pool-id)
+)
+
+;; [CLARITY 4] Get user's full STX account info using stx-account
+(define-read-only (get-user-stx-info (user principal))
+  (stx-account user)
+)
+
+;; [CLARITY 4] Check if user has sufficient balance to place bet using stx-account
+(define-read-only (can-user-afford-bet (user principal) (amount uint))
+  (let ((account-info (stx-account user)))
+    (>= (get unlocked account-info) amount)
+  )
+)
+
+;; [CLARITY 4] Analyze principal using principal-destruct?
+(define-read-only (analyze-principal (user principal))
+  (principal-destruct? user)
+)
+
+;; [CLARITY 4] Check if principal is a standard address (not contract)
+(define-read-only (is-standard-principal (user principal))
+  (match (principal-destruct? user)
+    ok-val (is-none (get name ok-val))
+    err-val false
+  )
+)
+
+;; [CLARITY 4] Serialize pool totals for cross-contract calls using to-consensus-buff?
+(define-read-only (serialize-pool-totals (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (to-consensus-buff? { 
+      total-a: (get total-a pool-data), 
+      total-b: (get total-b pool-data),
+      settled: (get settled pool-data)
+    })
+    none
+  )
+)
+
+;; [CLARITY 4] Public function to register user with principal analysis
+(define-public (register-user)
+  (let (
+    (is-standard (is-standard-principal tx-sender))
+  )
+    (map-set principal-registry
+      { user: tx-sender }
+      { 
+        is-standard: is-standard,
+        registered-at: burn-block-height
+      }
+    )
+    (ok is-standard)
+  )
+)
+
+;; [CLARITY 4] Create pool snapshot with serialized data
+(define-public (create-pool-snapshot (pool-id uint))
+  (let (
+    (serialized (serialize-pool-totals pool-id))
+  )
+    (match serialized
+      data (begin
+        (map-set pool-snapshots
+          { pool-id: pool-id }
+          { serialized-data: data }
+        )
+        (ok data)
+      )
+      ERR-SERIALIZATION-FAILED
+    )
+  )
+)
+
+;; [CLARITY 4] Get pool snapshot
+(define-read-only (get-pool-snapshot (pool-id uint))
+  (map-get? pool-snapshots { pool-id: pool-id })
+)
+
+;; [CLARITY 4] Get formatted pool info string (combines pool ID with volume)
+(define-read-only (get-pool-formatted-info (pool-id uint))
+  (let (
+    (pool-id-str (int-to-ascii pool-id))
+    (volume (var-get total-volume))
+    (volume-str (int-to-ascii volume))
+  )
+    { pool-id-ascii: pool-id-str, total-volume-ascii: volume-str }
+  )
+)
+
+;; [CLARITY 4] Enhanced bet placement with balance check using stx-account
+(define-public (place-bet-safe (pool-id uint) (outcome uint) (amount uint))
+  (let (
+    (account-info (stx-account tx-sender))
+    (unlocked-balance (get unlocked account-info))
+  )
+    ;; Check if user can afford the bet
+    (asserts! (>= unlocked-balance amount) ERR-INSUFFICIENT-BALANCE)
+    ;; Proceed with normal bet placement
+    (place-bet pool-id outcome amount)
+  )
 )
