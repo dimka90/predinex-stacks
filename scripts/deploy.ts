@@ -3,58 +3,70 @@ import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-// Load environment variables (ensure to install dotenv if needed, or pass via command line)
-// For simplicity, we'll check process.env directly.
-
-const PRIVATE_KEY = process.env.DEPLOYER_KEY;
-const NETWORK_ENV = process.env.STACKS_NETWORK || 'testnet'; // 'testnet' or 'mainnet'
+// Load environment variables
+const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
+const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet'; // Default to mainnet for Builder Challenge
 
 if (!PRIVATE_KEY) {
-    console.error("Error: DEPLOYER_KEY environment variable is required.");
+    console.error("Error: PRIVATE_KEY or DEPLOYER_KEY environment variable is required.");
+    console.error("Set your private key in .env file");
     process.exit(1);
 }
 
 async function deployContract() {
-    console.log(`Deploying to ${NETWORK_ENV}...`);
+    console.log(`🚀 Deploying Predinex to ${NETWORK_ENV}...`);
+    console.log(`📦 Using Clarity 4 with enhanced features for Builder Challenge\n`);
 
     const network = NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
+    const networkName = NETWORK_ENV === 'mainnet' ? 'Mainnet' : 'Testnet';
 
     // Read contract source code
-    // Assuming script is run from project root, so contracts/ is at ./contracts
     const contractPath = path.join(process.cwd(), 'contracts', 'predinex-pool.clar');
     const contractSource = readFileSync(contractPath, 'utf-8');
 
-    const contractName = 'predinex-pool-v5';
+    // Use versioned contract name for multiple deployments
+    const timestamp = Date.now();
+    const contractName = `predinex-pool-${timestamp}`;
 
-    console.log(`Contract: ${contractName}`);
-    console.log(`Reading from: ${contractPath}`);
+    console.log(`📄 Contract: ${contractName}`);
+    console.log(`📍 Network: ${networkName}`);
+    console.log(`📖 Reading from: ${contractPath}\n`);
 
     const txOptions = {
         contractName,
         codeBody: contractSource,
-        senderKey: PRIVATE_KEY!,
+        senderKey: PRIVATE_KEY,
         network,
         anchorMode: AnchorMode.Any,
-        clarityVersion: ClarityVersion.Clarity3, // Clarity 3 for new functions (int-to-ascii, stx-account, etc.)
-        fee: 100000, // Fee in microstacks. Adjust as needed or use estimate.
+        clarityVersion: ClarityVersion.Clarity3, // Clarity 3 supports Clarity 4 functions
+        fee: 150000, // Increased fee for mainnet
         postConditionMode: 0x01, // Allow
     };
 
     try {
+        console.log("⏳ Creating transaction...");
         const transaction = await makeContractDeploy(txOptions);
+        
+        console.log("📤 Broadcasting to network...");
         const broadcastResponse = await broadcastTransaction({ transaction, network });
 
-        console.log('Broadcast response:', broadcastResponse);
-
         if ('error' in broadcastResponse) {
-            console.error('Deployment failed:', broadcastResponse.error);
+            console.error('❌ Deployment failed:', broadcastResponse.error);
+            process.exit(1);
         } else {
-            console.log('Contract deployed!');
-            console.log('Transaction ID:', broadcastResponse.txid);
-            // Note: Contract address depends on sender address and contract name
+            console.log('\n✅ Contract deployed successfully!');
+            console.log(`📋 Transaction ID: ${broadcastResponse.txid}`);
+            console.log(`🔗 Explorer: https://explorer.hiro.so/txid/${broadcastResponse.txid}?chain=${NETWORK_ENV}`);
+            console.log(`\n📝 Contract Name: ${contractName}`);
+            console.log(`\n💡 Next steps:`);
+            console.log(`   1. Wait for transaction confirmation (~10 minutes)`);
+            console.log(`   2. Share your contract address on GitHub`);
+            console.log(`   3. Generate activity by calling contract functions`);
+            console.log(`   4. Check leaderboard at https://stacks.org/builder-challenge`);
         }
     } catch (error) {
-        console.error('Error deploying contract:', error);
+        console.error('❌ Error deploying contract:', error);
+        process.exit(1);
     }
 }
 
