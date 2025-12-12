@@ -1,4 +1,10 @@
-import { makeContractCall, broadcastTransaction, AnchorMode } from '@stacks/transactions';
+import { 
+    makeContractCall, 
+    broadcastTransaction, 
+    AnchorMode,
+    stringAsciiCV,
+    uintCV
+} from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import * as readline from 'readline';
 
@@ -11,6 +17,8 @@ if (!PRIVATE_KEY) {
     console.error("Error: PRIVATE_KEY environment variable is required.");
     process.exit(1);
 }
+
+const SENDER_KEY = PRIVATE_KEY as string;
 
 const network = NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
 const networkName = NETWORK_ENV === 'mainnet' ? 'Mainnet' : 'Testnet';
@@ -45,18 +53,36 @@ async function createPool() {
     try {
         console.log('\n⏳ Creating transaction...');
         
+        // Validate string lengths (Clarity limits)
+        if (title.length > 256) {
+            console.error('❌ Title too long (max 256 characters)');
+            return;
+        }
+        if (description.length > 512) {
+            console.error('❌ Description too long (max 512 characters)');
+            return;
+        }
+        if (outcomeA.length > 128) {
+            console.error('❌ Outcome A too long (max 128 characters)');
+            return;
+        }
+        if (outcomeB.length > 128) {
+            console.error('❌ Outcome B too long (max 128 characters)');
+            return;
+        }
+        
         const txOptions = {
             contractAddress: CONTRACT_ADDRESS,
             contractName: CONTRACT_NAME,
             functionName: 'create-pool',
             functionArgs: [
-                { type: 'string-ascii', value: title },
-                { type: 'string-ascii', value: description },
-                { type: 'string-ascii', value: outcomeA },
-                { type: 'string-ascii', value: outcomeB },
-                { type: 'uint', value: duration.toString() }
+                stringAsciiCV(title),
+                stringAsciiCV(description),
+                stringAsciiCV(outcomeA),
+                stringAsciiCV(outcomeB),
+                uintCV(duration)
             ],
-            senderKey: PRIVATE_KEY,
+            senderKey: SENDER_KEY,
             network,
             anchorMode: AnchorMode.Any,
             fee: 100000,
@@ -101,11 +127,11 @@ async function placeBet() {
             contractName: CONTRACT_NAME,
             functionName: 'place-bet-validated',
             functionArgs: [
-                { type: 'uint', value: poolId.toString() },
-                { type: 'uint', value: outcome.toString() },
-                { type: 'uint', value: amount.toString() }
+                uintCV(poolId),
+                uintCV(outcome),
+                uintCV(amount)
             ],
-            senderKey: PRIVATE_KEY,
+            senderKey: SENDER_KEY,
             network,
             anchorMode: AnchorMode.Any,
             fee: 100000,
@@ -148,10 +174,10 @@ async function settlePool() {
             contractName: CONTRACT_NAME,
             functionName: 'settle-pool-enhanced',
             functionArgs: [
-                { type: 'uint', value: poolId.toString() },
-                { type: 'uint', value: winningOutcome.toString() }
+                uintCV(poolId),
+                uintCV(winningOutcome)
             ],
-            senderKey: PRIVATE_KEY,
+            senderKey: SENDER_KEY,
             network,
             anchorMode: AnchorMode.Any,
             fee: 100000,
