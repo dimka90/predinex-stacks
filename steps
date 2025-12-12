@@ -1,0 +1,3 @@
+npm install -g @stacks/cli
+
+stx make_keychain "your 24 word mnemonic phrase here"
