@@ -1,4 +1,4 @@
-import { makeContractDeploy, broadcastTransaction, AnchorMode } from '@stacks/transactions';
+import { makeContractDeploy, broadcastTransaction, AnchorMode, ClarityVersion } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -24,7 +24,7 @@ async function deployContract() {
     const contractPath = path.join(process.cwd(), 'contracts', 'predinex-pool.clar');
     const contractSource = readFileSync(contractPath, 'utf-8');
 
-    const contractName = 'predinex-pool-v3';
+    const contractName = 'predinex-pool-v4';
 
     console.log(`Contract: ${contractName}`);
     console.log(`Reading from: ${contractPath}`);
@@ -35,6 +35,7 @@ async function deployContract() {
         senderKey: PRIVATE_KEY!,
         network,
         anchorMode: AnchorMode.Any,
+        clarityVersion: ClarityVersion.Clarity2, // Required after Nakamoto upgrade
         fee: 100000, // Fee in microstacks. Adjust as needed or use estimate.
         postConditionMode: 0x01, // Allow
     };
