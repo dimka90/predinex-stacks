@@ -9,7 +9,12 @@
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
     "deploy": "tsx scripts/deploy.ts",
-    "interact": "tsx scripts/interact.ts"
+    "deploy:mainnet": "STACKS_NETWORK=mainnet tsx scripts/deploy.ts",
+    "deploy:testnet": "STACKS_NETWORK=testnet tsx scripts/deploy.ts",
+    "interact": "tsx scripts/interact.ts",
+    "generate-activity": "tsx scripts/generate-activity.ts",
+    "generate-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/generate-activity.ts",
+    "generate-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/generate-activity.ts"
   },
   "author": "",
   "license": "ISC",
