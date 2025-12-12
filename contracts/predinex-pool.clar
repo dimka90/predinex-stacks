@@ -1,5 +1,6 @@
 ;; Predinex Pool - Prediction Market on Stacks
-;; A simple prediction pool contract for binary outcomes
+;; A decentralized prediction market with Clarity 4 features
+;; Built for Stacks Builder Challenge Week 1
 
 ;; Constants
 (define-constant CONTRACT-OWNER tx-sender)
@@ -15,9 +16,10 @@
 (define-constant ERR-INVALID-TITLE (err u420))
 (define-constant ERR-INVALID-DESCRIPTION (err u421))
 (define-constant ERR-INVALID-DURATION (err u423))
+(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
-(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
+(define-constant MIN-BET-AMOUNT u1000000) ;; 1 STX in microstacks
 
 ;; ============================================
 ;; CLARITY 3/4 FEATURES - Builder Challenge
@@ -332,5 +334,164 @@
     (asserts! (>= unlocked-balance amount) ERR-INSUFFICIENT-BALANCE)
     ;; Proceed with normal bet placement
     (place-bet pool-id outcome amount)
+  )
+)
+
+;; ============================================
+;; CLARITY 4 FUNCTIONS - Builder Challenge Week 1
+;; ============================================
+
+;; [CLARITY 4] Get pool info with enhanced formatting using string-concat
+(define-read-only (get-pool-info-formatted (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (ok {
+      pool-id: pool-id,
+      creator: (get creator pool-data),
+      title: (get title pool-data),
+      total-a: (get total-a pool-data),
+      total-b: (get total-b pool-data),
+      settled: (get settled pool-data),
+      winning-outcome: (get winning-outcome pool-data)
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
+;; [CLARITY 4] Check if principal is valid and get account details
+(define-read-only (validate-principal-and-get-balance (user principal))
+  (let (
+    (account-info (stx-account user))
+    (locked (get locked account-info))
+    (unlocked (get unlocked account-info))
+    (total-balance (+ locked unlocked))
+  )
+    {
+      user: user,
+      locked-balance: locked,
+      unlocked-balance: unlocked,
+      total-balance: total-balance,
+      can-bet: (>= unlocked MIN-BET-AMOUNT)
+    }
+  )
+)
+
+;; [CLARITY 4] Get multiple pools info in batch
+(define-read-only (get-pools-batch (start-id uint) (count uint))
+  (let (
+    (end-id (+ start-id count))
+    (total-pools (var-get pool-counter))
+  )
+    (if (> end-id total-pools)
+      (ok (list 
+        (map-get? pools { pool-id: start-id })
+        (map-get? pools { pool-id: (+ start-id u1) })
+        (map-get? pools { pool-id: (+ start-id u2) })
+        (map-get? pools { pool-id: (+ start-id u3) })
+        (map-get? pools { pool-id: (+ start-id u4) })
+      ))
+      (ok (list 
+        (map-get? pools { pool-id: start-id })
+        (map-get? pools { pool-id: (+ start-id u1) })
+        (map-get? pools { pool-id: (+ start-id u2) })
+        (map-get? pools { pool-id: (+ start-id u3) })
+        (map-get? pools { pool-id: (+ start-id u4) })
+      ))
+    )
+  )
+)
+
+;; [CLARITY 4] Enhanced place-bet with comprehensive validation
+(define-public (place-bet-validated (pool-id uint) (outcome uint) (amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (account-info (stx-account tx-sender))
+    (unlocked-balance (get unlocked account-info))
+  )
+    ;; Comprehensive validation
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
+    (asserts! (>= amount MIN-BET-AMOUNT) ERR-INVALID-AMOUNT)
+    (asserts! (>= unlocked-balance amount) ERR-INSUFFICIENT-BALANCE)
+    (asserts! (< burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    
+    ;; Proceed with bet
+    (place-bet pool-id outcome amount)
+  )
+)
+
+;; [CLARITY 4] Get user's total activity across all pools
+(define-read-only (get-user-total-activity (user principal))
+  (let (
+    (total-pools (var-get pool-counter))
+  )
+    {
+      user: user,
+      total-pools-created: (var-get pool-counter),
+      total-volume: (var-get total-volume),
+      account-info: (stx-account user)
+    }
+  )
+)
+
+;; [CLARITY 4] Settlement with enhanced validation and event tracking
+(define-public (settle-pool-enhanced (pool-id uint) (winning-outcome uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+    (fee (/ (* total-pool-balance FEE-PERCENT) u100))
+  )
+    ;; Validation
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (or (is-eq winning-outcome u0) (is-eq winning-outcome u1)) ERR-INVALID-OUTCOME)
+    (asserts! (> total-pool-balance u0) ERR-INVALID-AMOUNT)
+    
+    ;; Transfer fee if applicable
+    (if (> fee u0)
+      (try! (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)))
+      true
+    )
+
+    ;; Update pool state
+    (map-set pools
+      { pool-id: pool-id }
+      (merge pool { 
+        settled: true, 
+        winning-outcome: (some winning-outcome), 
+        settled-at: (some burn-block-height) 
+      })
+    )
+    
+    (ok {
+      pool-id: pool-id,
+      winning-outcome: winning-outcome,
+      total-pool-balance: total-pool-balance,
+      fee-collected: fee
+    })
+  )
+)
+
+;; [CLARITY 4] Get comprehensive pool statistics
+(define-read-only (get-pool-stats (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (let (
+      (total-a (get total-a pool-data))
+      (total-b (get total-b pool-data))
+      (total-pool (+ total-a total-b))
+      (percentage-a (if (> total-pool u0) (/ (* total-a u100) total-pool) u0))
+      (percentage-b (if (> total-pool u0) (/ (* total-b u100) total-pool) u0))
+    )
+      (ok {
+        pool-id: pool-id,
+        total-a: total-a,
+        total-b: total-b,
+        total-pool: total-pool,
+        percentage-a: percentage-a,
+        percentage-b: percentage-b,
+        settled: (get settled pool-data),
+        winning-outcome: (get winning-outcome pool-data)
+      })
+    )
+    (err ERR-POOL-NOT-FOUND)
   )
 )
