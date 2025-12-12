@@ -24,7 +24,7 @@ async function deployContract() {
     const contractPath = path.join(process.cwd(), 'contracts', 'predinex-pool.clar');
     const contractSource = readFileSync(contractPath, 'utf-8');
 
-    const contractName = 'predinex-pool-v4';
+    const contractName = 'predinex-pool-v5';
 
     console.log(`Contract: ${contractName}`);
     console.log(`Reading from: ${contractPath}`);
@@ -35,7 +35,7 @@ async function deployContract() {
         senderKey: PRIVATE_KEY!,
         network,
         anchorMode: AnchorMode.Any,
-        clarityVersion: ClarityVersion.Clarity2, // Required after Nakamoto upgrade
+        clarityVersion: ClarityVersion.Clarity3, // Clarity 3 for new functions (int-to-ascii, stx-account, etc.)
         fee: 100000, // Fee in microstacks. Adjust as needed or use estimate.
         postConditionMode: 0x01, // Allow
     };

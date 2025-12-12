@@ -17,6 +17,19 @@
 (define-constant ERR-INVALID-DURATION (err u423))
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
+(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
+
+;; ============================================
+;; CLARITY 3/4 FEATURES - Builder Challenge
+;; ============================================
+
+;; Principal registry for tracking users
+(define-map principal-registry
+  { user: principal }
+  { 
+    registered-at: uint
+  }
+)
 
 ;; Data structures
 (define-map pools
@@ -250,4 +263,74 @@
 ;; Get total volume
 (define-read-only (get-total-volume)
   (var-get total-volume)
+)
+
+;; ============================================
+;; CLARITY 3/4 FUNCTIONS - Builder Challenge
+;; ============================================
+
+;; [CLARITY 3] Get pool ID as readable ASCII string using int-to-ascii
+(define-read-only (get-pool-id-string (pool-id uint))
+  (int-to-ascii pool-id)
+)
+
+;; [CLARITY 3] Get user's full STX account info using stx-account
+(define-read-only (get-user-stx-info (user principal))
+  (stx-account user)
+)
+
+;; [CLARITY 3] Check if user has sufficient balance to place bet
+(define-read-only (can-user-afford-bet (user principal) (amount uint))
+  (let ((account-info (stx-account user)))
+    (>= (get unlocked account-info) amount)
+  )
+)
+
+;; [CLARITY 3] Serialize pool totals for cross-contract calls using to-consensus-buff?
+(define-read-only (serialize-pool-totals (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (to-consensus-buff? { 
+      total-a: (get total-a pool-data), 
+      total-b: (get total-b pool-data),
+      settled: (get settled pool-data)
+    })
+    none
+  )
+)
+
+;; [CLARITY 3] Public function to register user
+(define-public (register-user)
+  (begin
+    (map-set principal-registry
+      { user: tx-sender }
+      { 
+        registered-at: burn-block-height
+      }
+    )
+    (ok true)
+  )
+)
+
+;; [CLARITY 3] Get formatted pool info string (combines pool ID with volume)
+(define-read-only (get-pool-formatted-info (pool-id uint))
+  (let (
+    (pool-id-str (int-to-ascii pool-id))
+    (volume (var-get total-volume))
+    (volume-str (int-to-ascii volume))
+  )
+    { pool-id-ascii: pool-id-str, total-volume-ascii: volume-str }
+  )
+)
+
+;; [CLARITY 3] Enhanced bet placement with balance check using stx-account
+(define-public (place-bet-safe (pool-id uint) (outcome uint) (amount uint))
+  (let (
+    (account-info (stx-account tx-sender))
+    (unlocked-balance (get unlocked account-info))
+  )
+    ;; Check if user can afford the bet
+    (asserts! (>= unlocked-balance amount) ERR-INSUFFICIENT-BALANCE)
+    ;; Proceed with normal bet placement
+    (place-bet pool-id outcome amount)
+  )
 )
