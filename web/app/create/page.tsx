@@ -43,6 +43,7 @@ export default function CreatePool() {
                 contractName: CONTRACT_NAME,
                 functionName: 'create-pool',
                 functionArgs,
+                userSession: userData.userSession || undefined,
                 onFinish: (data) => {
                     console.log('Transaction finished:', data);
                     setIsLoading(false);
@@ -57,6 +58,7 @@ export default function CreatePool() {
         } catch (error) {
             console.error("Contract call failed", error);
             setIsLoading(false);
+            alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 

@@ -1,9 +1,9 @@
-import { STACKS_MOCKNET, StacksNetwork } from "@stacks/network";
+import { STACKS_MAINNET, StacksNetwork } from "@stacks/network";
 import { fetchCallReadOnlyFunction, cvToValue, uintCV, ClarityValue } from "@stacks/transactions";
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from "./constants";
 
-// SDK v7 uses STACKS_MOCKNET constant instead of StacksMocknet class
-const network: StacksNetwork = STACKS_MOCKNET;
+// Use mainnet for production
+const network: StacksNetwork = STACKS_MAINNET;
 
 export interface Pool {
     id: number;
