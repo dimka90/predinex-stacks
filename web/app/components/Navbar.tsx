@@ -5,7 +5,7 @@ import { Wallet, LogOut } from "lucide-react";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { authenticate, userData, signOut } = useStacks();
+    const { authenticate, userData, signOut, isLoading } = useStacks();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -36,10 +36,11 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={authenticate}
-                            className="flex items-center gap-2 bg-muted hover:bg-zinc-800 transition-colors px-4 py-2 rounded-full border border-border font-medium text-sm"
+                            disabled={isLoading}
+                            className="flex items-center gap-2 bg-muted hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2 rounded-full border border-border font-medium text-sm"
                         >
                             <Wallet className="w-4 h-4 text-accent" />
-                            Connect Wallet
+                            {isLoading ? 'Loading...' : 'Connect Wallet'}
                         </button>
                     )}
                 </div>
