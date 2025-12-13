@@ -2,10 +2,23 @@
 
 import Link from "next/link";
 import { Wallet, LogOut } from "lucide-react";
+import { useState } from "react";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
     const { authenticate, userData, signOut, isLoading } = useStacks();
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+    const handleConnect = async () => {
+        setIsAuthenticating(true);
+        try {
+            await authenticate();
+        } catch (error) {
+            console.error('Connection failed:', error);
+        } finally {
+            setIsAuthenticating(false);
+        }
+    };
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -35,12 +48,12 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <button
-                            onClick={authenticate}
-                            disabled={isLoading}
+                            onClick={handleConnect}
+                            disabled={isLoading || isAuthenticating}
                             className="flex items-center gap-2 bg-muted hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2 rounded-full border border-border font-medium text-sm"
                         >
                             <Wallet className="w-4 h-4 text-accent" />
-                            {isLoading ? 'Loading...' : 'Connect Wallet'}
+                            {isLoading || isAuthenticating ? 'Loading...' : 'Connect Wallet'}
                         </button>
                     )}
                 </div>
