@@ -7,10 +7,9 @@ import {
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 
-const PRIVATE_KEY = process.env.DEPLOYER_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'testnet';
-// The address provided by the user as the contract deployer
-const CONTRACT_ADDRESS = 'STSHVWJVD3NP8G7ZM82KTHB91HKCMNTY38BY9FYG';
+const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
 const CONTRACT_NAME = 'predinex-pool';
 
 if (!PRIVATE_KEY) {
@@ -65,7 +64,8 @@ async function runInteractions() {
                 stringAsciiCV("Bitcoin to 100k"),
                 stringAsciiCV("Will BTC hit 100k by EOY?"),
                 stringAsciiCV("Yes"),
-                stringAsciiCV("No")
+                stringAsciiCV("No"),
+                uintCV(1000) // duration in blocks
             ]
             : [
                 uintCV(0), // pool-id
