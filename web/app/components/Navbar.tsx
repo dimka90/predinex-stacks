@@ -23,7 +23,7 @@ export default function Navbar() {
                     {userData ? (
                         <div className="flex items-center gap-4">
                             <span className="text-sm font-mono text-muted-foreground hidden sm:block">
-                                {userData.profile.stxAddress.testnet.slice(0, 5)}...{userData.profile.stxAddress.testnet.slice(-5)}
+                                {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
                             </span>
                             <button
                                 onClick={signOut}
