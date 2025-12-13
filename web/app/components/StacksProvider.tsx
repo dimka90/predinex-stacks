@@ -9,21 +9,19 @@ const userSession = new UserSession({ appConfig });
 interface StacksContextValue {
     userSession: UserSession;
     userData: any;
-    authenticate: () => void;
+    authenticate: () => Promise<void>;
     signOut: () => void;
+    isLoading: boolean;
 }
 
 const StacksContext = createContext<StacksContextValue>({} as any);
 
 export function StacksProvider({ children }: { children: ReactNode }) {
     const [userData, setUserData] = useState<any>(null);
-    const [showConnectFn, setShowConnectFn] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Load showConnect only on client side
-        import('@stacks/connect').then((module) => {
-            setShowConnectFn(() => module.showConnect);
-        });
+        setIsLoading(false);
 
         if (userSession.isSignInPending()) {
             userSession.handlePendingSignIn().then((userData) => {
@@ -34,23 +32,24 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const authenticate = () => {
-        if (!showConnectFn) {
-            console.error('showConnect not loaded yet');
-            return;
+    const authenticate = async () => {
+        try {
+            const { showConnect } = await import('@stacks/connect');
+            
+            showConnect({
+                appDetails: {
+                    name: 'Predinex',
+                    icon: window.location.origin + '/favicon.ico',
+                },
+                redirectTo: '/',
+                onFinish: () => {
+                    setUserData(userSession.loadUserData());
+                },
+                userSession: userSession as any,
+            });
+        } catch (error) {
+            console.error('Failed to authenticate:', error);
         }
-
-        showConnectFn({
-            appDetails: {
-                name: 'Predinex',
-                icon: window.location.origin + '/favicon.ico',
-            },
-            redirectTo: '/',
-            onFinish: () => {
-                setUserData(userSession.loadUserData());
-            },
-            userSession: userSession as any,
-        });
     };
 
     const signOut = () => {
@@ -59,7 +58,7 @@ export function StacksProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <StacksContext.Provider value={{ userSession, userData, authenticate, signOut }}>
+        <StacksContext.Provider value={{ userSession, userData, authenticate, signOut, isLoading }}>
             {children}
         </StacksContext.Provider>
     );
