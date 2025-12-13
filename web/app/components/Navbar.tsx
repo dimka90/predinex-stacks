@@ -1,55 +1,11 @@
 'use client';
 
 import Link from "next/link";
-import { Wallet, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { LogOut } from "lucide-react";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { userData, setUserData, signOut, userSession } = useStacks();
-    const [isAuthenticating, setIsAuthenticating] = useState(false);
-    const [showConnectFn, setShowConnectFn] = useState<any>(null);
-
-    // Load showConnect on mount
-    useEffect(() => {
-        import('@stacks/connect').then((module) => {
-            console.log('Loaded @stacks/connect:', Object.keys(module));
-            setShowConnectFn(() => module.showConnect);
-        }).catch((err) => {
-            console.error('Failed to load @stacks/connect:', err);
-        });
-    }, []);
-
-    const handleConnect = async () => {
-        if (!showConnectFn) {
-            console.error('showConnect not loaded');
-            return;
-        }
-
-        setIsAuthenticating(true);
-        try {
-            showConnectFn({
-                appDetails: {
-                    name: 'Predinex',
-                    icon: window.location.origin + '/favicon.ico',
-                },
-                redirectTo: '/',
-                onFinish: () => {
-                    try {
-                        const userData = userSession.loadUserData();
-                        setUserData(userData);
-                    } catch (error) {
-                        console.error('Failed to load user data:', error);
-                    }
-                },
-                userSession: userSession as any,
-            });
-        } catch (error) {
-            console.error('Connection failed:', error);
-        } finally {
-            setIsAuthenticating(false);
-        }
-    };
+    const { userData, signOut } = useStacks();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -63,7 +19,7 @@ export default function Navbar() {
                         <span className="font-bold text-xl tracking-tight">Predinex</span>
                     </Link>
 
-                    {/* Connect Button */}
+                    {/* User Info */}
                     {userData ? (
                         <div className="flex items-center gap-4">
                             <span className="text-sm font-mono text-muted-foreground hidden sm:block">
@@ -78,14 +34,9 @@ export default function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <button
-                            onClick={handleConnect}
-                            disabled={isAuthenticating || !showConnectFn}
-                            className="flex items-center gap-2 bg-muted hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2 rounded-full border border-border font-medium text-sm"
-                        >
-                            <Wallet className="w-4 h-4 text-accent" />
-                            {isAuthenticating ? 'Loading...' : 'Connect Wallet'}
-                        </button>
+                        <div className="text-sm text-muted-foreground">
+                            Not connected
+                        </div>
                     )}
                 </div>
             </div>
