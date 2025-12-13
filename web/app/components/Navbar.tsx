@@ -2,17 +2,48 @@
 
 import Link from "next/link";
 import { Wallet, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { authenticate, userData, signOut, isLoading } = useStacks();
+    const { userData, setUserData, signOut, userSession } = useStacks();
     const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [showConnectFn, setShowConnectFn] = useState<any>(null);
+
+    // Load showConnect on mount
+    useEffect(() => {
+        import('@stacks/connect').then((module) => {
+            console.log('Loaded @stacks/connect:', Object.keys(module));
+            setShowConnectFn(() => module.showConnect);
+        }).catch((err) => {
+            console.error('Failed to load @stacks/connect:', err);
+        });
+    }, []);
 
     const handleConnect = async () => {
+        if (!showConnectFn) {
+            console.error('showConnect not loaded');
+            return;
+        }
+
         setIsAuthenticating(true);
         try {
-            await authenticate();
+            showConnectFn({
+                appDetails: {
+                    name: 'Predinex',
+                    icon: window.location.origin + '/favicon.ico',
+                },
+                redirectTo: '/',
+                onFinish: () => {
+                    try {
+                        const userData = userSession.loadUserData();
+                        setUserData(userData);
+                    } catch (error) {
+                        console.error('Failed to load user data:', error);
+                    }
+                },
+                userSession: userSession as any,
+            });
         } catch (error) {
             console.error('Connection failed:', error);
         } finally {
@@ -49,11 +80,11 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={handleConnect}
-                            disabled={isLoading || isAuthenticating}
+                            disabled={isAuthenticating || !showConnectFn}
                             className="flex items-center gap-2 bg-muted hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2 rounded-full border border-border font-medium text-sm"
                         >
                             <Wallet className="w-4 h-4 text-accent" />
-                            {isLoading || isAuthenticating ? 'Loading...' : 'Connect Wallet'}
+                            {isAuthenticating ? 'Loading...' : 'Connect Wallet'}
                         </button>
                     )}
                 </div>
