@@ -14,7 +14,8 @@
     "interact": "tsx scripts/interact.ts",
     "generate-activity": "tsx scripts/generate-activity.ts",
     "generate-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/generate-activity.ts",
-    "generate-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/generate-activity.ts"
+    "generate-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/generate-activity.ts",
+    "auto-activity": "tsx scripts/auto-activity.ts"
   },
   "author": "",
   "license": "ISC",
