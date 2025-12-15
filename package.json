@@ -18,6 +18,9 @@
     "bulk-activity": "tsx scripts/bulk-activity.ts",
     "bulk-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/bulk-activity.ts",
     "bulk-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/bulk-activity.ts",
+    "cheap-activity": "tsx scripts/cheap-activity.ts",
+    "cheap-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/cheap-activity.ts",
+    "cheap-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/cheap-activity.ts",
     "auto-activity": "tsx scripts/auto-activity.ts"
   },
   "author": "",
