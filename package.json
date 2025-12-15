@@ -26,6 +26,7 @@
     "optimized-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/optimized-activity.ts",
     "simple-activity": "tsx scripts/simple-activity.ts",
     "simple-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/simple-activity.ts",
+    "final-activity": "tsx scripts/final-activity.ts",
     "auto-activity": "tsx scripts/auto-activity.ts"
   },
   "author": "",
