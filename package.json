@@ -21,6 +21,9 @@
     "cheap-activity": "tsx scripts/cheap-activity.ts",
     "cheap-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/cheap-activity.ts",
     "cheap-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/cheap-activity.ts",
+    "optimized-activity": "tsx scripts/optimized-activity.ts",
+    "optimized-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/optimized-activity.ts",
+    "optimized-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/optimized-activity.ts",
     "auto-activity": "tsx scripts/auto-activity.ts"
   },
   "author": "",
