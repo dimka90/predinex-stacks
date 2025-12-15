@@ -15,6 +15,9 @@
     "generate-activity": "tsx scripts/generate-activity.ts",
     "generate-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/generate-activity.ts",
     "generate-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/generate-activity.ts",
+    "bulk-activity": "tsx scripts/bulk-activity.ts",
+    "bulk-activity:mainnet": "STACKS_NETWORK=mainnet tsx scripts/bulk-activity.ts",
+    "bulk-activity:testnet": "STACKS_NETWORK=testnet tsx scripts/bulk-activity.ts",
     "auto-activity": "tsx scripts/auto-activity.ts"
   },
   "author": "",
