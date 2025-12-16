@@ -22,6 +22,9 @@ export default function Navbar() {
                     {/* User Info */}
                     {userData ? (
                         <div className="flex items-center gap-4">
+                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                Dashboard
+                            </Link>
                             <span className="text-sm font-mono text-muted-foreground hidden sm:block">
                                 {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
                             </span>
