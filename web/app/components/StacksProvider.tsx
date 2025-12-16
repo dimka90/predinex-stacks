@@ -1,6 +1,7 @@
 'use client';
 
 import { AppConfig, UserSession } from '@stacks/auth';
+import { showConnect } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
