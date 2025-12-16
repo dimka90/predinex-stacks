@@ -12,6 +12,7 @@ interface StacksContextValue {
     userData: any;
     setUserData: (data: any) => void;
     signOut: () => void;
+    authenticate: () => void;
 }
 
 const StacksContext = createContext<StacksContextValue>({} as any);
@@ -34,8 +35,29 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         setUserData(null);
     };
 
+    const authenticate = () => {
+        showConnect({
+            appDetails: {
+                name: 'Predinex',
+                icon: window.location.origin + '/favicon.ico',
+            },
+            redirectTo: '/',
+            onFinish: () => {
+                // Handle successful authentication
+                window.location.reload();
+            },
+            onCancel: () => {
+                // Handle user cancellation gracefully
+                console.log('User cancelled wallet connection');
+            },
+        }).catch((error) => {
+            // Handle connection errors
+            console.error('Wallet connection error:', error);
+        });
+    };
+
     return (
-        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut }}>
+        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate }}>
             {children}
         </StacksContext.Provider>
     );
