@@ -1,11 +1,11 @@
 'use client';
 
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, Wallet } from "lucide-react";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { userData, signOut } = useStacks();
+    const { userData, signOut, authenticate } = useStacks();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -37,9 +37,13 @@ export default function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <div className="text-sm text-muted-foreground">
-                            Not connected
-                        </div>
+                        <button
+                            onClick={authenticate}
+                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm"
+                        >
+                            <Wallet className="w-4 h-4" />
+                            Connect Wallet
+                        </button>
                     )}
                 </div>
             </div>
