@@ -31,7 +31,7 @@ async function createPool(index: number) {
 
     const txOptions = {
       contractAddress: WALLET_ADDRESS,
-      contractName: 'predinex-pool-1765792183853', // Use exact deployed name
+      contractName: 'predinex-pool-1765876691340', // Use exact deployed name
       functionName: 'create-pool',
       functionArgs: [
         stringAsciiCV(title),

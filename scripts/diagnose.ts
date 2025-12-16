@@ -2,7 +2,7 @@ import { fetchCallReadOnlyFunction, uintCV } from '@stacks/transactions';
 import { STACKS_MAINNET } from '@stacks/network';
 
 const CONTRACT_ADDRESS = 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
-const CONTRACT_NAME = 'predinex-pool-1765792183853';
+const CONTRACT_NAME = 'predinex-pool-1765876691340';
 
 async function diagnose() {
   console.log(`\n${'='.repeat(60)}`);
