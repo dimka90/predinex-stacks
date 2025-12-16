@@ -10,7 +10,7 @@ if (!PRIVATE_KEY) {
 
 const SENDER_KEY = PRIVATE_KEY as string;
 const CONTRACT_ADDRESS = 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
-const CONTRACT_NAME = 'predinex-pool-1765792183853';
+const CONTRACT_NAME = 'predinex-pool-1765876691340';
 
 async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
