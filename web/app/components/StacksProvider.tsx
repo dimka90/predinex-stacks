@@ -35,25 +35,30 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         setUserData(null);
     };
 
-    const authenticate = () => {
-        showConnect({
-            appDetails: {
-                name: 'Predinex',
-                icon: window.location.origin + '/favicon.ico',
-            },
-            redirectTo: '/',
-            onFinish: () => {
-                // Handle successful authentication
-                window.location.reload();
-            },
-            onCancel: () => {
-                // Handle user cancellation gracefully
-                console.log('User cancelled wallet connection');
-            },
-        }).catch((error) => {
+    const authenticate = async () => {
+        console.log('Authenticate function called');
+        try {
+            await showConnect({
+                appDetails: {
+                    name: 'Predinex',
+                    icon: window.location.origin + '/favicon.ico',
+                },
+                redirectTo: '/',
+                onFinish: (authData) => {
+                    // Handle successful authentication
+                    console.log('Authentication finished:', authData);
+                    // Reload to trigger the useEffect that checks for signed in user
+                    window.location.reload();
+                },
+                onCancel: () => {
+                    // Handle user cancellation gracefully
+                    console.log('User cancelled wallet connection');
+                },
+            });
+        } catch (error) {
             // Handle connection errors
             console.error('Wallet connection error:', error);
-        });
+        }
     };
 
     return (
