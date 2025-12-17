@@ -1,5 +1,5 @@
 import { STACKS_MAINNET, StacksNetwork } from "@stacks/network";
-import { fetchCallReadOnlyFunction, cvToValue, uintCV, ClarityValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToValue, uintCV, principalCV, ClarityValue } from "@stacks/transactions";
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from "./constants";
 
 // Use mainnet for production
@@ -82,4 +82,35 @@ export async function fetchActivePools(): Promise<Pool[]> {
         if (pool) pools.push(pool);
     }
     return pools;
+}
+
+export interface UserBetData {
+    amountA: number;
+    amountB: number;
+    totalBet: number;
+}
+
+export async function getUserBet(poolId: number, userAddress: string): Promise<UserBetData | null> {
+    try {
+        const result = await fetchCallReadOnlyFunction({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'get-user-bet',
+            functionArgs: [uintCV(poolId), principalCV(userAddress)],
+            senderAddress: CONTRACT_ADDRESS,
+            network,
+        });
+
+        const value = cvToValue(result, true);
+        if (!value) return null;
+
+        return {
+            amountA: Number(value['amount-a']),
+            amountB: Number(value['amount-b']),
+            totalBet: Number(value['total-bet']),
+        };
+    } catch (e) {
+        console.error(`Failed to fetch user bet for pool ${poolId}`, e);
+        return null;
+    }
 }

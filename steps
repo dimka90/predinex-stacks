@@ -1,3 +1,4 @@
 npm install -g @stacks/cli
 
 stx make_keychain "your 24 word mnemonic phrase here"
+Explorer: https://explorer.hiro.so/txid/e1adce134fd9d549b4abedfcbb10501ef12a2155fe27ec7bd0a6d525721a892d?chain=mainnet

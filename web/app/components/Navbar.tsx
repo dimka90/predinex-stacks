@@ -22,11 +22,10 @@ export default function Navbar() {
                     {/* User Info */}
                     {userData ? (
                         <div className="flex items-center gap-4">
-                            <span 
-                                className="text-sm font-mono text-muted-foreground hidden sm:block"
-                                title={userData.profile.stxAddress.mainnet}
-                                aria-label={`Connected wallet address: ${userData.profile.stxAddress.mainnet}`}
-                            >
+                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                Dashboard
+                            </Link>
+                            <span className="text-sm font-mono text-muted-foreground hidden sm:block">
                                 {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
                             </span>
                             <button
