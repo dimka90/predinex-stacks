@@ -77,7 +77,7 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                 <p className="text-muted-foreground mb-4">You need to connect your wallet to place bets on this market.</p>
                 <button
                     onClick={authenticate}
-                    className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-full border border-primary/20 transition-colors font-medium mx-auto"
+                    className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-full border border-primary/20 transition-colors font-medium mx-auto hover:scale-105 transform transition-transform"
                 >
                     <Wallet className="w-5 h-5" />
                     Connect Wallet
