@@ -2,7 +2,7 @@
 
 import { AppConfig, UserSession } from '@stacks/auth';
 import { showConnect } from '@stacks/connect';
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -41,12 +41,12 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         initializeAuth();
     }, []);
 
-    const signOut = () => {
+    const signOut = useCallback(() => {
         userSession.signUserOut();
         setUserData(null);
-    };
+    }, []);
 
-    const authenticate = async () => {
+    const authenticate = useCallback(async () => {
         console.log('Authenticate function called');
         try {
             await showConnect({
@@ -73,7 +73,7 @@ export function StacksProvider({ children }: { children: ReactNode }) {
             console.error('Wallet connection error:', error);
             console.error('Please ensure you have a Stacks wallet extension installed (Leather or Xverse)');
         }
-    };
+    }, []);
 
     if (isLoading) {
         return (
