@@ -1,24 +1,18 @@
 'use client';
 
 import Navbar from "../../components/Navbar";
+import BettingSection from "../../components/BettingSection";
 import { useEffect, useState } from "react";
 import { getPool, Pool } from "../../lib/stacks-api";
-import { useStacks } from "../../components/StacksProvider";
-import { openContractCall } from "@stacks/connect";
-import { uintCV } from "@stacks/transactions";
-import { CONTRACT_ADDRESS, CONTRACT_NAME } from "../../lib/constants";
-import { Loader2, TrendingUp, Users, Clock } from "lucide-react";
+import { TrendingUp, Users, Clock } from "lucide-react";
 import { use } from "react";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const poolId = parseInt(id);
 
-    const { userData, authenticate } = useStacks();
     const [pool, setPool] = useState<Pool | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [betAmount, setBetAmount] = useState("");
-    const [isBetting, setIsBetting] = useState(false);
 
     useEffect(() => {
         getPool(poolId).then(data => {
@@ -27,45 +21,7 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
         });
     }, [poolId]);
 
-    const placeBet = async (outcome: number) => {
-        if (!userData) {
-            authenticate();
-            return;
-        }
 
-        if (!betAmount || parseFloat(betAmount) <= 0) {
-            alert("Please enter a valid bet amount.");
-            return;
-        }
-
-        setIsBetting(true);
-        const amountInMicroStx = Math.floor(parseFloat(betAmount) * 1_000_000); // STX to microSTX
-
-        try {
-            await openContractCall({
-                contractAddress: CONTRACT_ADDRESS,
-                contractName: CONTRACT_NAME,
-                functionName: 'place-bet',
-                functionArgs: [
-                    uintCV(poolId),
-                    uintCV(outcome),
-                    uintCV(amountInMicroStx),
-                ],
-                onFinish: (data) => {
-                    console.log('Bet placed:', data);
-                    alert(`Bet placed! TxId: ${data.txId}`);
-                    setIsBetting(false);
-                    setBetAmount("");
-                },
-                onCancel: () => {
-                    setIsBetting(false);
-                },
-            });
-        } catch (error) {
-            console.error("Bet failed", error);
-            setIsBetting(false);
-        }
-    };
 
     if (isLoading) {
         return (
@@ -145,47 +101,7 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                     </div>
 
                     {/* Betting UI */}
-                    {!pool.settled && (
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Bet Amount (STX)</label>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    min="0.1"
-                                    className="w-full bg-muted/50 border border-border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="e.g., 10"
-                                    value={betAmount}
-                                    onChange={(e) => setBetAmount(e.target.value)}
-                                    disabled={isBetting}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => placeBet(0)}
-                                    disabled={isBetting}
-                                    className="py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
-                                >
-                                    {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeA}`}
-                                </button>
-                                <button
-                                    onClick={() => placeBet(1)}
-                                    disabled={isBetting}
-                                    className="py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
-                                >
-                                    {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeB}`}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {pool.settled && (
-                        <div className="text-center py-6 bg-muted/50 rounded-lg">
-                            <p className="text-lg font-bold">This pool has been settled.</p>
-                            <p className="text-muted-foreground">Winner: {pool.winningOutcome === 0 ? pool.outcomeA : pool.outcomeB}</p>
-                        </div>
-                    )}
+                    <BettingSection pool={pool} poolId={poolId} />
                 </div>
             </div>
         </main>
