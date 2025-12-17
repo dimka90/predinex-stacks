@@ -43,17 +43,19 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                     uintCV(amountInMicroStx),
                 ],
                 onFinish: (data) => {
-                    console.log('Bet placed:', data);
-                    alert(`Bet placed! TxId: ${data.txId}`);
+                    console.log('Bet placed successfully:', data);
+                    alert(`Bet placed successfully! Transaction ID: ${data.txId}`);
                     setIsBetting(false);
                     setBetAmount("");
                 },
                 onCancel: () => {
+                    console.log('User cancelled bet transaction');
                     setIsBetting(false);
                 },
             });
         } catch (error) {
-            console.error("Bet failed", error);
+            console.error("Bet transaction failed:", error);
+            alert(`Bet failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
             setIsBetting(false);
         }
     };
