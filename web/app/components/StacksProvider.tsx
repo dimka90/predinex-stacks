@@ -13,21 +13,32 @@ interface StacksContextValue {
     setUserData: (data: any) => void;
     signOut: () => void;
     authenticate: () => void;
+    isLoading: boolean;
 }
 
 const StacksContext = createContext<StacksContextValue>({} as any);
 
 export function StacksProvider({ children }: { children: ReactNode }) {
     const [userData, setUserData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (userSession.isSignInPending()) {
-            userSession.handlePendingSignIn().then((userData) => {
-                setUserData(userData);
-            });
-        } else if (userSession.isUserSignedIn()) {
-            setUserData(userSession.loadUserData());
-        }
+        const initializeAuth = async () => {
+            try {
+                if (userSession.isSignInPending()) {
+                    const userData = await userSession.handlePendingSignIn();
+                    setUserData(userData);
+                } else if (userSession.isUserSignedIn()) {
+                    setUserData(userSession.loadUserData());
+                }
+            } catch (error) {
+                console.error('Error initializing authentication:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeAuth();
     }, []);
 
     const signOut = () => {
@@ -64,8 +75,19 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate }}>
+        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate, isLoading }}>
             {children}
         </StacksContext.Provider>
     );
