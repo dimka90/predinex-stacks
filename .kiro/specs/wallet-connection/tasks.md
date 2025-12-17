@@ -43,7 +43,7 @@
   - Test button click interactions
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [-] 3. Verify wallet integration and session persistence
+- [x] 3. Verify wallet integration and session persistence
   - Test wallet connection with different wallet types
   - Verify user data persists on page refresh
   - Verify sign out clears authentication state
@@ -56,7 +56,7 @@
   - Test pending sign-in handling
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 4. Implement access control for protected pages
+- [-] 4. Implement access control for protected pages
   - Verify create pool page blocks unauthenticated users
   - Verify market betting page blocks unauthenticated users
   - Ensure authenticated users can access protected functionality
