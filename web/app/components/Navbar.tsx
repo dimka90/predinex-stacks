@@ -30,7 +30,8 @@ export default function Navbar() {
                             </span>
                             <button
                                 onClick={signOut}
-                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm"
+                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                                aria-label="Sign out of your wallet"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -39,7 +40,8 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={authenticate}
-                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm"
+                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            aria-label="Connect your Stacks wallet"
                         >
                             <Wallet className="w-4 h-4" />
                             Connect Wallet
