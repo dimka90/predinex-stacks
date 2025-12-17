@@ -24,8 +24,14 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
             return;
         }
 
-        if (!betAmount || parseFloat(betAmount) <= 0) {
-            alert("Please enter a valid bet amount.");
+        const amount = parseFloat(betAmount);
+        if (!betAmount || isNaN(amount) || amount <= 0) {
+            alert("Please enter a valid bet amount greater than 0.");
+            return;
+        }
+
+        if (amount < 0.1) {
+            alert("Minimum bet amount is 0.1 STX.");
             return;
         }
 
@@ -99,6 +105,7 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                     value={betAmount}
                     onChange={(e) => setBetAmount(e.target.value)}
                     disabled={isBetting}
+                    aria-label="Enter bet amount in STX"
                 />
             </div>
 
