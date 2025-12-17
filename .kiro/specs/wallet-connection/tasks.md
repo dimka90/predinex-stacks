@@ -56,7 +56,7 @@
   - Test pending sign-in handling
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [-] 4. Implement access control for protected pages
+- [x] 4. Implement access control for protected pages
   - Verify create pool page blocks unauthenticated users
   - Verify market betting page blocks unauthenticated users
   - Ensure authenticated users can access protected functionality
@@ -69,5 +69,5 @@
   - Test authentication state availability in components
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 5. Final verification and testing
+- [-] 5. Final verification and testing
   - Ensure all tests pass, ask the user if questions arise.

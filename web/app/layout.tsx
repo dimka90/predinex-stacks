@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Predinex - Prediction Market",
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <StacksProvider>
-          {children}
-        </StacksProvider>
+        <ErrorBoundary>
+          <StacksProvider>
+            {children}
+          </StacksProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

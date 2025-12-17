@@ -47,17 +47,20 @@ export function StacksProvider({ children }: { children: ReactNode }) {
                 onFinish: (authData) => {
                     // Handle successful authentication
                     console.log('Authentication finished:', authData);
+                    console.log('User data will be loaded on page reload');
                     // Reload to trigger the useEffect that checks for signed in user
                     window.location.reload();
                 },
                 onCancel: () => {
                     // Handle user cancellation gracefully
                     console.log('User cancelled wallet connection');
+                    console.log('Authentication state remains unchanged');
                 },
             });
         } catch (error) {
             // Handle connection errors
             console.error('Wallet connection error:', error);
+            console.error('Please ensure you have a Stacks wallet extension installed (Leather or Xverse)');
         }
     };
 
