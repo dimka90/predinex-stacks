@@ -92,3 +92,33 @@
 (define-private (is-approved-for-all (owner principal) (operator principal))
   (default-to false (map-get? operator-approvals { owner: owner, operator: operator }))
 )
+
+;; Burn NFT
+(define-public (burn (token-id uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    
+    (try! (nft-burn? predinex-nft token-id owner))
+    (map-delete token-owners token-id)
+    (map-delete token-approvals token-id)
+    (map-delete token-metadata token-id)
+    (ok true)
+  )
+)
+
+;; Read-only functions
+
+;; Get token owner
+(define-read-only (get-owner (token-id uint))
+  (ok (nft-get-owner? predinex-nft token-id))
+)
+
+;; Get approved spender for token
+(define-read-only (get-approved (token-id uint))
+  (ok (map-get? token-approvals token-id))
+)
+
+;; Check if operator is approved for all
+(define-read-only (is-approved-for-all-read (owner principal) (operator principal))
+  (ok (is-approved-for-all owner operator))
+)
