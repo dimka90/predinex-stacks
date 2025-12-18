@@ -98,6 +98,7 @@
     (try! (ft-mint? predinex-token amount recipient))
     (var-set total-supply (+ (var-get total-supply) amount))
     (update-balance recipient (+ (get-balance recipient) amount))
+    (emit-transfer 'SP000000000000000000002Q6VF78 recipient amount) ;; Zero address as from
     (ok true)
   )
 )
@@ -111,6 +112,7 @@
     (try! (ft-burn? predinex-token amount sender))
     (var-set total-supply (- (var-get total-supply) amount))
     (update-balance sender (- (get-balance sender) amount))
+    (emit-transfer sender 'SP000000000000000000002Q6VF78 amount) ;; Zero address as to
     (ok true)
   )
 )
