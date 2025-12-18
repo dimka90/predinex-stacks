@@ -37,6 +37,7 @@
     (map-set token-owners token-id recipient)
     (map-set token-metadata token-id { name: name, description: description, image: image })
     (var-set token-counter (+ token-id u1))
+    (emit-transfer none recipient token-id)
     (ok token-id)
   )
 )
@@ -50,6 +51,7 @@
     (try! (nft-transfer? predinex-nft token-id sender recipient))
     (map-set token-owners token-id recipient)
     (map-delete token-approvals token-id)
+    (emit-transfer (some sender) recipient token-id)
     (ok true)
   )
 )
@@ -67,6 +69,7 @@
     (try! (nft-transfer? predinex-nft token-id owner recipient))
     (map-set token-owners token-id recipient)
     (map-delete token-approvals token-id)
+    (emit-transfer (some owner) recipient token-id)
     (ok true)
   )
 )
@@ -76,6 +79,7 @@
   (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
     (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
     (map-set token-approvals token-id spender)
+    (emit-approval owner spender token-id)
     (ok true)
   )
 )
@@ -84,6 +88,7 @@
 (define-public (set-approval-for-all (operator principal) (approved bool))
   (begin
     (map-set operator-approvals { owner: tx-sender, operator: operator } approved)
+    (emit-approval-for-all tx-sender operator approved)
     (ok true)
   )
 )
@@ -151,4 +156,36 @@
 ;; Get token symbol
 (define-read-only (get-symbol)
   (ok TOKEN-SYMBOL)
+)
+
+;; Events (using print for event emission)
+
+;; Transfer event
+(define-private (emit-transfer (from (optional principal)) (to principal) (token-id uint))
+  (print { 
+    event: "transfer", 
+    from: from, 
+    to: to, 
+    token-id: token-id 
+  })
+)
+
+;; Approval event
+(define-private (emit-approval (owner principal) (approved principal) (token-id uint))
+  (print { 
+    event: "approval", 
+    owner: owner, 
+    approved: approved, 
+    token-id: token-id 
+  })
+)
+
+;; Approval for all event
+(define-private (emit-approval-for-all (owner principal) (operator principal) (approved bool))
+  (print { 
+    event: "approval-for-all", 
+    owner: owner, 
+    operator: operator, 
+    approved: approved 
+  })
 )
