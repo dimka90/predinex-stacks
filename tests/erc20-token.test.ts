@@ -81,4 +81,65 @@ describe("ERC20 Token Contract", () => {
       expect(result.result).toBe(Cl.uint(0));
     });
   });
+
+  describe("Transfer Functionality", () => {
+    it("should transfer tokens successfully", () => {
+      const transferAmount = 1000000; // 1 token with 6 decimals
+      
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer",
+        [Cl.uint(transferAmount), Cl.principal(alice)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check balances after transfer
+      const deployerBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(deployer)],
+        deployer
+      );
+      expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - transferAmount));
+
+      const aliceBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(aliceBalance.result).toBe(Cl.uint(transferAmount));
+    });
+
+    it("should fail when transferring more than balance", () => {
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer",
+        [Cl.uint(2000000000000), Cl.principal(alice)], // More than total supply
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(402)); // ERR-INSUFFICIENT-BALANCE
+    });
+
+    it("should fail when transferring to self", () => {
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer",
+        [Cl.uint(1000000), Cl.principal(deployer)],
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(404)); // ERR-INVALID-RECIPIENT
+    });
+
+    it("should fail when transferring zero amount", () => {
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice)],
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(403)); // ERR-INVALID-AMOUNT
+    });
+  });
 });
