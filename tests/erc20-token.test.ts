@@ -1,6 +1,9 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl } from "@stacks/transactions";
 
+// @ts-ignore
+const { simnet } = globalThis;
+
 const accounts = simnet.getAccounts();
 const deployer = accounts.get("deployer")!;
 const alice = accounts.get("wallet_1")!;
@@ -68,7 +71,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(deployer)],
         deployer
       );
-      expect(result.result).toBe(Cl.uint(1000000000000));
+      expect(result.result).toStrictEqual(Cl.uint(1000000000000));
     });
 
     it("should show zero balance for new accounts", () => {
@@ -78,7 +81,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice)],
         deployer
       );
-      expect(result.result).toBe(Cl.uint(0));
+      expect(result.result).toStrictEqual(Cl.uint(0));
     });
   });
 
@@ -101,7 +104,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(deployer)],
         deployer
       );
-      expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - transferAmount));
+      expect(deployerBalance.result).toStrictEqual(Cl.uint(1000000000000 - transferAmount));
 
       const aliceBalance = simnet.callReadOnlyFn(
         "erc20-token",
@@ -109,7 +112,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice)],
         deployer
       );
-      expect(aliceBalance.result).toBe(Cl.uint(transferAmount));
+      expect(aliceBalance.result).toStrictEqual(Cl.uint(transferAmount));
     });
 
     it("should fail when transferring more than balance", () => {
@@ -172,7 +175,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice), Cl.principal(bob)],
         deployer
       );
-      expect(allowance.result).toBe(Cl.uint(approveAmount));
+      expect(allowance.result).toStrictEqual(Cl.uint(approveAmount));
     });
 
     it("should transfer-from with valid allowance", () => {
@@ -203,7 +206,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice)],
         deployer
       );
-      expect(aliceBalance.result).toBe(Cl.uint(10000000 - transferAmount));
+      expect(aliceBalance.result).toStrictEqual(Cl.uint(10000000 - transferAmount));
 
       const bobBalance = simnet.callReadOnlyFn(
         "erc20-token",
@@ -211,7 +214,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(bob)],
         deployer
       );
-      expect(bobBalance.result).toBe(Cl.uint(transferAmount));
+      expect(bobBalance.result).toStrictEqual(Cl.uint(transferAmount));
 
       const remainingAllowance = simnet.callReadOnlyFn(
         "erc20-token",
@@ -219,7 +222,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice), Cl.principal(bob)],
         deployer
       );
-      expect(remainingAllowance.result).toBe(Cl.uint(approveAmount - transferAmount));
+      expect(remainingAllowance.result).toStrictEqual(Cl.uint(approveAmount - transferAmount));
     });
 
     it("should fail transfer-from with insufficient allowance", () => {

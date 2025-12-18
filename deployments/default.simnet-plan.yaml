@@ -64,13 +64,13 @@ plan:
     - id: 0
       transactions:
         - emulated-contract-publish:
-            contract-name: predinex-pool
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/predinex-pool.clar
-            clarity-version: 2
-        - emulated-contract-publish:
             contract-name: erc20-token
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/erc20-token.clar
+            clarity-version: 2
+        - emulated-contract-publish:
+            contract-name: predinex-pool
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/predinex-pool.clar
             clarity-version: 2
       epoch: "3.3"
