@@ -111,3 +111,40 @@
     (ok true)
   )
 )
+
+;; Read-only functions
+
+;; Get token name
+(define-read-only (get-name)
+  (ok TOKEN-NAME)
+)
+
+;; Get token symbol
+(define-read-only (get-symbol)
+  (ok TOKEN-SYMBOL)
+)
+
+;; Get token decimals
+(define-read-only (get-decimals)
+  (ok TOKEN-DECIMALS)
+)
+
+;; Get token URI
+(define-read-only (get-token-uri)
+  (ok (some TOKEN-URI))
+)
+
+;; Get total supply
+(define-read-only (get-total-supply)
+  (ok (var-get total-supply))
+)
+
+;; Get balance of a user
+(define-read-only (get-balance (user principal))
+  (default-to u0 (map-get? balances user))
+)
+
+;; Get allowance between owner and spender
+(define-read-only (get-allowance (owner principal) (spender principal))
+  (default-to u0 (map-get? allowances { owner: owner, spender: spender }))
+)
