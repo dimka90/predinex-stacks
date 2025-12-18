@@ -36,3 +36,22 @@
     (ok true)
   )
 )
+
+;; Transfer tokens from sender to recipient
+(define-public (transfer (amount uint) (recipient principal))
+  (let ((sender tx-sender))
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (not (is-eq sender recipient)) ERR-INVALID-RECIPIENT)
+    (asserts! (>= (get-balance sender) amount) ERR-INSUFFICIENT-BALANCE)
+    
+    (try! (ft-transfer? predinex-token amount sender recipient))
+    (update-balance sender (- (get-balance sender) amount))
+    (update-balance recipient (+ (get-balance recipient) amount))
+    (ok true)
+  )
+)
+
+;; Helper function to update balance
+(define-private (update-balance (user principal) (new-balance uint))
+  (map-set balances user new-balance)
+)
