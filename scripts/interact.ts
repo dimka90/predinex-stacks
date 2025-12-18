@@ -10,7 +10,7 @@ import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'testnet';
 const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
-const CONTRACT_NAME = 'predinex-pool';
+const CONTRACT_NAME = process.env.LATEST_CONTRACT_NAME || 'predinex-pool-1765876691340';
 
 if (!PRIVATE_KEY) {
     console.error("Error: DEPLOYER_KEY environment variable is required.");
