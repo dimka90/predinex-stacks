@@ -244,4 +244,86 @@ describe("ERC20 Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(405)); // ERR-INSUFFICIENT-ALLOWANCE
     });
   });
+
+  describe("Mint and Burn", () => {
+    it("should mint tokens successfully (owner only)", () => {
+      const mintAmount = 5000000; // 5 tokens
+      
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "mint",
+        [Cl.uint(mintAmount), Cl.principal(alice)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check Alice's balance
+      const aliceBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(aliceBalance.result).toBe(Cl.uint(mintAmount));
+
+      // Check total supply increased
+      const totalSupply = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(totalSupply.result).toBeOk(Cl.uint(1000000000000 + mintAmount));
+    });
+
+    it("should fail mint from non-owner", () => {
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "mint",
+        [Cl.uint(5000000), Cl.principal(alice)],
+        alice // Non-owner trying to mint
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should burn tokens successfully", () => {
+      const burnAmount = 1000000; // 1 token
+      
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "burn",
+        [Cl.uint(burnAmount)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check deployer's balance decreased
+      const deployerBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(deployer)],
+        deployer
+      );
+      expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - burnAmount));
+
+      // Check total supply decreased
+      const totalSupply = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(totalSupply.result).toBeOk(Cl.uint(1000000000000 - burnAmount));
+    });
+
+    it("should fail burn with insufficient balance", () => {
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "burn",
+        [Cl.uint(1000000)], // Alice has no tokens
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(402)); // ERR-INSUFFICIENT-BALANCE
+    });
+  });
 });
