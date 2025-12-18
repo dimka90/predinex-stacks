@@ -55,3 +55,33 @@
 (define-private (update-balance (user principal) (new-balance uint))
   (map-set balances user new-balance)
 )
+
+;; Approve spender to transfer tokens on behalf of owner
+(define-public (approve (spender principal) (amount uint))
+  (let ((owner tx-sender))
+    (asserts! (not (is-eq owner spender)) ERR-INVALID-RECIPIENT)
+    (map-set allowances { owner: owner, spender: spender } amount)
+    (ok true)
+  )
+)
+
+;; Transfer tokens from owner to recipient using allowance
+(define-public (transfer-from (owner principal) (recipient principal) (amount uint))
+  (let ((spender tx-sender))
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (not (is-eq owner recipient)) ERR-INVALID-RECIPIENT)
+    (asserts! (>= (get-balance owner) amount) ERR-INSUFFICIENT-BALANCE)
+    (asserts! (>= (get-allowance owner spender) amount) ERR-INSUFFICIENT-ALLOWANCE)
+    
+    (try! (ft-transfer? predinex-token amount owner recipient))
+    (update-balance owner (- (get-balance owner) amount))
+    (update-balance recipient (+ (get-balance recipient) amount))
+    (update-allowance owner spender (- (get-allowance owner spender) amount))
+    (ok true)
+  )
+)
+
+;; Helper function to update allowance
+(define-private (update-allowance (owner principal) (spender principal) (new-allowance uint))
+  (map-set allowances { owner: owner, spender: spender } new-allowance)
+)
