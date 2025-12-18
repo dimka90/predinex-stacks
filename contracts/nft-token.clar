@@ -107,7 +107,29 @@
     (map-delete token-owners token-id)
     (map-delete token-approvals token-id)
     (map-delete token-metadata token-id)
+    (emit-transfer (some owner) 'SP000000000000000000002Q6VF78 token-id) ;; Zero address as to
     (ok true)
+  )
+)
+
+;; Update contract URI (owner only)
+(define-public (set-contract-uri (new-uri (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-uri new-uri)
+    (ok true)
+  )
+)
+
+;; Batch mint multiple NFTs
+(define-public (batch-mint (recipients (list 10 principal)) (names (list 10 (string-ascii 64))) (descriptions (list 10 (string-ascii 256))) (images (list 10 (string-ascii 256))))
+  (let ((count (len recipients)))
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (is-eq count (len names)) ERR-INVALID-TOKEN-ID)
+    (asserts! (is-eq count (len descriptions)) ERR-INVALID-TOKEN-ID)
+    (asserts! (is-eq count (len images)) ERR-INVALID-TOKEN-ID)
+    
+    (ok (map mint recipients names descriptions images))
   )
 )
 
