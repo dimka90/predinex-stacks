@@ -142,4 +142,106 @@ describe("ERC20 Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(403)); // ERR-INVALID-AMOUNT
     });
   });
+
+  describe("Approval and Transfer-From", () => {
+    beforeEach(() => {
+      // Transfer some tokens to Alice first
+      simnet.callPublicFn(
+        "erc20-token",
+        "transfer",
+        [Cl.uint(10000000), Cl.principal(alice)], // 10 tokens
+        deployer
+      );
+    });
+
+    it("should approve spender successfully", () => {
+      const approveAmount = 5000000; // 5 tokens
+      
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(approveAmount)],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check allowance
+      const allowance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-allowance",
+        [Cl.principal(alice), Cl.principal(bob)],
+        deployer
+      );
+      expect(allowance.result).toBe(Cl.uint(approveAmount));
+    });
+
+    it("should transfer-from with valid allowance", () => {
+      const approveAmount = 5000000; // 5 tokens
+      const transferAmount = 3000000; // 3 tokens
+      
+      // Approve Bob to spend Alice's tokens
+      simnet.callPublicFn(
+        "erc20-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(approveAmount)],
+        alice
+      );
+
+      // Bob transfers from Alice to himself
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer-from",
+        [Cl.principal(alice), Cl.principal(bob), Cl.uint(transferAmount)],
+        bob
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check balances and allowance
+      const aliceBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(aliceBalance.result).toBe(Cl.uint(10000000 - transferAmount));
+
+      const bobBalance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-balance",
+        [Cl.principal(bob)],
+        deployer
+      );
+      expect(bobBalance.result).toBe(Cl.uint(transferAmount));
+
+      const remainingAllowance = simnet.callReadOnlyFn(
+        "erc20-token",
+        "get-allowance",
+        [Cl.principal(alice), Cl.principal(bob)],
+        deployer
+      );
+      expect(remainingAllowance.result).toBe(Cl.uint(approveAmount - transferAmount));
+    });
+
+    it("should fail transfer-from with insufficient allowance", () => {
+      const approveAmount = 2000000; // 2 tokens
+      const transferAmount = 5000000; // 5 tokens (more than approved)
+      
+      // Approve Bob to spend Alice's tokens
+      simnet.callPublicFn(
+        "erc20-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(approveAmount)],
+        alice
+      );
+
+      // Bob tries to transfer more than approved
+      const result = simnet.callPublicFn(
+        "erc20-token",
+        "transfer-from",
+        [Cl.principal(alice), Cl.principal(bob), Cl.uint(transferAmount)],
+        bob
+      );
+      expect(result.result).toBeErr(Cl.uint(405)); // ERR-INSUFFICIENT-ALLOWANCE
+    });
+  });
 });
