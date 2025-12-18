@@ -133,6 +133,45 @@
   )
 )
 
+;; Safe transfer with data
+(define-public (safe-transfer-from (token-id uint) (owner principal) (recipient principal) (data (buff 256)))
+  (let ((approved (map-get? token-approvals token-id)))
+    (asserts! (or 
+      (is-eq tx-sender owner)
+      (is-eq (some tx-sender) approved)
+      (is-approved-for-all owner tx-sender)
+    ) ERR-UNAUTHORIZED)
+    (asserts! (is-eq (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) owner) ERR-NOT-OWNER)
+    
+    (try! (nft-transfer? predinex-nft token-id owner recipient))
+    (map-set token-owners token-id recipient)
+    (map-delete token-approvals token-id)
+    (emit-transfer (some owner) recipient token-id)
+    (print { event: "safe-transfer", token-id: token-id, data: data })
+    (ok true)
+  )
+)
+
+;; Check if token exists
+(define-read-only (token-exists (token-id uint))
+  (is-some (nft-get-owner? predinex-nft token-id))
+)
+
+;; Get balance of owner (count of NFTs)
+(define-read-only (balance-of (owner principal))
+  (let ((total-supply (var-get token-counter)))
+    (ok (fold count-owner-tokens (list u0 u1 u2 u3 u4 u5 u6 u7 u8 u9) { owner: owner, count: u0 }))
+  )
+)
+
+;; Helper function for balance counting
+(define-private (count-owner-tokens (token-id uint) (acc { owner: principal, count: uint }))
+  (if (is-eq (nft-get-owner? predinex-nft token-id) (some (get owner acc)))
+    { owner: (get owner acc), count: (+ (get count acc) u1) }
+    acc
+  )
+)
+
 ;; Read-only functions
 
 ;; Get token owner
