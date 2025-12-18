@@ -122,3 +122,33 @@
 (define-read-only (is-approved-for-all-read (owner principal) (operator principal))
   (ok (is-approved-for-all owner operator))
 )
+
+;; Get token metadata
+(define-read-only (get-token-metadata (token-id uint))
+  (ok (map-get? token-metadata token-id))
+)
+
+;; Get token URI
+(define-read-only (get-token-uri (token-id uint))
+  (ok (some (concat BASE-URI (int-to-ascii token-id))))
+)
+
+;; Get total supply
+(define-read-only (get-total-supply)
+  (ok (var-get token-counter))
+)
+
+;; Get contract URI
+(define-read-only (get-contract-uri)
+  (ok (var-get contract-uri))
+)
+
+;; Get token name
+(define-read-only (get-name)
+  (ok TOKEN-NAME)
+)
+
+;; Get token symbol
+(define-read-only (get-symbol)
+  (ok TOKEN-SYMBOL)
+)
