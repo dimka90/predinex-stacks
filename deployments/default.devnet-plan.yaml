@@ -22,11 +22,4 @@ plan:
             path: contracts/erc20-token.clar
             anchor-block-only: true
             clarity-version: 4
-        - contract-publish:
-            contract-name: nft-token
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 40000
-            path: contracts/nft-token.clar
-            anchor-block-only: true
-            clarity-version: 4
       epoch: "3.3"
