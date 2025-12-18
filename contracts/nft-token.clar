@@ -40,3 +40,33 @@
     (ok token-id)
   )
 )
+
+;; Transfer NFT
+(define-public (transfer (token-id uint) (sender principal) (recipient principal))
+  (begin
+    (asserts! (is-eq tx-sender sender) ERR-UNAUTHORIZED)
+    (asserts! (is-eq (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) sender) ERR-NOT-OWNER)
+    
+    (try! (nft-transfer? predinex-nft token-id sender recipient))
+    (map-set token-owners token-id recipient)
+    (map-delete token-approvals token-id)
+    (ok true)
+  )
+)
+
+;; Transfer from (with approval)
+(define-public (transfer-from (token-id uint) (owner principal) (recipient principal))
+  (let ((approved (map-get? token-approvals token-id)))
+    (asserts! (or 
+      (is-eq tx-sender owner)
+      (is-eq (some tx-sender) approved)
+      (is-approved-for-all owner tx-sender)
+    ) ERR-UNAUTHORIZED)
+    (asserts! (is-eq (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) owner) ERR-NOT-OWNER)
+    
+    (try! (nft-transfer? predinex-nft token-id owner recipient))
+    (map-set token-owners token-id recipient)
+    (map-delete token-approvals token-id)
+    (ok true)
+  )
+)
