@@ -70,3 +70,25 @@
     (ok true)
   )
 )
+
+;; Approve spender for specific token
+(define-public (approve (spender principal) (token-id uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (map-set token-approvals token-id spender)
+    (ok true)
+  )
+)
+
+;; Set approval for all tokens
+(define-public (set-approval-for-all (operator principal) (approved bool))
+  (begin
+    (map-set operator-approvals { owner: tx-sender, operator: operator } approved)
+    (ok true)
+  )
+)
+
+;; Helper function to check if operator is approved for all
+(define-private (is-approved-for-all (owner principal) (operator principal))
+  (default-to false (map-get? operator-approvals { owner: owner, operator: operator }))
+)
