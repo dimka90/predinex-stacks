@@ -47,6 +47,7 @@
     (try! (ft-transfer? predinex-token amount sender recipient))
     (update-balance sender (- (get-balance sender) amount))
     (update-balance recipient (+ (get-balance recipient) amount))
+    (emit-transfer sender recipient amount)
     (ok true)
   )
 )
@@ -61,6 +62,7 @@
   (let ((owner tx-sender))
     (asserts! (not (is-eq owner spender)) ERR-INVALID-RECIPIENT)
     (map-set allowances { owner: owner, spender: spender } amount)
+    (emit-approval owner spender amount)
     (ok true)
   )
 )
@@ -77,6 +79,7 @@
     (update-balance owner (- (get-balance owner) amount))
     (update-balance recipient (+ (get-balance recipient) amount))
     (update-allowance owner spender (- (get-allowance owner spender) amount))
+    (emit-transfer owner recipient amount)
     (ok true)
   )
 )
@@ -147,4 +150,26 @@
 ;; Get allowance between owner and spender
 (define-read-only (get-allowance (owner principal) (spender principal))
   (default-to u0 (map-get? allowances { owner: owner, spender: spender }))
+)
+
+;; Events (using print for event emission)
+
+;; Transfer event
+(define-private (emit-transfer (from principal) (to principal) (amount uint))
+  (print { 
+    event: "transfer", 
+    from: from, 
+    to: to, 
+    amount: amount 
+  })
+)
+
+;; Approval event
+(define-private (emit-approval (owner principal) (spender principal) (amount uint))
+  (print { 
+    event: "approval", 
+    owner: owner, 
+    spender: spender, 
+    amount: amount 
+  })
 )
