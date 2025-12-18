@@ -15,4 +15,11 @@ plan:
             path: contracts/predinex-pool.clar
             anchor-block-only: true
             clarity-version: 4
+        - contract-publish:
+            contract-name: erc20-token
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 35000
+            path: contracts/erc20-token.clar
+            anchor-block-only: true
+            clarity-version: 4
       epoch: "3.3"
