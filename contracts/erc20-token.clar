@@ -175,3 +175,38 @@
     amount: amount 
   })
 )
+
+;; Additional utility functions
+
+;; Increase allowance
+(define-public (increase-allowance (spender principal) (amount uint))
+  (let ((owner tx-sender))
+    (asserts! (not (is-eq owner spender)) ERR-INVALID-RECIPIENT)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    (let ((current-allowance (get-allowance owner spender)))
+      (let ((new-allowance (+ current-allowance amount)))
+        (map-set allowances { owner: owner, spender: spender } new-allowance)
+        (emit-approval owner spender new-allowance)
+        (ok true)
+      )
+    )
+  )
+)
+
+;; Decrease allowance
+(define-public (decrease-allowance (spender principal) (amount uint))
+  (let ((owner tx-sender))
+    (asserts! (not (is-eq owner spender)) ERR-INVALID-RECIPIENT)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    (let ((current-allowance (get-allowance owner spender)))
+      (asserts! (>= current-allowance amount) ERR-INSUFFICIENT-ALLOWANCE)
+      (let ((new-allowance (- current-allowance amount)))
+        (map-set allowances { owner: owner, spender: spender } new-allowance)
+        (emit-approval owner spender new-allowance)
+        (ok true)
+      )
+    )
+  )
+)
