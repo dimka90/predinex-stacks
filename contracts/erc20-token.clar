@@ -85,3 +85,29 @@
 (define-private (update-allowance (owner principal) (spender principal) (new-allowance uint))
   (map-set allowances { owner: owner, spender: spender } new-allowance)
 )
+
+;; Mint new tokens (only owner)
+(define-public (mint (amount uint) (recipient principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    (try! (ft-mint? predinex-token amount recipient))
+    (var-set total-supply (+ (var-get total-supply) amount))
+    (update-balance recipient (+ (get-balance recipient) amount))
+    (ok true)
+  )
+)
+
+;; Burn tokens from sender's balance
+(define-public (burn (amount uint))
+  (let ((sender tx-sender))
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (>= (get-balance sender) amount) ERR-INSUFFICIENT-BALANCE)
+    
+    (try! (ft-burn? predinex-token amount sender))
+    (var-set total-supply (- (var-get total-supply) amount))
+    (update-balance sender (- (get-balance sender) amount))
+    (ok true)
+  )
+)
