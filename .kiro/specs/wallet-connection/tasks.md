@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [-] 1. Add authenticate function to StacksProvider
+- [x] 1. Add authenticate function to StacksProvider
   - Import showConnect function from @stacks/connect
   - Create authenticate function that opens wallet connection dialog
   - Handle successful authentication by loading user data
@@ -24,7 +24,7 @@
   - Test error scenarios with mocked failures
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2. Add Connect Wallet button to Navbar
+- [x] 2. Add Connect Wallet button to Navbar
   - Import authenticate function from useStacks hook
   - Add "Connect Wallet" button that appears when userData is null
   - Style button to match existing "Sign Out" button design
@@ -43,7 +43,7 @@
   - Test button click interactions
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3. Verify wallet integration and session persistence
+- [x] 3. Verify wallet integration and session persistence
   - Test wallet connection with different wallet types
   - Verify user data persists on page refresh
   - Verify sign out clears authentication state
@@ -56,7 +56,7 @@
   - Test pending sign-in handling
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 4. Implement access control for protected pages
+- [x] 4. Implement access control for protected pages
   - Verify create pool page blocks unauthenticated users
   - Verify market betting page blocks unauthenticated users
   - Ensure authenticated users can access protected functionality
@@ -69,5 +69,5 @@
   - Test authentication state availability in components
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 5. Final verification and testing
+- [x] 5. Final verification and testing
   - Ensure all tests pass, ask the user if questions arise.
