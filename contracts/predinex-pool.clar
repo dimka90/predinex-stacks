@@ -24,7 +24,7 @@
 (define-constant ERR-NOT-POOL-CREATOR (err u429))
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
-(define-constant MIN-BET-AMOUNT u1000000) ;; 1 STX in microstacks
+(define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
 
 ;; ============================================
@@ -748,6 +748,47 @@
 ;; Get total withdrawn amount
 (define-read-only (get-total-withdrawn)
   (var-get total-withdrawn)
+)
+
+;; ============================================
+;; REFUND FUNCTION - Direct bet refund
+;; ============================================
+
+;; [NEW] Direct refund - User can refund their bets anytime
+(define-public (refund-bet (pool-id uint) (amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (user-bet (unwrap! (map-get? user-bets { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
+    (total-bet (get total-bet user-bet))
+  )
+    ;; Validation
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= amount total-bet) ERR-INVALID-WITHDRAWAL)
+    
+    ;; Transfer funds back to user
+    (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
+    
+    ;; Update user bet
+    (map-set user-bets
+      { pool-id: pool-id, user: tx-sender }
+      (merge user-bet { 
+        total-bet: (- total-bet amount),
+        amount-a: (if (> (get amount-a user-bet) amount) (- (get amount-a user-bet) amount) u0),
+        amount-b: (if (> (get amount-b user-bet) amount) (- (get amount-b user-bet) amount) u0)
+      })
+    )
+    
+    ;; Update pool totals
+    (map-set pools
+      { pool-id: pool-id }
+      (merge pool {
+        total-a: (if (> (get total-a pool) amount) (- (get total-a pool) amount) u0),
+        total-b: (if (> (get total-b pool) amount) (- (get total-b pool) amount) u0)
+      })
+    )
+    
+    (ok amount)
+  )
 )
 
 ;; Get withdrawal counter
