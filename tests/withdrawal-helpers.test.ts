@@ -89,7 +89,7 @@ describe("withdrawal helpers and batch operations (predinex-pool)", () => {
     expect(toWallet2).toBeDefined();
   });
 
-  it("allows refund-bet within user total bet amount and updates state", () => {
+  it("documents current refund-bet behavior and over-refund rejection", () => {
     const poolId = 0;
 
     simnet.callPublicFn(
