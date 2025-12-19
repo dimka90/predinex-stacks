@@ -1,107 +1,51 @@
 'use client';
 
-import Navbar from "../components/Navbar";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useStacks } from "../components/StacksProvider";
-import { fetchActivePools, Pool, getUserBet } from "../lib/stacks-api";
-import Link from "next/link";
-import { TrendingUp, Trophy, Clock, AlertCircle } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Navbar from '../components/Navbar';
+import DashboardLayout from '../components/dashboard/DashboardLayout';
+import PortfolioOverview from '../components/dashboard/PortfolioOverview';
+import ActiveBetsCard from '../components/dashboard/ActiveBetsCard';
+import BetHistoryTable from '../components/dashboard/BetHistoryTable';
+import ClaimWinnings from '../components/dashboard/ClaimWinnings';
+import MarketStatsCard from '../components/dashboard/MarketStatsCard';
+import PlatformMetrics from '../components/dashboard/PlatformMetrics';
+import { useStacks } from '../components/StacksProvider';
+import { useDashboardData } from '../lib/hooks/useDashboardData';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
-interface UserBet {
-  pool: Pool;
-  amountA: number;
-  amountB: number;
-  totalBet: number;
-}
+type DashboardSection = 'portfolio' | 'history' | 'statistics' | 'claims';
 
 export default function Dashboard() {
   const router = useRouter();
   const { userData } = useStacks();
-  const [pools, setPools] = useState<Pool[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeBets, setActiveBets] = useState<UserBet[]>([]);
-  const [winnings, setWinnings] = useState<UserBet[]>([]);
-  const [history, setHistory] = useState<UserBet[]>([]);
-  const [stats, setStats] = useState({
-    totalBet: 0,
-    totalWinnings: 0,
-    activeBetsCount: 0,
-    settledBetsCount: 0,
-    winRate: 0,
-  });
+  const [activeSection, setActiveSection] = useState<DashboardSection>('portfolio');
+  
+  const userAddress = userData?.profile?.stxAddress?.mainnet || null;
+  const {
+    data,
+    isLoading,
+    isConnected,
+    error,
+    filters,
+    claimTransactions,
+    refreshData,
+    setFilters,
+    executeClaim,
+    retry
+  } = useDashboardData(userAddress);
 
   useEffect(() => {
     if (!userData) {
-      router.push("/");
+      router.push('/');
       return;
     }
-
-    loadDashboardData();
   }, [userData, router]);
 
-  const loadDashboardData = async () => {
-    try {
-      const allPools = await fetchActivePools();
-      setPools(allPools);
-
-      const userAddress = userData.profile.stxAddress.mainnet;
-
-      const active: UserBet[] = [];
-      const won: UserBet[] = [];
-      const all: UserBet[] = [];
-
-      let totalBet = 0;
-      let totalWon = 0;
-      let activeCount = 0;
-      let settledCount = 0;
-
-      // Fetch user bets for each pool
-      for (const pool of allPools) {
-        const userBet = await getUserBet(pool.id, userAddress);
-        
-        if (userBet && userBet.totalBet > 0) {
-          const bet: UserBet = {
-            pool,
-            amountA: userBet.amountA,
-            amountB: userBet.amountB,
-            totalBet: userBet.totalBet,
-          };
-
-          all.push(bet);
-          totalBet += userBet.totalBet;
-
-          if (pool.settled) {
-            settledCount++;
-            // Check if user won
-            if (pool.winningOutcome === 0 && userBet.amountA > 0) {
-              won.push(bet);
-              totalWon += userBet.totalBet; // Placeholder - actual winnings would be calculated
-            } else if (pool.winningOutcome === 1 && userBet.amountB > 0) {
-              won.push(bet);
-              totalWon += userBet.totalBet; // Placeholder - actual winnings would be calculated
-            }
-          } else {
-            activeCount++;
-            active.push(bet);
-          }
-        }
-      }
-
-      setActiveBets(active);
-      setWinnings(won);
-      setHistory(all);
-      setStats({
-        totalBet,
-        totalWinnings: totalWon,
-        activeBetsCount: activeCount,
-        settledBetsCount: settledCount,
-        winRate: settledCount > 0 ? (won.length / settledCount) * 100 : 0,
-      });
-    } catch (error) {
-      console.error("Failed to load dashboard data:", error);
-    } finally {
-      setIsLoading(false);
+  // Handle batch claim functionality
+  const handleBatchClaim = async (poolIds: number[]) => {
+    for (const poolId of poolIds) {
+      await executeClaim(poolId);
     }
   };
 
@@ -109,207 +53,129 @@ export default function Dashboard() {
     return null;
   }
 
+  // Connection error state
+  if (error && !isConnected) {
+    return (
+      <main className="min-h-screen bg-background text-foreground">
+        <Navbar />
+        <div className="pt-32 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold mb-4">Connection Error</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <button
+              onClick={retry}
+              className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mx-auto"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const renderSectionContent = () => {
+    if (!data && isLoading) {
+      return <div className="text-center py-20">Loading your dashboard...</div>;
+    }
+
+    if (!data) {
+      return <div className="text-center py-20">No data available</div>;
+    }
+
+    switch (activeSection) {
+      case 'portfolio':
+        return (
+          <div className="space-y-8">
+            <PortfolioOverview portfolio={data.userPortfolio} isLoading={isLoading} />
+            <ActiveBetsCard
+              bets={data.activeBets}
+              claimTransactions={claimTransactions}
+              onClaim={executeClaim}
+              isLoading={isLoading}
+            />
+          </div>
+        );
+
+      case 'history':
+        return (
+          <BetHistoryTable
+            history={data.betHistory}
+            filters={filters}
+            onFiltersChange={setFilters}
+            isLoading={isLoading}
+          />
+        );
+
+      case 'claims':
+        const claimableBets = data.activeBets.concat(data.betHistory).filter(
+          bet => bet.claimStatus === 'unclaimed' && bet.claimableAmount && bet.claimableAmount > 0
+        );
+        
+        return (
+          <ClaimWinnings
+            claimableBets={claimableBets}
+            claimTransactions={claimTransactions}
+            onClaim={executeClaim}
+            onBatchClaim={handleBatchClaim}
+            isLoading={isLoading}
+          />
+        );
+
+      case 'statistics':
+        return (
+          <div className="space-y-8">
+            <PlatformMetrics metrics={data.platformMetrics} isLoading={isLoading} />
+            <MarketStatsCard markets={data.marketStats} isLoading={isLoading} />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
+      
+      <DashboardLayout
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        breadcrumbs={[
+          { label: activeSection.charAt(0).toUpperCase() + activeSection.slice(1) }
+        ]}
+      >
+        {/* Connection Status */}
+        {!isConnected && (
+          <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <div className="flex items-center gap-2 text-yellow-500">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm">Connection lost. Attempting to reconnect...</span>
+            </div>
+          </div>
+        )}
 
-      <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {userData.profile.stxAddress.mainnet.slice(0, 8)}...
-          </p>
+        {/* Refresh Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm text-muted-foreground">
+            {data && `Last updated: ${new Date(data.lastUpdated).toLocaleTimeString()}`}
+          </div>
+          <button
+            onClick={refreshData}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-3 py-2 border border-muted/50 rounded-lg hover:bg-muted/50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-20">Loading your dashboard...</div>
-        ) : (
-          <>
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Total Bet</p>
-                <p className="text-2xl font-bold">
-                  {(stats.totalBet / 1_000_000).toFixed(2)} STX
-                </p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Total Winnings</p>
-                <p className="text-2xl font-bold text-green-400">
-                  {(stats.totalWinnings / 1_000_000).toFixed(2)} STX
-                </p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Active Bets</p>
-                <p className="text-2xl font-bold">{stats.activeBetsCount}</p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Settled Bets</p>
-                <p className="text-2xl font-bold">{stats.settledBetsCount}</p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Win Rate</p>
-                <p className="text-2xl font-bold text-accent">
-                  {stats.winRate.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-
-            {/* Active Bets Section */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">Active Bets</h2>
-              {activeBets.length === 0 ? (
-                <div className="glass p-8 rounded-xl border border-border text-center">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No active bets. <Link href="/markets" className="text-primary underline">Explore markets</Link>
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {activeBets.map((bet) => (
-                    <Link key={bet.pool.id} href={`/markets/${bet.pool.id}`}>
-                      <div className="glass p-6 rounded-xl hover:border-primary/50 transition-colors cursor-pointer group h-full">
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="text-xs font-mono text-muted-foreground">#POOL-{bet.pool.id}</span>
-                          <span className="px-2 py-1 rounded bg-green-500/10 text-green-500 text-xs font-medium">
-                            Active
-                          </span>
-                        </div>
-
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {bet.pool.title}
-                        </h3>
-
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Your Bet:</span>
-                            <span className="font-semibold">{(bet.totalBet / 1_000_000).toFixed(2)} STX</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">On:</span>
-                            <span className="font-semibold">
-                              {bet.amountA > 0 ? bet.pool.outcomeA : bet.pool.outcomeB}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Winnings Section */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">Winnings</h2>
-              {winnings.length === 0 ? (
-                <div className="glass p-8 rounded-xl border border-border text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No winnings yet. Keep betting!
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {winnings.map((bet) => (
-                    <Link key={bet.pool.id} href={`/markets/${bet.pool.id}`}>
-                      <div className="glass p-6 rounded-xl hover:border-green-500/50 transition-colors cursor-pointer group h-full border-green-500/20">
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="text-xs font-mono text-muted-foreground">#POOL-{bet.pool.id}</span>
-                          <span className="px-2 py-1 rounded bg-green-500/10 text-green-500 text-xs font-medium">
-                            Won
-                          </span>
-                        </div>
-
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-green-400 transition-colors line-clamp-2">
-                          {bet.pool.title}
-                        </h3>
-
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Winnings:</span>
-                            <span className="font-semibold text-green-400">
-                              {(bet.totalBet / 1_000_000).toFixed(2)} STX
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Status:</span>
-                            <span className="font-semibold">Unclaimed</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Betting History Section */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Betting History</h2>
-              {history.length === 0 ? (
-                <div className="glass p-8 rounded-xl border border-border text-center">
-                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No betting history yet.
-                  </p>
-                </div>
-              ) : (
-                <div className="glass rounded-xl border border-border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Pool</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Amount</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Outcome</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Result</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {history.map((bet) => (
-                          <tr key={bet.pool.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <Link href={`/markets/${bet.pool.id}`} className="text-primary hover:underline">
-                                {bet.pool.title.slice(0, 30)}...
-                              </Link>
-                            </td>
-                            <td className="px-6 py-4">{(bet.totalBet / 1_000_000).toFixed(2)} STX</td>
-                            <td className="px-6 py-4">
-                              {bet.amountA > 0 ? bet.pool.outcomeA : bet.pool.outcomeB}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                bet.pool.settled ? 'bg-zinc-800 text-zinc-400' : 'bg-green-500/10 text-green-500'
-                              }`}>
-                                {bet.pool.settled ? 'Settled' : 'Active'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {bet.pool.settled ? (
-                                <span className="text-green-400">Won</span>
-                              ) : (
-                                <span className="text-muted-foreground">Pending</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+        {/* Section Content */}
+        {renderSectionContent()}
+      </DashboardLayout>
     </main>
   );
 }
