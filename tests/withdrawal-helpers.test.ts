@@ -6,7 +6,7 @@ const deployer = accounts.get("deployer")!;
 const wallet1 = accounts.get("wallet_1")!;
 const wallet2 = accounts.get("wallet_2")!;
 
-describe("withdrawal helpers and batch operations", () => {
+describe("withdrawal helpers and batch operations (predinex-pool)", () => {
   it("supports batch-approve-withdrawals for multiple users", () => {
     const poolId = 0;
 
