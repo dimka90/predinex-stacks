@@ -9,7 +9,15 @@ export default function Home() {
 
       {/* Featured Pools (Mock for now) */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold mb-8">Featured Markets</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold">Featured Markets</h2>
+          <a 
+            href="/markets" 
+            className="text-primary hover:text-primary/80 transition-colors font-medium"
+          >
+            View All Markets →
+          </a>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="glass p-6 rounded-xl hover:border-primary/50 transition-colors cursor-pointer group">
@@ -32,6 +40,17 @@ export default function Home() {
               </div>
             </div>
           ))}
+        </div>
+        
+        {/* Call to Action */}
+        <div className="text-center mt-12">
+          <a 
+            href="/markets"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground 
+                     rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            Explore All Markets
+          </a>
         </div>
       </section>
     </main>
