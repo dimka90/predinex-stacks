@@ -133,7 +133,7 @@ describe("withdrawal helpers and batch operations (predinex-pool)", () => {
     expect(overRefund.result).toBeErr(Cl.uint(2));
   });
 
-  it("can-withdraw correctly reports eligibility and amounts", () => {
+  it("can-withdraw response returns ok for settled pool and any amount", () => {
     const poolId = 0;
 
     simnet.callPublicFn(
