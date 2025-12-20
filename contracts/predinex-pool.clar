@@ -46,6 +46,11 @@
 (define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u445))
 (define-constant ERR-INVALID-DISPUTE_REASON (err u446))
 
+;; Fallback resolution error constants
+(define-constant ERR-FALLBACK-NOT-TRIGGERED (err u447))
+(define-constant ERR-MANUAL-SETTLEMENT-DISABLED (err u448))
+(define-constant ERR-MAX-RETRIES-NOT-REACHED (err u449))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
@@ -245,6 +250,18 @@
     fee-amount: uint,
     is-claimed: bool,
     claimed-at: (optional uint)
+  }
+)
+
+;; Fallback resolution tracking
+(define-map fallback-resolutions
+  { pool-id: uint }
+  {
+    triggered-at: uint,
+    failure-reason: (string-ascii 128),
+    max-retries-reached: bool,
+    manual-settlement-enabled: bool,
+    notified-creator: bool
   }
 )
 
@@ -1036,6 +1053,92 @@
 ;; Get oracle fee claim information
 (define-read-only (get-oracle-fee-claim (provider-id uint) (pool-id uint))
   (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id })
+)
+
+;; Trigger fallback resolution when automated resolution fails
+(define-public (trigger-fallback-resolution (pool-id uint) (failure-reason (string-ascii 128)))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (config (unwrap! (map-get? resolution-configs { pool-id: pool-id }) ERR-RESOLUTION-CONFIG-NOT-FOUND))
+  )
+    ;; Only contract can trigger fallback
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Validate pool is expired and not settled
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Check if max retries reached (simplified: assume 3 retries)
+    (let ((max-retries-reached true)) ;; Simplified for now
+      ;; Record fallback activation
+      (map-insert fallback-resolutions
+        { pool-id: pool-id }
+        {
+          triggered-at: burn-block-height,
+          failure-reason: failure-reason,
+          max-retries-reached: max-retries-reached,
+          manual-settlement-enabled: true,
+          notified-creator: false ;; Would trigger notification in real system
+        }
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Manual settlement during fallback (enhanced validation)
+(define-public (manual-settle-fallback (pool-id uint) (winning-outcome uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (fallback (unwrap! (map-get? fallback-resolutions { pool-id: pool-id }) ERR-FALLBACK-NOT-TRIGGERED))
+  )
+    ;; Only pool creator can manually settle during fallback
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Validate manual settlement is enabled
+    (asserts! (get manual-settlement-enabled fallback) ERR-MANUAL-SETTLEMENT-DISABLED)
+    
+    ;; Validate outcome
+    (asserts! (or (is-eq winning-outcome u0) (is-eq winning-outcome u1)) ERR-INVALID-OUTCOME)
+    
+    ;; Additional validation for fallback settlement
+    (asserts! (> burn-block-height (+ (get triggered-at fallback) u144)) ERR-WITHDRAWAL-LOCKED) ;; 24 hour delay
+    
+    ;; Settle with reduced fee (50% reduction)
+    (let (
+      (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+      (reduced-fee (/ (* total-pool-balance FEE-PERCENT) u200)) ;; 1% instead of 2%
+    )
+      ;; Transfer reduced fee
+      (if (> reduced-fee u0)
+        (try! (as-contract (stx-transfer? reduced-fee tx-sender CONTRACT-OWNER)))
+        true
+      )
+      
+      ;; Settle the pool
+      (map-set pools
+        { pool-id: pool-id }
+        (merge pool { 
+          settled: true, 
+          winning-outcome: (some winning-outcome), 
+          settled-at: (some burn-block-height) 
+        })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Get fallback resolution status
+(define-read-only (get-fallback-status (pool-id uint))
+  (map-get? fallback-resolutions { pool-id: pool-id })
+)
+
+;; Check if pool is in fallback mode
+(define-read-only (is-pool-in-fallback (pool-id uint))
+  (is-some (map-get? fallback-resolutions { pool-id: pool-id }))
 )
 
 ;; ============================================
