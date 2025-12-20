@@ -993,6 +993,51 @@
   )
 )
 
+;; Refund resolution fee for upheld disputes
+(define-public (refund-resolution-fee (pool-id uint) (dispute-id uint))
+  (let (
+    (dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
+    (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (disputer (get disputer dispute))
+  )
+    ;; Validate dispute was upheld and resolved
+    (asserts! (is-eq (get status dispute) "resolved") ERR-DISPUTE-NOT-FOUND)
+    (asserts! (is-eq (unwrap! (get resolution dispute) ERR-DISPUTE-NOT-FOUND) true) ERR-DISPUTE-NOT-FOUND)
+    
+    ;; Validate fee not already refunded
+    (asserts! (not (get is-refunded fee-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Only contract or admin can process refunds
+    (asserts! (or (is-eq tx-sender (as-contract tx-sender)) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let ((refund-amount (get total-fee fee-info)))
+      ;; Transfer refund to disputer
+      (try! (as-contract (stx-transfer? refund-amount tx-sender disputer)))
+      
+      ;; Mark fee as refunded
+      (map-set resolution-fees
+        { pool-id: pool-id }
+        (merge fee-info {
+          is-refunded: true,
+          refund-recipient: (some disputer)
+        })
+      )
+      
+      (ok refund-amount)
+    )
+  )
+)
+
+;; Get fee information for a pool
+(define-read-only (get-resolution-fee-info (pool-id uint))
+  (map-get? resolution-fees { pool-id: pool-id })
+)
+
+;; Get oracle fee claim information
+(define-read-only (get-oracle-fee-claim (provider-id uint) (pool-id uint))
+  (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id })
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
