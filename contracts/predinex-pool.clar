@@ -148,11 +148,14 @@
 )
 
 ;; Place a bet on a pool
+;; Validates bet amount meets minimum requirements
+;; Ensures pool is still active and not settled
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
     (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
     (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
-    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (>= amount MIN-BET-AMOUNT) ERR-INVALID-AMOUNT)
+    (asserts! (< burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
     
     (let ((pool-principal (as-contract tx-sender)))
         ;; Transfer STX from user to contract
