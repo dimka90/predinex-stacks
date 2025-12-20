@@ -31,6 +31,13 @@
 (define-constant ERR-INSUFFICIENT-CONFIDENCE (err u434))
 (define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND (err u435))
 
+;; Resolution system error constants
+(define-constant ERR-RESOLUTION-CONFIG-NOT-FOUND (err u436))
+(define-constant ERR-INVALID-RESOLUTION-CRITERIA (err u437))
+(define-constant ERR-INSUFFICIENT-ORACLE-SOURCES (err u438))
+(define-constant ERR-RESOLUTION-ALREADY-CONFIGURED (err u439))
+(define-constant ERR-AUTOMATED-RESOLUTION-FAILED (err u440))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
@@ -150,6 +157,34 @@
   }
 )
 
+;; Resolution configuration for automated pools
+(define-map resolution-configs
+  { pool-id: uint }
+  {
+    oracle-sources: (list 5 uint),
+    resolution-criteria: (string-ascii 512),
+    criteria-type: (string-ascii 32),
+    threshold-value: (optional uint),
+    logical-operator: (string-ascii 8),
+    retry-attempts: uint,
+    resolution-fee: uint,
+    is-automated: bool,
+    created-at: uint
+  }
+)
+
+;; Resolution attempts tracking
+(define-map resolution-attempts
+  { pool-id: uint, attempt-id: uint }
+  {
+    attempted-at: uint,
+    oracle-data-used: (list 5 uint),
+    result: (optional uint),
+    failure-reason: (optional (string-ascii 128)),
+    is-successful: bool
+  }
+)
+
 (define-data-var pool-counter uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-withdrawn uint u0)
@@ -158,6 +193,7 @@
 ;; Oracle system counters
 (define-data-var oracle-provider-counter uint u0)
 (define-data-var oracle-submission-counter uint u0)
+(define-data-var resolution-attempt-counter uint u0)
 
 ;; Create a new prediction pool
 ;; Validates all inputs before creating pool
