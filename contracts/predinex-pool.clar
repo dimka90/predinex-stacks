@@ -568,6 +568,37 @@
   (var-get oracle-provider-counter)
 )
 
+;; Get oracle submission details
+(define-read-only (get-oracle-submission (submission-id uint))
+  (map-get? oracle-submissions { submission-id: submission-id })
+)
+
+;; Get total oracle submissions
+(define-read-only (get-oracle-submission-count)
+  (var-get oracle-submission-counter)
+)
+
+;; Get oracle submissions for a pool (simplified - returns first 5)
+(define-read-only (get-pool-oracle-submissions (pool-id uint))
+  (let ((submission-count (var-get oracle-submission-counter)))
+    (filter-submissions-by-pool pool-id u0 (min submission-count u5))
+  )
+)
+
+;; Helper function to filter submissions by pool
+(define-private (filter-submissions-by-pool (pool-id uint) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? oracle-submissions { submission-id: current-id })
+      submission (if (is-eq (get pool-id submission) pool-id)
+        (unwrap-panic (as-max-len? (append (filter-submissions-by-pool pool-id (+ current-id u1) max-id) submission) u5))
+        (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
+      )
+      (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
+    )
+  )
+)
+
 ;; [ACCESS CONTROL] Add admin
 (define-public (add-admin (admin principal))
   (begin
