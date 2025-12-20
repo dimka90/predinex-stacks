@@ -426,6 +426,47 @@
   )
 )
 
+;; Update oracle provider reliability metrics
+(define-public (update-oracle-reliability (provider-id uint) (was-successful bool) (response-time uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract or admins can update reliability
+    (asserts! (or (is-eq tx-sender (as-contract tx-sender)) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let (
+      (total-resolutions (+ (get total-resolutions provider) u1))
+      (successful-resolutions (if was-successful (+ (get successful-resolutions provider) u1) (get successful-resolutions provider)))
+      (new-reliability-score (if (> total-resolutions u0) (/ (* successful-resolutions u100) total-resolutions) u0))
+      (current-avg-time (get average-response-time provider))
+      (new-avg-time (if (> total-resolutions u1) 
+        (/ (+ (* current-avg-time (- total-resolutions u1)) response-time) total-resolutions)
+        response-time))
+    )
+      ;; Update provider metrics
+      (map-set oracle-providers
+        { provider-id: provider-id }
+        (merge provider {
+          total-resolutions: total-resolutions,
+          successful-resolutions: successful-resolutions,
+          reliability-score: new-reliability-score,
+          average-response-time: new-avg-time,
+          last-activity: burn-block-height
+        })
+      )
+      
+      ;; Auto-disable if reliability drops below 50%
+      (if (< new-reliability-score u50)
+        (map-set oracle-providers
+          { provider-id: provider-id }
+          (merge provider { is-active: false })
+        )
+        true
+      )
+      
+      (ok new-reliability-score)
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
