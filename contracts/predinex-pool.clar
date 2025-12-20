@@ -689,6 +689,24 @@
   )
 )
 
+;; Get resolution configuration for a pool
+(define-read-only (get-resolution-config (pool-id uint))
+  (map-get? resolution-configs { pool-id: pool-id })
+)
+
+;; Check if pool has automated resolution configured
+(define-read-only (is-pool-automated (pool-id uint))
+  (match (map-get? resolution-configs { pool-id: pool-id })
+    config (get is-automated config)
+    false
+  )
+)
+
+;; Get resolution attempt details
+(define-read-only (get-resolution-attempt (pool-id uint) (attempt-id uint))
+  (map-get? resolution-attempts { pool-id: pool-id, attempt-id: attempt-id })
+)
+
 ;; Helper function to filter submissions by pool
 (define-private (filter-submissions-by-pool (pool-id uint) (current-id uint) (max-id uint))
   (if (>= current-id max-id)
