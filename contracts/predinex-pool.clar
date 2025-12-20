@@ -50,6 +50,11 @@
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
 
+;; Resolution and fee constants
+(define-constant RESOLUTION-FEE-PERCENT u5) ;; 0.5% (5/1000)
+(define-constant DISPUTE-BOND-PERCENT u5) ;; 5% of pool value
+(define-constant DISPUTE-WINDOW-BLOCKS u1008) ;; 48 hours
+
 ;; ============================================
 ;; CLARITY 3/4 FEATURES - Builder Challenge
 ;; ============================================
@@ -218,6 +223,28 @@
     vote: bool,
     voting-power: uint,
     voted-at: uint
+  }
+)
+
+;; Fee tracking and distribution
+(define-map resolution-fees
+  { pool-id: uint }
+  {
+    total-fee: uint,
+    oracle-fees: uint,
+    platform-fee: uint,
+    is-refunded: bool,
+    refund-recipient: (optional principal)
+  }
+)
+
+;; Oracle fee distribution tracking
+(define-map oracle-fee-claims
+  { provider-id: uint, pool-id: uint }
+  {
+    fee-amount: uint,
+    is-claimed: bool,
+    claimed-at: (optional uint)
   }
 )
 
