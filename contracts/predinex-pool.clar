@@ -897,6 +897,102 @@
   (is-some (map-get? dispute-votes { dispute-id: dispute-id, voter: voter }))
 )
 
+;; Calculate and collect resolution fee
+(define-public (collect-resolution-fee (pool-id uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (total-pool-value (+ (get total-a pool) (get total-b pool)))
+    (resolution-fee (/ (* total-pool-value RESOLUTION-FEE-PERCENT) u1000))
+    (oracle-fee-portion (/ (* resolution-fee u80) u100)) ;; 80% to oracles
+    (platform-fee-portion (- resolution-fee oracle-fee-portion)) ;; 20% to platform
+  )
+    ;; Only contract can collect fees
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Store fee breakdown
+    (map-insert resolution-fees
+      { pool-id: pool-id }
+      {
+        total-fee: resolution-fee,
+        oracle-fees: oracle-fee-portion,
+        platform-fee: platform-fee-portion,
+        is-refunded: false,
+        refund-recipient: none
+      }
+    )
+    
+    ;; Transfer platform fee to contract owner
+    (try! (as-contract (stx-transfer? platform-fee-portion tx-sender CONTRACT-OWNER)))
+    
+    (ok resolution-fee)
+  )
+)
+
+;; Distribute fees to oracle providers
+(define-public (distribute-oracle-fees (pool-id uint) (oracle-providers-list (list 5 uint)))
+  (let (
+    (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (oracle-fees (get oracle-fees fee-info))
+    (num-oracles (len oracle-providers-list))
+    (fee-per-oracle (if (> num-oracles u0) (/ oracle-fees num-oracles) u0))
+  )
+    ;; Only contract can distribute fees
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Distribute fees to each oracle
+    (fold distribute-fee-to-oracle oracle-providers-list { pool-id: pool-id, fee-amount: fee-per-oracle })
+    
+    (ok true)
+  )
+)
+
+;; Helper function to distribute fee to single oracle
+(define-private (distribute-fee-to-oracle (provider-id uint) (fee-data { pool-id: uint, fee-amount: uint }))
+  (let (
+    (pool-id (get pool-id fee-data))
+    (fee-amount (get fee-amount fee-data))
+  )
+    ;; Record oracle fee claim
+    (map-insert oracle-fee-claims
+      { provider-id: provider-id, pool-id: pool-id }
+      {
+        fee-amount: fee-amount,
+        is-claimed: false,
+        claimed-at: none
+      }
+    )
+    
+    fee-data ;; Return unchanged for fold
+  )
+)
+
+;; Oracle claims their fee
+(define-public (claim-oracle-fee (pool-id uint))
+  (let (
+    (provider-id (unwrap! (get-provider-id-by-address tx-sender) ERR-ORACLE-NOT-FOUND))
+    (fee-claim (unwrap! (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id }) ERR-NO-WINNINGS))
+  )
+    ;; Validate fee not already claimed
+    (asserts! (not (get is-claimed fee-claim)) ERR-ALREADY-CLAIMED)
+    
+    (let ((fee-amount (get fee-amount fee-claim)))
+      ;; Transfer fee to oracle
+      (try! (as-contract (stx-transfer? fee-amount tx-sender tx-sender)))
+      
+      ;; Mark as claimed
+      (map-set oracle-fee-claims
+        { provider-id: provider-id, pool-id: pool-id }
+        (merge fee-claim {
+          is-claimed: true,
+          claimed-at: (some burn-block-height)
+        })
+      )
+      
+      (ok fee-amount)
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
