@@ -632,6 +632,68 @@
   )
 )
 
+;; Attempt automated resolution for an expired pool
+(define-public (attempt-automated-resolution (pool-id uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (config (unwrap! (map-get? resolution-configs { pool-id: pool-id }) ERR-RESOLUTION-CONFIG-NOT-FOUND))
+    (attempt-id (var-get resolution-attempt-counter))
+  )
+    ;; Validate pool is expired and not settled
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Validate pool has automated resolution configured
+    (asserts! (get is-automated config) ERR-AUTOMATED-RESOLUTION-FAILED)
+    
+    ;; For now, use simple resolution logic (can be expanded)
+    (let ((oracle-sources (get oracle-sources config)))
+      (if (> (len oracle-sources) u0)
+        ;; Simple resolution: use first oracle source as outcome (0 or 1)
+        (let ((outcome (mod (unwrap-panic (element-at oracle-sources u0)) u2)))
+          ;; Record successful resolution attempt
+          (map-insert resolution-attempts
+            { pool-id: pool-id, attempt-id: attempt-id }
+            {
+              attempted-at: burn-block-height,
+              oracle-data-used: oracle-sources,
+              result: (some outcome),
+              failure-reason: none,
+              is-successful: true
+            }
+          )
+          
+          ;; Settle the pool with the determined outcome
+          (try! (settle-pool pool-id outcome))
+          
+          ;; Increment attempt counter
+          (var-set resolution-attempt-counter (+ attempt-id u1))
+          
+          (ok outcome)
+        )
+        ;; No oracle sources - record failed attempt
+        (begin
+          (map-insert resolution-attempts
+            { pool-id: pool-id, attempt-id: attempt-id }
+            {
+              attempted-at: burn-block-height,
+              oracle-data-used: (list),
+              result: none,
+              failure-reason: (some "No oracle sources configured"),
+              is-successful: false
+            }
+          )
+          
+          ;; Increment attempt counter
+          (var-set resolution-attempt-counter (+ attempt-id u1))
+          
+          (err ERR-AUTOMATED-RESOLUTION-FAILED)
+        )
+      )
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
