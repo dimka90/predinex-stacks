@@ -731,6 +731,89 @@
   )
 )
 
+;; Create a dispute for an automated resolution
+(define-public (create-dispute (pool-id uint) (dispute-reason (string-ascii 512)) (evidence-hash (optional (buff 32))))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (dispute-id (var-get dispute-counter))
+    (total-pool-value (+ (get total-a pool) (get total-b pool)))
+    (dispute-bond (/ (* total-pool-value u5) u100)) ;; 5% of pool value
+  )
+    ;; Validate pool is settled (can only dispute settled pools)
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    ;; Validate dispute reason
+    (asserts! (> (len dispute-reason) u0) ERR-INVALID-DISPUTE_REASON)
+    
+    ;; Validate dispute bond payment
+    (asserts! (>= (stx-get-balance tx-sender) dispute-bond) ERR-INSUFFICIENT-DISPUTE-BOND)
+    
+    ;; Transfer dispute bond to contract
+    (try! (stx-transfer? dispute-bond tx-sender (as-contract tx-sender)))
+    
+    ;; Create dispute record
+    (map-insert disputes
+      { dispute-id: dispute-id }
+      {
+        pool-id: pool-id,
+        disputer: tx-sender,
+        dispute-bond: dispute-bond,
+        dispute-reason: dispute-reason,
+        evidence-hash: evidence-hash,
+        voting-deadline: (+ burn-block-height u1008), ;; 48 hours (assuming ~1 block per minute)
+        votes-for: u0,
+        votes-against: u0,
+        status: "active",
+        resolution: none,
+        created-at: burn-block-height
+      }
+    )
+    
+    ;; Increment dispute counter
+    (var-set dispute-counter (+ dispute-id u1))
+    
+    (ok dispute-id)
+  )
+)
+
+;; Vote on a dispute
+(define-public (vote-on-dispute (dispute-id uint) (vote bool))
+  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+    ;; Validate dispute is active
+    (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
+    
+    ;; Validate voting deadline not passed
+    (asserts! (< burn-block-height (get voting-deadline dispute)) ERR-DISPUTE-WINDOW-CLOSED)
+    
+    ;; Validate user hasn't already voted
+    (asserts! (is-none (map-get? dispute-votes { dispute-id: dispute-id, voter: tx-sender })) ERR-ALREADY-VOTED)
+    
+    ;; Calculate voting power (simplified: 1 vote per user)
+    (let ((voting-power u1))
+      ;; Record vote
+      (map-insert dispute-votes
+        { dispute-id: dispute-id, voter: tx-sender }
+        {
+          vote: vote,
+          voting-power: voting-power,
+          voted-at: burn-block-height
+        }
+      )
+      
+      ;; Update dispute vote counts
+      (map-set disputes
+        { dispute-id: dispute-id }
+        (merge dispute {
+          votes-for: (if vote (+ (get votes-for dispute) voting-power) (get votes-for dispute)),
+          votes-against: (if vote (get votes-against dispute) (+ (get votes-against dispute) voting-power))
+        })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
