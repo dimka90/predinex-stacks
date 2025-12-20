@@ -564,6 +564,74 @@
   )
 )
 
+;; Configure automated resolution for a pool
+(define-public (configure-pool-resolution 
+  (pool-id uint) 
+  (oracle-sources (list 5 uint)) 
+  (resolution-criteria (string-ascii 512))
+  (criteria-type (string-ascii 32))
+  (threshold-value (optional uint))
+  (logical-operator (string-ascii 8))
+  (retry-attempts uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    ;; Only pool creator can configure resolution
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Ensure pool is not already configured for automated resolution
+    (asserts! (is-none (map-get? resolution-configs { pool-id: pool-id })) ERR-RESOLUTION-ALREADY-CONFIGURED)
+    
+    ;; Validate oracle sources
+    (asserts! (> (len oracle-sources) u0) ERR-INSUFFICIENT-ORACLE-SOURCES)
+    (asserts! (validate-oracle-sources oracle-sources) ERR-ORACLE-NOT-FOUND)
+    
+    ;; Validate resolution criteria
+    (asserts! (> (len resolution-criteria) u0) ERR-INVALID-RESOLUTION-CRITERIA)
+    (asserts! (> (len criteria-type) u0) ERR-INVALID-RESOLUTION-CRITERIA)
+    
+    ;; Validate logical operator
+    (asserts! (or (is-eq logical-operator "AND") (is-eq logical-operator "OR")) ERR-INVALID-RESOLUTION-CRITERIA)
+    
+    ;; Calculate resolution fee (0.5% of current pool value)
+    (let ((total-pool-value (+ (get total-a pool) (get total-b pool))))
+      (let ((resolution-fee (/ (* total-pool-value u5) u1000))) ;; 0.5%
+        ;; Store resolution configuration
+        (map-insert resolution-configs
+          { pool-id: pool-id }
+          {
+            oracle-sources: oracle-sources,
+            resolution-criteria: resolution-criteria,
+            criteria-type: criteria-type,
+            threshold-value: threshold-value,
+            logical-operator: logical-operator,
+            retry-attempts: retry-attempts,
+            resolution-fee: resolution-fee,
+            is-automated: true,
+            created-at: burn-block-height
+          }
+        )
+        
+        (ok true)
+      )
+    )
+  )
+)
+
+;; Helper function to validate oracle sources
+(define-private (validate-oracle-sources (oracle-sources (list 5 uint)))
+  (fold validate-single-oracle oracle-sources true)
+)
+
+;; Helper function to validate a single oracle
+(define-private (validate-single-oracle (oracle-id uint) (is-valid bool))
+  (if is-valid
+    (match (map-get? oracle-providers { provider-id: oracle-id })
+      provider (get is-active provider)
+      false
+    )
+    false
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
