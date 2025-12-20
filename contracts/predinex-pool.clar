@@ -38,6 +38,14 @@
 (define-constant ERR-RESOLUTION-ALREADY-CONFIGURED (err u439))
 (define-constant ERR-AUTOMATED-RESOLUTION-FAILED (err u440))
 
+;; Dispute system error constants
+(define-constant ERR-DISPUTE-NOT-FOUND (err u441))
+(define-constant ERR-DISPUTE-WINDOW-CLOSED (err u442))
+(define-constant ERR-INSUFFICIENT-DISPUTE-BOND (err u443))
+(define-constant ERR-ALREADY-VOTED (err u444))
+(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u445))
+(define-constant ERR-INVALID-DISPUTE_REASON (err u446))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
@@ -185,6 +193,34 @@
   }
 )
 
+;; Dispute system data structures
+(define-map disputes
+  { dispute-id: uint }
+  {
+    pool-id: uint,
+    disputer: principal,
+    dispute-bond: uint,
+    dispute-reason: (string-ascii 512),
+    evidence-hash: (optional (buff 32)),
+    voting-deadline: uint,
+    votes-for: uint,
+    votes-against: uint,
+    status: (string-ascii 16),
+    resolution: (optional bool),
+    created-at: uint
+  }
+)
+
+;; Dispute votes tracking
+(define-map dispute-votes
+  { dispute-id: uint, voter: principal }
+  {
+    vote: bool,
+    voting-power: uint,
+    voted-at: uint
+  }
+)
+
 (define-data-var pool-counter uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-withdrawn uint u0)
@@ -194,6 +230,7 @@
 (define-data-var oracle-provider-counter uint u0)
 (define-data-var oracle-submission-counter uint u0)
 (define-data-var resolution-attempt-counter uint u0)
+(define-data-var dispute-counter uint u0)
 
 ;; Create a new prediction pool
 ;; Validates all inputs before creating pool
