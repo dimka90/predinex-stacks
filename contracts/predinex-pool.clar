@@ -23,9 +23,42 @@
 (define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428))
 (define-constant ERR-NOT-POOL-CREATOR (err u429))
 
+;; Oracle system error constants
+(define-constant ERR-ORACLE-NOT-FOUND (err u430))
+(define-constant ERR-ORACLE-INACTIVE (err u431))
+(define-constant ERR-INVALID-DATA-TYPE (err u432))
+(define-constant ERR-ORACLE-ALREADY-EXISTS (err u433))
+(define-constant ERR-INSUFFICIENT-CONFIDENCE (err u434))
+(define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND (err u435))
+
+;; Resolution system error constants
+(define-constant ERR-RESOLUTION-CONFIG-NOT-FOUND (err u436))
+(define-constant ERR-INVALID-RESOLUTION-CRITERIA (err u437))
+(define-constant ERR-INSUFFICIENT-ORACLE-SOURCES (err u438))
+(define-constant ERR-RESOLUTION-ALREADY-CONFIGURED (err u439))
+(define-constant ERR-AUTOMATED-RESOLUTION-FAILED (err u440))
+
+;; Dispute system error constants
+(define-constant ERR-DISPUTE-NOT-FOUND (err u441))
+(define-constant ERR-DISPUTE-WINDOW-CLOSED (err u442))
+(define-constant ERR-INSUFFICIENT-DISPUTE-BOND (err u443))
+(define-constant ERR-ALREADY-VOTED (err u444))
+(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u445))
+(define-constant ERR-INVALID-DISPUTE_REASON (err u446))
+
+;; Fallback resolution error constants
+(define-constant ERR-FALLBACK-NOT-TRIGGERED (err u447))
+(define-constant ERR-MANUAL-SETTLEMENT-DISABLED (err u448))
+(define-constant ERR-MAX-RETRIES-NOT-REACHED (err u449))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
+
+;; Resolution and fee constants
+(define-constant RESOLUTION-FEE-PERCENT u5) ;; 0.5% (5/1000)
+(define-constant DISPUTE-BOND-PERCENT u5) ;; 5% of pool value
+(define-constant DISPUTE-WINDOW-BLOCKS u1008) ;; 48 hours
 
 ;; ============================================
 ;; CLARITY 3/4 FEATURES - Builder Challenge
@@ -103,10 +136,145 @@
   bool
 )
 
+;; ============================================
+;; ORACLE SYSTEM DATA STRUCTURES
+;; ============================================
+
+;; Oracle provider registry
+(define-map oracle-providers
+  { provider-id: uint }
+  {
+    provider-address: principal,
+    reliability-score: uint,
+    total-resolutions: uint,
+    successful-resolutions: uint,
+    average-response-time: uint,
+    is-active: bool,
+    registered-at: uint,
+    last-activity: uint
+  }
+)
+
+;; Supported data types for each oracle provider
+(define-map oracle-data-types
+  { provider-id: uint, data-type: (string-ascii 32) }
+  bool
+)
+
+;; Oracle data submissions
+(define-map oracle-submissions
+  { submission-id: uint }
+  {
+    provider-id: uint,
+    pool-id: uint,
+    data-value: (string-ascii 256),
+    data-type: (string-ascii 32),
+    timestamp: uint,
+    confidence-score: uint,
+    is-processed: bool
+  }
+)
+
+;; Resolution configuration for automated pools
+(define-map resolution-configs
+  { pool-id: uint }
+  {
+    oracle-sources: (list 5 uint),
+    resolution-criteria: (string-ascii 512),
+    criteria-type: (string-ascii 32),
+    threshold-value: (optional uint),
+    logical-operator: (string-ascii 8),
+    retry-attempts: uint,
+    resolution-fee: uint,
+    is-automated: bool,
+    created-at: uint
+  }
+)
+
+;; Resolution attempts tracking
+(define-map resolution-attempts
+  { pool-id: uint, attempt-id: uint }
+  {
+    attempted-at: uint,
+    oracle-data-used: (list 5 uint),
+    result: (optional uint),
+    failure-reason: (optional (string-ascii 128)),
+    is-successful: bool
+  }
+)
+
+;; Dispute system data structures
+(define-map disputes
+  { dispute-id: uint }
+  {
+    pool-id: uint,
+    disputer: principal,
+    dispute-bond: uint,
+    dispute-reason: (string-ascii 512),
+    evidence-hash: (optional (buff 32)),
+    voting-deadline: uint,
+    votes-for: uint,
+    votes-against: uint,
+    status: (string-ascii 16),
+    resolution: (optional bool),
+    created-at: uint
+  }
+)
+
+;; Dispute votes tracking
+(define-map dispute-votes
+  { dispute-id: uint, voter: principal }
+  {
+    vote: bool,
+    voting-power: uint,
+    voted-at: uint
+  }
+)
+
+;; Fee tracking and distribution
+(define-map resolution-fees
+  { pool-id: uint }
+  {
+    total-fee: uint,
+    oracle-fees: uint,
+    platform-fee: uint,
+    is-refunded: bool,
+    refund-recipient: (optional principal)
+  }
+)
+
+;; Oracle fee distribution tracking
+(define-map oracle-fee-claims
+  { provider-id: uint, pool-id: uint }
+  {
+    fee-amount: uint,
+    is-claimed: bool,
+    claimed-at: (optional uint)
+  }
+)
+
+;; Fallback resolution tracking
+(define-map fallback-resolutions
+  { pool-id: uint }
+  {
+    triggered-at: uint,
+    failure-reason: (string-ascii 128),
+    max-retries-reached: bool,
+    manual-settlement-enabled: bool,
+    notified-creator: bool
+  }
+)
+
 (define-data-var pool-counter uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-withdrawn uint u0)
 (define-data-var withdrawal-counter uint u0)
+
+;; Oracle system counters
+(define-data-var oracle-provider-counter uint u0)
+(define-data-var oracle-submission-counter uint u0)
+(define-data-var resolution-attempt-counter uint u0)
+(define-data-var dispute-counter uint u0)
 
 ;; Create a new prediction pool
 ;; Validates all inputs before creating pool
@@ -295,8 +463,772 @@
 )
 
 ;; ============================================
-;; WITHDRAWAL FUNCTIONS WITH ACCESS CONTROL
+;; ORACLE SYSTEM FUNCTIONS
 ;; ============================================
+
+;; Register a new oracle provider
+(define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
+  (let ((provider-id (var-get oracle-provider-counter)))
+    ;; Only contract owner or admins can register oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Validate provider address is not already registered
+    (asserts! (is-none (get-oracle-provider-by-address provider-address)) ERR-ORACLE-ALREADY-EXISTS)
+    
+    ;; Register the oracle provider
+    (map-insert oracle-providers
+      { provider-id: provider-id }
+      {
+        provider-address: provider-address,
+        reliability-score: u100, ;; Start with 100% reliability
+        total-resolutions: u0,
+        successful-resolutions: u0,
+        average-response-time: u0,
+        is-active: true,
+        registered-at: burn-block-height,
+        last-activity: burn-block-height
+      }
+    )
+    
+    ;; Register supported data types
+    (fold register-data-type-for-provider supported-data-types provider-id)
+    
+    ;; Increment provider counter
+    (var-set oracle-provider-counter (+ provider-id u1))
+    
+    (ok provider-id)
+  )
+)
+
+;; Helper function to register data types for a provider
+(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
+  (begin
+    (map-insert oracle-data-types
+      { provider-id: provider-id, data-type: data-type }
+      true
+    )
+    provider-id
+  )
+)
+
+;; Deactivate an oracle provider
+(define-public (deactivate-oracle-provider (provider-id uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract owner or admins can deactivate oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Update provider status
+    (map-set oracle-providers
+      { provider-id: provider-id }
+      (merge provider { is-active: false })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Reactivate an oracle provider
+(define-public (reactivate-oracle-provider (provider-id uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract owner or admins can reactivate oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Update provider status
+    (map-set oracle-providers
+      { provider-id: provider-id }
+      (merge provider { is-active: true, last-activity: burn-block-height })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Update oracle provider reliability metrics
+(define-public (update-oracle-reliability (provider-id uint) (was-successful bool) (response-time uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract or admins can update reliability
+    (asserts! (or (is-eq tx-sender (as-contract tx-sender)) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let (
+      (total-resolutions (+ (get total-resolutions provider) u1))
+      (successful-resolutions (if was-successful (+ (get successful-resolutions provider) u1) (get successful-resolutions provider)))
+      (new-reliability-score (if (> total-resolutions u0) (/ (* successful-resolutions u100) total-resolutions) u0))
+      (current-avg-time (get average-response-time provider))
+      (new-avg-time (if (> total-resolutions u1) 
+        (/ (+ (* current-avg-time (- total-resolutions u1)) response-time) total-resolutions)
+        response-time))
+    )
+      ;; Update provider metrics
+      (map-set oracle-providers
+        { provider-id: provider-id }
+        (merge provider {
+          total-resolutions: total-resolutions,
+          successful-resolutions: successful-resolutions,
+          reliability-score: new-reliability-score,
+          average-response-time: new-avg-time,
+          last-activity: burn-block-height
+        })
+      )
+      
+      ;; Auto-disable if reliability drops below 50%
+      (if (< new-reliability-score u50)
+        (map-set oracle-providers
+          { provider-id: provider-id }
+          (merge provider { is-active: false })
+        )
+        true
+      )
+      
+      (ok new-reliability-score)
+    )
+  )
+)
+
+;; Submit oracle data for a pool
+(define-public (submit-oracle-data (pool-id uint) (data-value (string-ascii 256)) (data-type (string-ascii 32)) (confidence-score uint))
+  (let (
+    (provider-id (unwrap! (get-provider-id-by-address tx-sender) ERR-ORACLE-NOT-FOUND))
+    (provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND))
+    (submission-id (var-get oracle-submission-counter))
+  )
+    ;; Validate oracle provider is active
+    (asserts! (get is-active provider) ERR-ORACLE-INACTIVE)
+    
+    ;; Validate oracle supports this data type
+    (asserts! (oracle-supports-data-type provider-id data-type) ERR-INVALID-DATA-TYPE)
+    
+    ;; Validate confidence score (0-100)
+    (asserts! (<= confidence-score u100) ERR-INSUFFICIENT-CONFIDENCE)
+    
+    ;; Validate pool exists
+    (asserts! (is-some (map-get? pools { pool-id: pool-id })) ERR-POOL-NOT-FOUND)
+    
+    ;; Store oracle submission
+    (map-insert oracle-submissions
+      { submission-id: submission-id }
+      {
+        provider-id: provider-id,
+        pool-id: pool-id,
+        data-value: data-value,
+        data-type: data-type,
+        timestamp: burn-block-height,
+        confidence-score: confidence-score,
+        is-processed: false
+      }
+    )
+    
+    ;; Increment submission counter
+    (var-set oracle-submission-counter (+ submission-id u1))
+    
+    (ok submission-id)
+  )
+)
+
+;; Helper function to get provider ID by address
+(define-private (get-provider-id-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-id-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider ID by address
+(define-private (find-provider-id-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some current-id)
+        (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Configure automated resolution for a pool
+(define-public (configure-pool-resolution 
+  (pool-id uint) 
+  (oracle-sources (list 5 uint)) 
+  (resolution-criteria (string-ascii 512))
+  (criteria-type (string-ascii 32))
+  (threshold-value (optional uint))
+  (logical-operator (string-ascii 8))
+  (retry-attempts uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    ;; Only pool creator can configure resolution
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Ensure pool is not already configured for automated resolution
+    (asserts! (is-none (map-get? resolution-configs { pool-id: pool-id })) ERR-RESOLUTION-ALREADY-CONFIGURED)
+    
+    ;; Validate oracle sources
+    (asserts! (> (len oracle-sources) u0) ERR-INSUFFICIENT-ORACLE-SOURCES)
+    (asserts! (validate-oracle-sources oracle-sources) ERR-ORACLE-NOT-FOUND)
+    
+    ;; Validate resolution criteria
+    (asserts! (> (len resolution-criteria) u0) ERR-INVALID-RESOLUTION-CRITERIA)
+    (asserts! (> (len criteria-type) u0) ERR-INVALID-RESOLUTION-CRITERIA)
+    
+    ;; Validate logical operator
+    (asserts! (or (is-eq logical-operator "AND") (is-eq logical-operator "OR")) ERR-INVALID-RESOLUTION-CRITERIA)
+    
+    ;; Calculate resolution fee (0.5% of current pool value)
+    (let ((total-pool-value (+ (get total-a pool) (get total-b pool))))
+      (let ((resolution-fee (/ (* total-pool-value u5) u1000))) ;; 0.5%
+        ;; Store resolution configuration
+        (map-insert resolution-configs
+          { pool-id: pool-id }
+          {
+            oracle-sources: oracle-sources,
+            resolution-criteria: resolution-criteria,
+            criteria-type: criteria-type,
+            threshold-value: threshold-value,
+            logical-operator: logical-operator,
+            retry-attempts: retry-attempts,
+            resolution-fee: resolution-fee,
+            is-automated: true,
+            created-at: burn-block-height
+          }
+        )
+        
+        (ok true)
+      )
+    )
+  )
+)
+
+;; Helper function to validate oracle sources
+(define-private (validate-oracle-sources (oracle-sources (list 5 uint)))
+  (fold validate-single-oracle oracle-sources true)
+)
+
+;; Helper function to validate a single oracle
+(define-private (validate-single-oracle (oracle-id uint) (is-valid bool))
+  (if is-valid
+    (match (map-get? oracle-providers { provider-id: oracle-id })
+      provider (get is-active provider)
+      false
+    )
+    false
+  )
+)
+
+;; Attempt automated resolution for an expired pool
+(define-public (attempt-automated-resolution (pool-id uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (config (unwrap! (map-get? resolution-configs { pool-id: pool-id }) ERR-RESOLUTION-CONFIG-NOT-FOUND))
+    (attempt-id (var-get resolution-attempt-counter))
+  )
+    ;; Validate pool is expired and not settled
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Validate pool has automated resolution configured
+    (asserts! (get is-automated config) ERR-AUTOMATED-RESOLUTION-FAILED)
+    
+    ;; For now, use simple resolution logic (can be expanded)
+    (let ((oracle-sources (get oracle-sources config)))
+      (if (> (len oracle-sources) u0)
+        ;; Simple resolution: use first oracle source as outcome (0 or 1)
+        (let ((outcome (mod (unwrap-panic (element-at oracle-sources u0)) u2)))
+          ;; Record successful resolution attempt
+          (map-insert resolution-attempts
+            { pool-id: pool-id, attempt-id: attempt-id }
+            {
+              attempted-at: burn-block-height,
+              oracle-data-used: oracle-sources,
+              result: (some outcome),
+              failure-reason: none,
+              is-successful: true
+            }
+          )
+          
+          ;; Settle the pool with the determined outcome
+          (try! (settle-pool pool-id outcome))
+          
+          ;; Increment attempt counter
+          (var-set resolution-attempt-counter (+ attempt-id u1))
+          
+          (ok outcome)
+        )
+        ;; No oracle sources - record failed attempt
+        (begin
+          (map-insert resolution-attempts
+            { pool-id: pool-id, attempt-id: attempt-id }
+            {
+              attempted-at: burn-block-height,
+              oracle-data-used: (list),
+              result: none,
+              failure-reason: (some "No oracle sources configured"),
+              is-successful: false
+            }
+          )
+          
+          ;; Increment attempt counter
+          (var-set resolution-attempt-counter (+ attempt-id u1))
+          
+          (err ERR-AUTOMATED-RESOLUTION-FAILED)
+        )
+      )
+    )
+  )
+)
+
+;; Create a dispute for an automated resolution
+(define-public (create-dispute (pool-id uint) (dispute-reason (string-ascii 512)) (evidence-hash (optional (buff 32))))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (dispute-id (var-get dispute-counter))
+    (total-pool-value (+ (get total-a pool) (get total-b pool)))
+    (dispute-bond (/ (* total-pool-value u5) u100)) ;; 5% of pool value
+  )
+    ;; Validate pool is settled (can only dispute settled pools)
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    ;; Validate dispute reason
+    (asserts! (> (len dispute-reason) u0) ERR-INVALID-DISPUTE_REASON)
+    
+    ;; Validate dispute bond payment
+    (asserts! (>= (stx-get-balance tx-sender) dispute-bond) ERR-INSUFFICIENT-DISPUTE-BOND)
+    
+    ;; Transfer dispute bond to contract
+    (try! (stx-transfer? dispute-bond tx-sender (as-contract tx-sender)))
+    
+    ;; Create dispute record
+    (map-insert disputes
+      { dispute-id: dispute-id }
+      {
+        pool-id: pool-id,
+        disputer: tx-sender,
+        dispute-bond: dispute-bond,
+        dispute-reason: dispute-reason,
+        evidence-hash: evidence-hash,
+        voting-deadline: (+ burn-block-height u1008), ;; 48 hours (assuming ~1 block per minute)
+        votes-for: u0,
+        votes-against: u0,
+        status: "active",
+        resolution: none,
+        created-at: burn-block-height
+      }
+    )
+    
+    ;; Increment dispute counter
+    (var-set dispute-counter (+ dispute-id u1))
+    
+    (ok dispute-id)
+  )
+)
+
+;; Vote on a dispute
+(define-public (vote-on-dispute (dispute-id uint) (vote bool))
+  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+    ;; Validate dispute is active
+    (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
+    
+    ;; Validate voting deadline not passed
+    (asserts! (< burn-block-height (get voting-deadline dispute)) ERR-DISPUTE-WINDOW-CLOSED)
+    
+    ;; Validate user hasn't already voted
+    (asserts! (is-none (map-get? dispute-votes { dispute-id: dispute-id, voter: tx-sender })) ERR-ALREADY-VOTED)
+    
+    ;; Calculate voting power (simplified: 1 vote per user)
+    (let ((voting-power u1))
+      ;; Record vote
+      (map-insert dispute-votes
+        { dispute-id: dispute-id, voter: tx-sender }
+        {
+          vote: vote,
+          voting-power: voting-power,
+          voted-at: burn-block-height
+        }
+      )
+      
+      ;; Update dispute vote counts
+      (map-set disputes
+        { dispute-id: dispute-id }
+        (merge dispute {
+          votes-for: (if vote (+ (get votes-for dispute) voting-power) (get votes-for dispute)),
+          votes-against: (if vote (get votes-against dispute) (+ (get votes-against dispute) voting-power))
+        })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Resolve a dispute after voting deadline
+(define-public (resolve-dispute (dispute-id uint))
+  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+    ;; Validate dispute is active
+    (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
+    
+    ;; Validate voting deadline has passed
+    (asserts! (>= burn-block-height (get voting-deadline dispute)) ERR-DISPUTE-WINDOW-CLOSED)
+    
+    (let (
+      (votes-for (get votes-for dispute))
+      (votes-against (get votes-against dispute))
+      (dispute-upheld (> votes-for votes-against))
+      (disputer (get disputer dispute))
+      (dispute-bond (get dispute-bond dispute))
+    )
+      ;; Update dispute status and resolution
+      (map-set disputes
+        { dispute-id: dispute-id }
+        (merge dispute {
+          status: "resolved",
+          resolution: (some dispute-upheld)
+        })
+      )
+      
+      ;; Handle dispute bond refund if dispute was upheld
+      (if dispute-upheld
+        (try! (as-contract (stx-transfer? dispute-bond tx-sender disputer)))
+        true ;; Bond is kept by contract if dispute was rejected
+      )
+      
+      (ok dispute-upheld)
+    )
+  )
+)
+
+;; Get dispute details
+(define-read-only (get-dispute (dispute-id uint))
+  (map-get? disputes { dispute-id: dispute-id })
+)
+
+;; Get dispute vote details
+(define-read-only (get-dispute-vote (dispute-id uint) (voter principal))
+  (map-get? dispute-votes { dispute-id: dispute-id, voter: voter })
+)
+
+;; Get total disputes count
+(define-read-only (get-dispute-count)
+  (var-get dispute-counter)
+)
+
+;; Check if user has voted on dispute
+(define-read-only (has-user-voted-on-dispute (dispute-id uint) (voter principal))
+  (is-some (map-get? dispute-votes { dispute-id: dispute-id, voter: voter }))
+)
+
+;; Calculate and collect resolution fee
+(define-public (collect-resolution-fee (pool-id uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (total-pool-value (+ (get total-a pool) (get total-b pool)))
+    (resolution-fee (/ (* total-pool-value RESOLUTION-FEE-PERCENT) u1000))
+    (oracle-fee-portion (/ (* resolution-fee u80) u100)) ;; 80% to oracles
+    (platform-fee-portion (- resolution-fee oracle-fee-portion)) ;; 20% to platform
+  )
+    ;; Only contract can collect fees
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Store fee breakdown
+    (map-insert resolution-fees
+      { pool-id: pool-id }
+      {
+        total-fee: resolution-fee,
+        oracle-fees: oracle-fee-portion,
+        platform-fee: platform-fee-portion,
+        is-refunded: false,
+        refund-recipient: none
+      }
+    )
+    
+    ;; Transfer platform fee to contract owner
+    (try! (as-contract (stx-transfer? platform-fee-portion tx-sender CONTRACT-OWNER)))
+    
+    (ok resolution-fee)
+  )
+)
+
+;; Distribute fees to oracle providers
+(define-public (distribute-oracle-fees (pool-id uint) (oracle-providers-list (list 5 uint)))
+  (let (
+    (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (oracle-fees (get oracle-fees fee-info))
+    (num-oracles (len oracle-providers-list))
+    (fee-per-oracle (if (> num-oracles u0) (/ oracle-fees num-oracles) u0))
+  )
+    ;; Only contract can distribute fees
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Distribute fees to each oracle
+    (fold distribute-fee-to-oracle oracle-providers-list { pool-id: pool-id, fee-amount: fee-per-oracle })
+    
+    (ok true)
+  )
+)
+
+;; Helper function to distribute fee to single oracle
+(define-private (distribute-fee-to-oracle (provider-id uint) (fee-data { pool-id: uint, fee-amount: uint }))
+  (let (
+    (pool-id (get pool-id fee-data))
+    (fee-amount (get fee-amount fee-data))
+  )
+    ;; Record oracle fee claim
+    (map-insert oracle-fee-claims
+      { provider-id: provider-id, pool-id: pool-id }
+      {
+        fee-amount: fee-amount,
+        is-claimed: false,
+        claimed-at: none
+      }
+    )
+    
+    fee-data ;; Return unchanged for fold
+  )
+)
+
+;; Oracle claims their fee
+(define-public (claim-oracle-fee (pool-id uint))
+  (let (
+    (provider-id (unwrap! (get-provider-id-by-address tx-sender) ERR-ORACLE-NOT-FOUND))
+    (fee-claim (unwrap! (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id }) ERR-NO-WINNINGS))
+  )
+    ;; Validate fee not already claimed
+    (asserts! (not (get is-claimed fee-claim)) ERR-ALREADY-CLAIMED)
+    
+    (let ((fee-amount (get fee-amount fee-claim)))
+      ;; Transfer fee to oracle
+      (try! (as-contract (stx-transfer? fee-amount tx-sender tx-sender)))
+      
+      ;; Mark as claimed
+      (map-set oracle-fee-claims
+        { provider-id: provider-id, pool-id: pool-id }
+        (merge fee-claim {
+          is-claimed: true,
+          claimed-at: (some burn-block-height)
+        })
+      )
+      
+      (ok fee-amount)
+    )
+  )
+)
+
+;; Refund resolution fee for upheld disputes
+(define-public (refund-resolution-fee (pool-id uint) (dispute-id uint))
+  (let (
+    (dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
+    (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (disputer (get disputer dispute))
+  )
+    ;; Validate dispute was upheld and resolved
+    (asserts! (is-eq (get status dispute) "resolved") ERR-DISPUTE-NOT-FOUND)
+    (asserts! (is-eq (unwrap! (get resolution dispute) ERR-DISPUTE-NOT-FOUND) true) ERR-DISPUTE-NOT-FOUND)
+    
+    ;; Validate fee not already refunded
+    (asserts! (not (get is-refunded fee-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Only contract or admin can process refunds
+    (asserts! (or (is-eq tx-sender (as-contract tx-sender)) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let ((refund-amount (get total-fee fee-info)))
+      ;; Transfer refund to disputer
+      (try! (as-contract (stx-transfer? refund-amount tx-sender disputer)))
+      
+      ;; Mark fee as refunded
+      (map-set resolution-fees
+        { pool-id: pool-id }
+        (merge fee-info {
+          is-refunded: true,
+          refund-recipient: (some disputer)
+        })
+      )
+      
+      (ok refund-amount)
+    )
+  )
+)
+
+;; Get fee information for a pool
+(define-read-only (get-resolution-fee-info (pool-id uint))
+  (map-get? resolution-fees { pool-id: pool-id })
+)
+
+;; Get oracle fee claim information
+(define-read-only (get-oracle-fee-claim (provider-id uint) (pool-id uint))
+  (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id })
+)
+
+;; Trigger fallback resolution when automated resolution fails
+(define-public (trigger-fallback-resolution (pool-id uint) (failure-reason (string-ascii 128)))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (config (unwrap! (map-get? resolution-configs { pool-id: pool-id }) ERR-RESOLUTION-CONFIG-NOT-FOUND))
+  )
+    ;; Only contract can trigger fallback
+    (asserts! (is-eq tx-sender (as-contract tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Validate pool is expired and not settled
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Check if max retries reached (simplified: assume 3 retries)
+    (let ((max-retries-reached true)) ;; Simplified for now
+      ;; Record fallback activation
+      (map-insert fallback-resolutions
+        { pool-id: pool-id }
+        {
+          triggered-at: burn-block-height,
+          failure-reason: failure-reason,
+          max-retries-reached: max-retries-reached,
+          manual-settlement-enabled: true,
+          notified-creator: false ;; Would trigger notification in real system
+        }
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Manual settlement during fallback (enhanced validation)
+(define-public (manual-settle-fallback (pool-id uint) (winning-outcome uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (fallback (unwrap! (map-get? fallback-resolutions { pool-id: pool-id }) ERR-FALLBACK-NOT-TRIGGERED))
+  )
+    ;; Only pool creator can manually settle during fallback
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Validate manual settlement is enabled
+    (asserts! (get manual-settlement-enabled fallback) ERR-MANUAL-SETTLEMENT-DISABLED)
+    
+    ;; Validate outcome
+    (asserts! (or (is-eq winning-outcome u0) (is-eq winning-outcome u1)) ERR-INVALID-OUTCOME)
+    
+    ;; Additional validation for fallback settlement
+    (asserts! (> burn-block-height (+ (get triggered-at fallback) u144)) ERR-WITHDRAWAL-LOCKED) ;; 24 hour delay
+    
+    ;; Settle with reduced fee (50% reduction)
+    (let (
+      (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+      (reduced-fee (/ (* total-pool-balance FEE-PERCENT) u200)) ;; 1% instead of 2%
+    )
+      ;; Transfer reduced fee
+      (if (> reduced-fee u0)
+        (try! (as-contract (stx-transfer? reduced-fee tx-sender CONTRACT-OWNER)))
+        true
+      )
+      
+      ;; Settle the pool
+      (map-set pools
+        { pool-id: pool-id }
+        (merge pool { 
+          settled: true, 
+          winning-outcome: (some winning-outcome), 
+          settled-at: (some burn-block-height) 
+        })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Get fallback resolution status
+(define-read-only (get-fallback-status (pool-id uint))
+  (map-get? fallback-resolutions { pool-id: pool-id })
+)
+
+;; Check if pool is in fallback mode
+(define-read-only (is-pool-in-fallback (pool-id uint))
+  (is-some (map-get? fallback-resolutions { pool-id: pool-id }))
+)
+
+;; ============================================
+;; ORACLE READ-ONLY FUNCTIONS
+;; ============================================
+
+;; Get oracle provider details
+(define-read-only (get-oracle-provider (provider-id uint))
+  (map-get? oracle-providers { provider-id: provider-id })
+)
+
+;; Get oracle provider by address (helper function)
+(define-read-only (get-oracle-provider-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider by address
+(define-private (find-provider-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some provider)
+        (find-provider-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Check if oracle provider supports a data type
+(define-read-only (oracle-supports-data-type (provider-id uint) (data-type (string-ascii 32)))
+  (default-to false (map-get? oracle-data-types { provider-id: provider-id, data-type: data-type }))
+)
+
+;; Get total oracle providers
+(define-read-only (get-oracle-provider-count)
+  (var-get oracle-provider-counter)
+)
+
+;; Get oracle submission details
+(define-read-only (get-oracle-submission (submission-id uint))
+  (map-get? oracle-submissions { submission-id: submission-id })
+)
+
+;; Get total oracle submissions
+(define-read-only (get-oracle-submission-count)
+  (var-get oracle-submission-counter)
+)
+
+;; Get oracle submissions for a pool (simplified - returns first 5)
+(define-read-only (get-pool-oracle-submissions (pool-id uint))
+  (let ((submission-count (var-get oracle-submission-counter)))
+    (filter-submissions-by-pool pool-id u0 (min submission-count u5))
+  )
+)
+
+;; Get resolution configuration for a pool
+(define-read-only (get-resolution-config (pool-id uint))
+  (map-get? resolution-configs { pool-id: pool-id })
+)
+
+;; Check if pool has automated resolution configured
+(define-read-only (is-pool-automated (pool-id uint))
+  (match (map-get? resolution-configs { pool-id: pool-id })
+    config (get is-automated config)
+    false
+  )
+)
+
+;; Get resolution attempt details
+(define-read-only (get-resolution-attempt (pool-id uint) (attempt-id uint))
+  (map-get? resolution-attempts { pool-id: pool-id, attempt-id: attempt-id })
+)
+
+;; Helper function to filter submissions by pool
+(define-private (filter-submissions-by-pool (pool-id uint) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? oracle-submissions { submission-id: current-id })
+      submission (if (is-eq (get pool-id submission) pool-id)
+        (unwrap-panic (as-max-len? (append (filter-submissions-by-pool pool-id (+ current-id u1) max-id) submission) u5))
+        (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
+      )
+      (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
+    )
+  )
+)
 
 ;; [ACCESS CONTROL] Add admin
 (define-public (add-admin (admin principal))
