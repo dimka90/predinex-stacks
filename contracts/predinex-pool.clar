@@ -109,14 +109,21 @@
 (define-data-var withdrawal-counter uint u0)
 
 ;; Create a new prediction pool
+;; Validates all inputs before creating pool
+;; Ensures pool parameters are within acceptable ranges
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
-    ;; Validation checks
+    ;; Comprehensive validation checks
     (asserts! (> (len title) u0) ERR-INVALID-TITLE)
+    (asserts! (<= (len title) u256) ERR-INVALID-TITLE)
     (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
+    (asserts! (<= (len description) u512) ERR-INVALID-DESCRIPTION)
     (asserts! (> (len outcome-a) u0) ERR-INVALID-OUTCOME)
+    (asserts! (<= (len outcome-a) u128) ERR-INVALID-OUTCOME)
     (asserts! (> (len outcome-b) u0) ERR-INVALID-OUTCOME)
+    (asserts! (<= (len outcome-b) u128) ERR-INVALID-OUTCOME)
     (asserts! (> duration u0) ERR-INVALID-DURATION)
+    (asserts! (< duration u100000) ERR-INVALID-DURATION) ;; Prevent unreasonably long durations
 
     (map-insert pools
       { pool-id: pool-id }
