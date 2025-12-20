@@ -850,6 +850,26 @@
   )
 )
 
+;; Get dispute details
+(define-read-only (get-dispute (dispute-id uint))
+  (map-get? disputes { dispute-id: dispute-id })
+)
+
+;; Get dispute vote details
+(define-read-only (get-dispute-vote (dispute-id uint) (voter principal))
+  (map-get? dispute-votes { dispute-id: dispute-id, voter: voter })
+)
+
+;; Get total disputes count
+(define-read-only (get-dispute-count)
+  (var-get dispute-counter)
+)
+
+;; Check if user has voted on dispute
+(define-read-only (has-user-voted-on-dispute (dispute-id uint) (voter principal))
+  (is-some (map-get? dispute-votes { dispute-id: dispute-id, voter: voter }))
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
