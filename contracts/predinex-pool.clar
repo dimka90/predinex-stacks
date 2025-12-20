@@ -467,6 +467,67 @@
   )
 )
 
+;; Submit oracle data for a pool
+(define-public (submit-oracle-data (pool-id uint) (data-value (string-ascii 256)) (data-type (string-ascii 32)) (confidence-score uint))
+  (let (
+    (provider-id (unwrap! (get-provider-id-by-address tx-sender) ERR-ORACLE-NOT-FOUND))
+    (provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND))
+    (submission-id (var-get oracle-submission-counter))
+  )
+    ;; Validate oracle provider is active
+    (asserts! (get is-active provider) ERR-ORACLE-INACTIVE)
+    
+    ;; Validate oracle supports this data type
+    (asserts! (oracle-supports-data-type provider-id data-type) ERR-INVALID-DATA-TYPE)
+    
+    ;; Validate confidence score (0-100)
+    (asserts! (<= confidence-score u100) ERR-INSUFFICIENT-CONFIDENCE)
+    
+    ;; Validate pool exists
+    (asserts! (is-some (map-get? pools { pool-id: pool-id })) ERR-POOL-NOT-FOUND)
+    
+    ;; Store oracle submission
+    (map-insert oracle-submissions
+      { submission-id: submission-id }
+      {
+        provider-id: provider-id,
+        pool-id: pool-id,
+        data-value: data-value,
+        data-type: data-type,
+        timestamp: burn-block-height,
+        confidence-score: confidence-score,
+        is-processed: false
+      }
+    )
+    
+    ;; Increment submission counter
+    (var-set oracle-submission-counter (+ submission-id u1))
+    
+    (ok submission-id)
+  )
+)
+
+;; Helper function to get provider ID by address
+(define-private (get-provider-id-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-id-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider ID by address
+(define-private (find-provider-id-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some current-id)
+        (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
