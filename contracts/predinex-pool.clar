@@ -430,6 +430,42 @@
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
 
+;; Get oracle provider details
+(define-read-only (get-oracle-provider (provider-id uint))
+  (map-get? oracle-providers { provider-id: provider-id })
+)
+
+;; Get oracle provider by address (helper function)
+(define-read-only (get-oracle-provider-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider by address
+(define-private (find-provider-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some provider)
+        (find-provider-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Check if oracle provider supports a data type
+(define-read-only (oracle-supports-data-type (provider-id uint) (data-type (string-ascii 32)))
+  (default-to false (map-get? oracle-data-types { provider-id: provider-id, data-type: data-type }))
+)
+
+;; Get total oracle providers
+(define-read-only (get-oracle-provider-count)
+  (var-get oracle-provider-counter)
+)
+
 ;; [ACCESS CONTROL] Add admin
 (define-public (add-admin (admin principal))
   (begin
