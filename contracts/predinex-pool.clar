@@ -23,6 +23,14 @@
 (define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428))
 (define-constant ERR-NOT-POOL-CREATOR (err u429))
 
+;; Oracle system error constants
+(define-constant ERR-ORACLE-NOT-FOUND (err u430))
+(define-constant ERR-ORACLE-INACTIVE (err u431))
+(define-constant ERR-INVALID-DATA-TYPE (err u432))
+(define-constant ERR-ORACLE-ALREADY-EXISTS (err u433))
+(define-constant ERR-INSUFFICIENT-CONFIDENCE (err u434))
+(define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND (err u435))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
@@ -103,10 +111,53 @@
   bool
 )
 
+;; ============================================
+;; ORACLE SYSTEM DATA STRUCTURES
+;; ============================================
+
+;; Oracle provider registry
+(define-map oracle-providers
+  { provider-id: uint }
+  {
+    provider-address: principal,
+    reliability-score: uint,
+    total-resolutions: uint,
+    successful-resolutions: uint,
+    average-response-time: uint,
+    is-active: bool,
+    registered-at: uint,
+    last-activity: uint
+  }
+)
+
+;; Supported data types for each oracle provider
+(define-map oracle-data-types
+  { provider-id: uint, data-type: (string-ascii 32) }
+  bool
+)
+
+;; Oracle data submissions
+(define-map oracle-submissions
+  { submission-id: uint }
+  {
+    provider-id: uint,
+    pool-id: uint,
+    data-value: (string-ascii 256),
+    data-type: (string-ascii 32),
+    timestamp: uint,
+    confidence-score: uint,
+    is-processed: bool
+  }
+)
+
 (define-data-var pool-counter uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-withdrawn uint u0)
 (define-data-var withdrawal-counter uint u0)
+
+;; Oracle system counters
+(define-data-var oracle-provider-counter uint u0)
+(define-data-var oracle-submission-counter uint u0)
 
 ;; Create a new prediction pool
 ;; Validates all inputs before creating pool
@@ -295,7 +346,88 @@
 )
 
 ;; ============================================
-;; WITHDRAWAL FUNCTIONS WITH ACCESS CONTROL
+;; ORACLE SYSTEM FUNCTIONS
+;; ============================================
+
+;; Register a new oracle provider
+(define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
+  (let ((provider-id (var-get oracle-provider-counter)))
+    ;; Only contract owner or admins can register oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Validate provider address is not already registered
+    (asserts! (is-none (get-oracle-provider-by-address provider-address)) ERR-ORACLE-ALREADY-EXISTS)
+    
+    ;; Register the oracle provider
+    (map-insert oracle-providers
+      { provider-id: provider-id }
+      {
+        provider-address: provider-address,
+        reliability-score: u100, ;; Start with 100% reliability
+        total-resolutions: u0,
+        successful-resolutions: u0,
+        average-response-time: u0,
+        is-active: true,
+        registered-at: burn-block-height,
+        last-activity: burn-block-height
+      }
+    )
+    
+    ;; Register supported data types
+    (fold register-data-type-for-provider supported-data-types provider-id)
+    
+    ;; Increment provider counter
+    (var-set oracle-provider-counter (+ provider-id u1))
+    
+    (ok provider-id)
+  )
+)
+
+;; Helper function to register data types for a provider
+(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
+  (begin
+    (map-insert oracle-data-types
+      { provider-id: provider-id, data-type: data-type }
+      true
+    )
+    provider-id
+  )
+)
+
+;; Deactivate an oracle provider
+(define-public (deactivate-oracle-provider (provider-id uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract owner or admins can deactivate oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Update provider status
+    (map-set oracle-providers
+      { provider-id: provider-id }
+      (merge provider { is-active: false })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Reactivate an oracle provider
+(define-public (reactivate-oracle-provider (provider-id uint))
+  (let ((provider (unwrap! (map-get? oracle-providers { provider-id: provider-id }) ERR-ORACLE-NOT-FOUND)))
+    ;; Only contract owner or admins can reactivate oracle providers
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Update provider status
+    (map-set oracle-providers
+      { provider-id: provider-id }
+      (merge provider { is-active: true, last-activity: burn-block-height })
+    )
+    
+    (ok true)
+  )
+)
+
+;; ============================================
+;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
 
 ;; [ACCESS CONTROL] Add admin
