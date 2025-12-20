@@ -814,6 +814,42 @@
   )
 )
 
+;; Resolve a dispute after voting deadline
+(define-public (resolve-dispute (dispute-id uint))
+  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+    ;; Validate dispute is active
+    (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
+    
+    ;; Validate voting deadline has passed
+    (asserts! (>= burn-block-height (get voting-deadline dispute)) ERR-DISPUTE-WINDOW-CLOSED)
+    
+    (let (
+      (votes-for (get votes-for dispute))
+      (votes-against (get votes-against dispute))
+      (dispute-upheld (> votes-for votes-against))
+      (disputer (get disputer dispute))
+      (dispute-bond (get dispute-bond dispute))
+    )
+      ;; Update dispute status and resolution
+      (map-set disputes
+        { dispute-id: dispute-id }
+        (merge dispute {
+          status: "resolved",
+          resolution: (some dispute-upheld)
+        })
+      )
+      
+      ;; Handle dispute bond refund if dispute was upheld
+      (if dispute-upheld
+        (try! (as-contract (stx-transfer? dispute-bond tx-sender disputer)))
+        true ;; Bond is kept by contract if dispute was rejected
+      )
+      
+      (ok dispute-upheld)
+    )
+  )
+)
+
 ;; ============================================
 ;; ORACLE READ-ONLY FUNCTIONS
 ;; ============================================
