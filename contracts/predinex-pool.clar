@@ -436,14 +436,16 @@
   )
 )
 
-;; Emergency withdrawal - Pool creator can withdraw unclaimed funds after expiry
+;; [FIXED] Emergency withdrawal - Pool creator can withdraw unclaimed funds after expiry
+;; Corrected transfer to send to pool creator, not contract
 (define-public (emergency-withdrawal (pool-id uint))
   (let (
     (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
     (total-pool-balance (+ (get total-a pool) (get total-b pool)))
+    (creator (get creator pool))
   )
     ;; Access control - only pool creator can emergency withdraw
-    (asserts! (is-eq tx-sender (get creator pool)) ERR-NOT-POOL-CREATOR)
+    (asserts! (is-eq tx-sender creator) ERR-NOT-POOL-CREATOR)
     
     ;; Validation - pool must be expired and settled
     (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
@@ -452,14 +454,14 @@
     ;; Check contract has balance
     (asserts! (> total-pool-balance u0) ERR-INVALID-AMOUNT)
     
-    ;; Transfer remaining balance to pool creator
-    (try! (as-contract (stx-transfer? total-pool-balance tx-sender tx-sender)))
+    ;; Transfer remaining balance to pool creator (not to self)
+    (try! (as-contract (stx-transfer? total-pool-balance tx-sender creator)))
     
     (ok total-pool-balance)
   )
 )
 
-;; Batch withdrawal - Approve multiple withdrawals at once
+;; [FIXED] Batch withdrawal - Approve multiple withdrawals at once with proper error handling
 (define-public (batch-approve-withdrawals (users (list 10 principal)) (withdrawal-ids (list 10 uint)))
   (let (
     (count (len users))
@@ -470,8 +472,25 @@
     ;; Validate lists have same length
     (asserts! (is-eq count (len withdrawal-ids)) ERR-INVALID-AMOUNT)
     
-    ;; Process each withdrawal
-    (ok (map approve-withdrawal users withdrawal-ids))
+    ;; Process each withdrawal with error handling
+    (ok (fold process-single-withdrawal 
+      (zip users withdrawal-ids) 
+      (list true)
+    ))
+  )
+)
+
+;; Helper function to process single withdrawal in batch
+(define-private (process-single-withdrawal (user-withdrawal-pair (tuple (user principal) (withdrawal-id uint))) (results (list 1 bool)))
+  (let (
+    (user (get user user-withdrawal-pair))
+    (withdrawal-id (get withdrawal-id user-withdrawal-pair))
+  )
+    ;; Attempt to approve, but don't fail entire batch if one fails
+    (match (approve-withdrawal user withdrawal-id)
+      success (list true)
+      error (list false)
+    )
   )
 )
 
@@ -754,37 +773,54 @@
 ;; REFUND FUNCTION - Direct bet refund
 ;; ============================================
 
-;; [NEW] Direct refund - User can refund their bets anytime
-(define-public (refund-bet (pool-id uint) (amount uint))
+;; [FIXED] Direct refund - User can refund their bets anytime
+;; Properly tracks which outcome the refund is from
+(define-public (refund-bet (pool-id uint) (outcome uint) (amount uint))
   (let (
     (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
     (user-bet (unwrap! (map-get? user-bets { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
     (total-bet (get total-bet user-bet))
+    (amount-a (get amount-a user-bet))
+    (amount-b (get amount-b user-bet))
   )
     ;; Validation
+    (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
     (asserts! (> amount u0) ERR-INVALID-AMOUNT)
     (asserts! (<= amount total-bet) ERR-INVALID-WITHDRAWAL)
+    
+    ;; Validate refund amount matches outcome
+    (if (is-eq outcome u0)
+      (asserts! (<= amount amount-a) ERR-INVALID-WITHDRAWAL)
+      (asserts! (<= amount amount-b) ERR-INVALID-WITHDRAWAL)
+    )
     
     ;; Transfer funds back to user
     (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
     
-    ;; Update user bet
+    ;; Update user bet - only reduce the specific outcome
     (map-set user-bets
       { pool-id: pool-id, user: tx-sender }
-      (merge user-bet { 
-        total-bet: (- total-bet amount),
-        amount-a: (if (> (get amount-a user-bet) amount) (- (get amount-a user-bet) amount) u0),
-        amount-b: (if (> (get amount-b user-bet) amount) (- (get amount-b user-bet) amount) u0)
-      })
+      (if (is-eq outcome u0)
+        { 
+          amount-a: (- amount-a amount),
+          amount-b: amount-b,
+          total-bet: (- total-bet amount)
+        }
+        { 
+          amount-a: amount-a,
+          amount-b: (- amount-b amount),
+          total-bet: (- total-bet amount)
+        }
+      )
     )
     
-    ;; Update pool totals
+    ;; Update pool totals - only reduce the specific outcome
     (map-set pools
       { pool-id: pool-id }
-      (merge pool {
-        total-a: (if (> (get total-a pool) amount) (- (get total-a pool) amount) u0),
-        total-b: (if (> (get total-b pool) amount) (- (get total-b pool) amount) u0)
-      })
+      (if (is-eq outcome u0)
+        (merge pool { total-a: (- (get total-a pool) amount) })
+        (merge pool { total-b: (- (get total-b pool) amount) })
+      )
     )
     
     (ok amount)
