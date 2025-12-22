@@ -14,3 +14,4 @@ costs-reports.json
 node_modules
 .vscode/
 MAKE_COMMITS.sh
+.kiro/
