@@ -15,3 +15,4 @@ node_modules
 .vscode/
 MAKE_COMMITS.sh
 .kiro/
+WALLETCONNECR_COMMITS.sh
