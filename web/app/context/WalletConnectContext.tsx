@@ -7,7 +7,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { WALLETCONNECT_CONFIG } from '@/lib/walletconnect-config';
+import { WALLETCONNECT_CONFIG } from '../lib/walletconnect-config';
 
 export interface WalletSession {
   address: string;
