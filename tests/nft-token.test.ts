@@ -899,6 +899,158 @@ describe("NFT Token Contract", () => {
     });
   });
 
+  describe("Performance and Stress Tests", () => {
+    it("should handle maximum batch mint size", () => {
+      const maxSize = 10;
+      const recipients = Array(maxSize).fill(0).map((_, i) => 
+        i % 3 === 0 ? alice : i % 3 === 1 ? bob : charlie
+      );
+      const names = Array(maxSize).fill(0).map((_, i) => `Batch NFT ${i}`);
+      const descriptions = Array(maxSize).fill(0).map((_, i) => `Batch description ${i}`);
+      const images = Array(maxSize).fill(0).map((_, i) => `batch${i}.png`);
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk();
+
+      // Verify total supply
+      const supplyResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(supplyResult.result).toBeOk(Cl.uint(maxSize));
+    });
+
+    it("should handle rapid sequential operations", () => {
+      // Mint multiple tokens rapidly
+      for (let i = 0; i < 5; i++) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(alice),
+            Cl.stringAscii(`Rapid NFT ${i}`),
+            Cl.stringAscii(`Rapid description ${i}`),
+            Cl.stringAscii(`rapid${i}.png`)
+          ],
+          deployer
+        );
+        expect(result.result).toBeOk(Cl.uint(i));
+      }
+
+      // Rapid transfers
+      for (let i = 0; i < 5; i++) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "transfer",
+          [Cl.uint(i), Cl.principal(alice), Cl.principal(bob)],
+          alice
+        );
+        expect(result.result).toBeOk(Cl.bool(true));
+      }
+
+      // Verify all transfers completed
+      for (let i = 0; i < 5; i++) {
+        const ownerResult = simnet.callReadOnlyFn(
+          "nft-token",
+          "get-owner",
+          [Cl.uint(i)],
+          deployer
+        );
+        expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(bob)));
+      }
+    });
+
+    it("should maintain data integrity under stress", () => {
+      const numTokens = 8;
+      
+      // Mint tokens to different owners
+      for (let i = 0; i < numTokens; i++) {
+        const owner = i % 2 === 0 ? alice : bob;
+        simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(owner),
+            Cl.stringAscii(`Stress NFT ${i}`),
+            Cl.stringAscii(`Stress test token ${i}`),
+            Cl.stringAscii(`stress${i}.png`)
+          ],
+          deployer
+        );
+      }
+
+      // Set up complex approval patterns
+      for (let i = 0; i < numTokens; i += 2) {
+        simnet.callPublicFn(
+          "nft-token",
+          "approve",
+          [Cl.principal(charlie), Cl.uint(i)],
+          alice
+        );
+      }
+
+      simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(alice), Cl.bool(true)],
+        bob
+      );
+
+      // Execute complex transfer patterns
+      for (let i = 0; i < numTokens; i += 2) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "transfer-from",
+          [Cl.uint(i), Cl.principal(alice), Cl.principal(charlie)],
+          charlie
+        );
+        expect(result.result).toBeOk(Cl.bool(true));
+      }
+
+      // Verify final state consistency
+      const totalSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(totalSupply.result).toBeOk(Cl.uint(numTokens));
+
+      // Check that all tokens still exist and have correct owners
+      for (let i = 0; i < numTokens; i++) {
+        const exists = simnet.callReadOnlyFn(
+          "nft-token",
+          "token-exists",
+          [Cl.uint(i)],
+          deployer
+        );
+        expect(exists.result).toBeBool(true);
+
+        const owner = simnet.callReadOnlyFn(
+          "nft-token",
+          "get-owner",
+          [Cl.uint(i)],
+          deployer
+        );
+        expect(owner.result).toBeOk(Cl.some(Cl.principal(
+          i % 2 === 0 ? charlie : bob
+        )));
+      }
+    });
+  });
+
   describe("Burn Functionality", () => {
     beforeEach(() => {
       // Mint a token to Alice for burn tests
