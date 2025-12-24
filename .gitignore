@@ -16,3 +16,4 @@ node_modules
 MAKE_COMMITS.sh
 .kiro/
 MAKE_ALL_COMMITS.sh
+MAKE_50_COMMITS.sh
