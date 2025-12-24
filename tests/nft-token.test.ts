@@ -1597,3 +1597,243 @@ describe("NFT Token Contract", () => {
     });
   });
 });
+  describe("Error Handling and Boundary Conditions", () => {
+    it("should handle token ID boundary conditions", () => {
+      // Test with token ID 0 (should work)
+      const result0 = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Token 0"),
+          Cl.stringAscii("First token"),
+          Cl.stringAscii("token0.png")
+        ],
+        deployer
+      );
+      expect(result0.result).toBeOk(Cl.uint(0));
+
+      // Test operations on non-existent high token ID
+      const highTokenId = 999999;
+      const transferResult = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(highTokenId), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(transferResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+
+      const approveResult = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(highTokenId)],
+        alice
+      );
+      expect(approveResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+
+      const burnResult = simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(highTokenId)],
+        alice
+      );
+      expect(burnResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+    });
+
+    it("should handle empty batch operations", () => {
+      // Test with empty arrays
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list([]),
+          Cl.list([]),
+          Cl.list([]),
+          Cl.list([])
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk();
+
+      // Verify no tokens were minted
+      const totalSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(totalSupply.result).toBeOk(Cl.uint(0));
+    });
+
+    it("should handle operations on burned tokens", () => {
+      // Mint and then burn a token
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Burned Token"),
+          Cl.stringAscii("Will be burned"),
+          Cl.stringAscii("burned.png")
+        ],
+        deployer
+      );
+
+      simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(0)],
+        alice
+      );
+
+      // Try to operate on burned token
+      const transferResult = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(transferResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+
+      const approveResult = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+      expect(approveResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+
+      const burnAgainResult = simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(0)],
+        alice
+      );
+      expect(burnAgainResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+    });
+
+    it("should handle concurrent approval scenarios", () => {
+      // Mint token to Alice
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Concurrent Test"),
+          Cl.stringAscii("Testing concurrent approvals"),
+          Cl.stringAscii("concurrent.png")
+        ],
+        deployer
+      );
+
+      // Alice approves Bob
+      simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+
+      // Alice also sets approval-for-all for Charlie
+      simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(charlie), Cl.bool(true)],
+        alice
+      );
+
+      // Both Bob and Charlie should be able to transfer
+      const bobTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        bob
+      );
+      expect(bobTransfer.result).toBeOk(Cl.bool(true));
+
+      // Charlie should no longer be able to transfer (token moved)
+      const charlieTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(bob), Cl.principal(charlie)],
+        charlie
+      );
+      expect(charlieTransfer.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should handle metadata edge cases", () => {
+      // Test with special characters in metadata
+      const specialName = "NFT with émojis 🎨";
+      const specialDesc = "Description with special chars: @#$%^&*()";
+      const specialImage = "https://example.com/image?param=value&other=123";
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii(specialName),
+          Cl.stringAscii(specialDesc),
+          Cl.stringAscii(specialImage)
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.uint(0));
+
+      // Verify metadata was stored correctly
+      const metadataResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-metadata",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(metadataResult.result).toBeOk(Cl.some(Cl.tuple({
+        name: Cl.stringAscii(specialName),
+        description: Cl.stringAscii(specialDesc),
+        image: Cl.stringAscii(specialImage)
+      })));
+    });
+
+    it("should handle read-only function edge cases", () => {
+      // Test read-only functions with non-existent tokens
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(999)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.none());
+
+      const approvedResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-approved",
+        [Cl.uint(999)],
+        deployer
+      );
+      expect(approvedResult.result).toBeOk(Cl.none());
+
+      const metadataResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-metadata",
+        [Cl.uint(999)],
+        deployer
+      );
+      expect(metadataResult.result).toBeOk(Cl.none());
+
+      const uriResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-uri",
+        [Cl.uint(999)],
+        deployer
+      );
+      expect(uriResult.result).toBeOk(Cl.some(Cl.stringAscii("https://predinex.com/nft/999")));
+
+      const existsResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "token-exists",
+        [Cl.uint(999)],
+        deployer
+      );
+      expect(existsResult.result).toBeBool(false);
+    });
+  });
