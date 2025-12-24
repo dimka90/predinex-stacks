@@ -354,5 +354,133 @@ describe("NFT Token Contract", () => {
       );
       expect(result.result).toBeErr(Cl.uint(403)); // ERR-NOT-OWNER
     });
+
+    it("should fail burn of non-existent token", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(999)],
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+    });
+
+    it("should clear approvals when burning", () => {
+      // First approve Bob
+      simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+
+      // Verify approval exists
+      const approvedResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-approved",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(approvedResult.result).toBeOk(Cl.some(Cl.principal(bob)));
+
+      // Burn the token
+      simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(0)],
+        alice
+      );
+
+      // Check approval is cleared (token doesn't exist)
+      const clearedApprovalResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-approved",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(clearedApprovalResult.result).toBeOk(Cl.none());
+    });
+  });
+
+  describe("Batch Minting", () => {
+    it("should batch mint multiple NFTs successfully", () => {
+      const recipients = [alice, bob, charlie];
+      const names = ["NFT 1", "NFT 2", "NFT 3"];
+      const descriptions = ["First NFT", "Second NFT", "Third NFT"];
+      const images = ["image1.png", "image2.png", "image3.png"];
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk();
+
+      // Check total supply increased by 3
+      const supplyResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(supplyResult.result).toBeOk(Cl.uint(3));
+
+      // Check each token has correct owner
+      for (let i = 0; i < recipients.length; i++) {
+        const ownerResult = simnet.callReadOnlyFn(
+          "nft-token",
+          "get-owner",
+          [Cl.uint(i)],
+          deployer
+        );
+        expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(recipients[i])));
+      }
+    });
+
+    it("should fail batch mint from non-owner", () => {
+      const recipients = [alice, bob];
+      const names = ["NFT 1", "NFT 2"];
+      const descriptions = ["First NFT", "Second NFT"];
+      const images = ["image1.png", "image2.png"];
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        alice // Non-owner trying to batch mint
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should fail batch mint with mismatched array lengths", () => {
+      const recipients = [alice, bob];
+      const names = ["NFT 1"]; // Different length
+      const descriptions = ["First NFT", "Second NFT"];
+      const images = ["image1.png", "image2.png"];
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
+    });
   });
 });
