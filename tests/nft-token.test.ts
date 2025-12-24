@@ -1217,6 +1217,203 @@ describe("NFT Token Contract", () => {
     });
   });
 
+  describe("Event Emission and State Consistency", () => {
+    it("should emit transfer events correctly", () => {
+      // Mint token to Alice
+      const mintResult = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Event Test NFT"),
+          Cl.stringAscii("Testing event emission"),
+          Cl.stringAscii("event.png")
+        ],
+        deployer
+      );
+      expect(mintResult.result).toBeOk(Cl.uint(0));
+
+      // Check mint event was emitted
+      expect(mintResult.events).toHaveLength(1);
+      expect(mintResult.events[0].event).toBe("print");
+
+      // Transfer token
+      const transferResult = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(transferResult.result).toBeOk(Cl.bool(true));
+
+      // Check transfer event was emitted
+      expect(transferResult.events).toHaveLength(1);
+      expect(transferResult.events[0].event).toBe("print");
+    });
+
+    it("should emit approval events correctly", () => {
+      // Mint token to Alice
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Approval Event NFT"),
+          Cl.stringAscii("Testing approval events"),
+          Cl.stringAscii("approval.png")
+        ],
+        deployer
+      );
+
+      // Approve Bob
+      const approveResult = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+      expect(approveResult.result).toBeOk(Cl.bool(true));
+
+      // Check approval event was emitted
+      expect(approveResult.events).toHaveLength(1);
+      expect(approveResult.events[0].event).toBe("print");
+    });
+
+    it("should emit approval-for-all events correctly", () => {
+      const approvalResult = simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(bob), Cl.bool(true)],
+        alice
+      );
+      expect(approvalResult.result).toBeOk(Cl.bool(true));
+
+      // Check approval-for-all event was emitted
+      expect(approvalResult.events).toHaveLength(1);
+      expect(approvalResult.events[0].event).toBe("print");
+    });
+
+    it("should maintain consistent state across operations", () => {
+      const initialSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(initialSupply.result).toBeOk(Cl.uint(0));
+
+      // Mint 3 tokens
+      for (let i = 0; i < 3; i++) {
+        simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(alice),
+            Cl.stringAscii(`Consistency NFT ${i}`),
+            Cl.stringAscii(`Testing consistency ${i}`),
+            Cl.stringAscii(`consistency${i}.png`)
+          ],
+          deployer
+        );
+      }
+
+      // Check supply increased correctly
+      const afterMintSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(afterMintSupply.result).toBeOk(Cl.uint(3));
+
+      // Transfer one token
+      simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+
+      // Supply should remain the same after transfer
+      const afterTransferSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(afterTransferSupply.result).toBeOk(Cl.uint(3));
+
+      // Burn one token
+      simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(1)],
+        alice
+      );
+
+      // Supply should remain the same (counter doesn't decrease)
+      const afterBurnSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(afterBurnSupply.result).toBeOk(Cl.uint(3));
+
+      // But token should not exist
+      const tokenExists = simnet.callReadOnlyFn(
+        "nft-token",
+        "token-exists",
+        [Cl.uint(1)],
+        deployer
+      );
+      expect(tokenExists.result).toBeBool(false);
+    });
+
+    it("should handle state transitions correctly", () => {
+      // Mint token
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("State Transition NFT"),
+          Cl.stringAscii("Testing state transitions"),
+          Cl.stringAscii("state.png")
+        ],
+        deployer
+      );
+
+      // Initial state: Alice owns, no approvals
+      let owner = simnet.callReadOnlyFn("nft-token", "get-owner", [Cl.uint(0)], deployer);
+      let approved = simnet.callReadOnlyFn("nft-token", "get-approved", [Cl.uint(0)], deployer);
+      expect(owner.result).toBeOk(Cl.some(Cl.principal(alice)));
+      expect(approved.result).toBeOk(Cl.none());
+
+      // State transition: Add approval
+      simnet.callPublicFn("nft-token", "approve", [Cl.principal(bob), Cl.uint(0)], alice);
+      
+      approved = simnet.callReadOnlyFn("nft-token", "get-approved", [Cl.uint(0)], deployer);
+      expect(approved.result).toBeOk(Cl.some(Cl.principal(bob)));
+
+      // State transition: Transfer (should clear approval)
+      simnet.callPublicFn("nft-token", "transfer-from", [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)], bob);
+      
+      owner = simnet.callReadOnlyFn("nft-token", "get-owner", [Cl.uint(0)], deployer);
+      approved = simnet.callReadOnlyFn("nft-token", "get-approved", [Cl.uint(0)], deployer);
+      expect(owner.result).toBeOk(Cl.some(Cl.principal(charlie)));
+      expect(approved.result).toBeOk(Cl.none());
+
+      // State transition: Burn (should clear all data)
+      simnet.callPublicFn("nft-token", "burn", [Cl.uint(0)], charlie);
+      
+      owner = simnet.callReadOnlyFn("nft-token", "get-owner", [Cl.uint(0)], deployer);
+      const metadata = simnet.callReadOnlyFn("nft-token", "get-token-metadata", [Cl.uint(0)], deployer);
+      expect(owner.result).toBeOk(Cl.none());
+      expect(metadata.result).toBeOk(Cl.none());
+    });
+  });
+
   describe("Burn Functionality", () => {
     beforeEach(() => {
       // Mint a token to Alice for burn tests
