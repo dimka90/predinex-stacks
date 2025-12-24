@@ -387,6 +387,167 @@ describe("NFT Token Contract", () => {
     });
   });
 
+  describe("Safe Transfer Functionality", () => {
+    beforeEach(() => {
+      // Mint a token to Alice for safe transfer tests
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Test NFT"),
+          Cl.stringAscii("A test NFT for the collection"),
+          Cl.stringAscii("https://example.com/image1.png")
+        ],
+        deployer
+      );
+    });
+
+    it("should safe transfer with data successfully", () => {
+      const testData = new TextEncoder().encode("test data");
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "safe-transfer-from",
+        [
+          Cl.uint(0),
+          Cl.principal(alice),
+          Cl.principal(bob),
+          Cl.buffer(testData)
+        ],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check new owner
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(bob)));
+    });
+
+    it("should safe transfer with approval", () => {
+      // First approve Bob
+      simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+
+      const testData = new TextEncoder().encode("approved transfer");
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "safe-transfer-from",
+        [
+          Cl.uint(0),
+          Cl.principal(alice),
+          Cl.principal(charlie),
+          Cl.buffer(testData)
+        ],
+        bob
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check new owner
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(charlie)));
+    });
+
+    it("should fail safe transfer without authorization", () => {
+      const testData = new TextEncoder().encode("unauthorized");
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "safe-transfer-from",
+        [
+          Cl.uint(0),
+          Cl.principal(alice),
+          Cl.principal(bob),
+          Cl.buffer(testData)
+        ],
+        bob // Bob trying to transfer without approval
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+  });
+
+  describe("Token Existence and Balance", () => {
+    it("should check token existence correctly", () => {
+      // Check non-existent token
+      const nonExistentResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "token-exists",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(nonExistentResult.result).toBeBool(false);
+
+      // Mint a token
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Test NFT"),
+          Cl.stringAscii("A test NFT for the collection"),
+          Cl.stringAscii("https://example.com/image1.png")
+        ],
+        deployer
+      );
+
+      // Check existing token
+      const existentResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "token-exists",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(existentResult.result).toBeBool(true);
+    });
+
+    it("should return correct balance for owner", () => {
+      // Initial balance should be 0
+      const initialBalance = simnet.callReadOnlyFn(
+        "nft-token",
+        "balance-of",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(initialBalance.result).toBeOk(Cl.tuple({ owner: Cl.principal(alice), count: Cl.uint(0) }));
+
+      // Mint multiple tokens to Alice
+      for (let i = 0; i < 3; i++) {
+        simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(alice),
+            Cl.stringAscii(`NFT ${i}`),
+            Cl.stringAscii(`Description ${i}`),
+            Cl.stringAscii(`image${i}.png`)
+          ],
+          deployer
+        );
+      }
+
+      // Check balance after minting
+      const finalBalance = simnet.callReadOnlyFn(
+        "nft-token",
+        "balance-of",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(finalBalance.result).toBeOk(Cl.tuple({ owner: Cl.principal(alice), count: Cl.uint(3) }));
+    });
+  });
+
   describe("Burn Functionality", () => {
     beforeEach(() => {
       // Mint a token to Alice for burn tests
