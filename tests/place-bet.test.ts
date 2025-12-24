@@ -96,9 +96,9 @@ describe("place-bet functionality", () => {
         simnet.callPublicFn("predinex-pool", "create-pool",
             [Cl.stringAscii("Min"), Cl.stringAscii("Desc"), Cl.stringAscii("A"), Cl.stringAscii("B"), Cl.uint(100)], deployer);
 
-        // MIN-BET-AMOUNT is u1000000
+        // MIN-BET-AMOUNT is u10000 (0.01 STX)
         const bet = simnet.callPublicFn("predinex-pool", "place-bet-validated",
-            [Cl.uint(0), Cl.uint(0), Cl.uint(999999)], wallet1);
+            [Cl.uint(0), Cl.uint(0), Cl.uint(9999)], wallet1);
         expect(bet.result).toBeErr(Cl.uint(400)); // ERR-INVALID-AMOUNT
     });
 });

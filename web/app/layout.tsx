@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
+import { WalletConnectProvider } from "./context/WalletConnectContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 export const metadata: Metadata = {
@@ -17,9 +18,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <ErrorBoundary>
-          <StacksProvider>
-            {children}
-          </StacksProvider>
+          <WalletConnectProvider>
+            <StacksProvider>
+              {children}
+            </StacksProvider>
+          </WalletConnectProvider>
         </ErrorBoundary>
       </body>
     </html>

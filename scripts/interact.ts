@@ -3,75 +3,66 @@ import {
     broadcastTransaction,
     AnchorMode,
     uintCV,
-    stringAsciiCV
+    stringAsciiCV,
+    getNonce
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import fetch from 'node-fetch';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
-const NETWORK_ENV = process.env.STACKS_NETWORK || 'testnet';
+const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
 const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
-const CONTRACT_NAME = process.env.LATEST_CONTRACT_NAME || 'predinex-pool-1765876691340';
+const CONTRACT_NAME = process.env.LATEST_CONTRACT_NAME || 'predinex-pool-1766043971498';
 
 if (!PRIVATE_KEY) {
-    console.error("Error: DEPLOYER_KEY environment variable is required.");
+    console.error("Error: PRIVATE_KEY environment variable is required.");
     process.exit(1);
+}
+
+// Get current nonce from API
+async function getCurrentNonce(address: string, network: any): Promise<number> {
+    try {
+        const apiUrl = network.coreApiUrl || 'https://api.mainnet.hiro.so';
+        const response = await fetch(`${apiUrl}/v2/accounts/${address}?proof=0`);
+        const data: any = await response.json();
+        return data.nonce || 0;
+    } catch (error) {
+        console.error('Error fetching nonce:', error);
+        return 0;
+    }
 }
 
 async function runInteractions() {
     const network = NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
     console.log(`Running interactions on ${NETWORK_ENV}...`);
+    console.log(`Sending 50 transactions with proper nonce management...`);
 
-    // 1. Get current nonce from the network for the sender
-    // We need to derive the sender address from the private key, but for now 
-    // relying on the API to tell us the next nonce for the address associated with the key is safer 
-    // if we had the address. 
-    // However, makeContractCall can fetch it efficiently if we don't pass it.
-    // BUT, to fire 20 txs in a row, we MUST manage nonce locally.
+    const TOTAL_TXS = 50; // Reduced to 50 to save STX
+    const LOW_FEE = 150000; // 0.0015 STX per tx = 0.075 STX for 50 txs
+    const DELAY_MS = 3000; // 3 second delay between transactions
 
-    // We'll use a fetch to get the nonce first.
-    // We need the sender address. 
-    // Since we don't want to import c32check or big deps just for that, 
-    // we can do a "dry run" or just let the first one fetch it, then increment.
-    // Actually, @stacks/transactions getAddressFromPrivateKey is available? 
-    // Let's assume we can get it or just make one call and read the nonce property? 
-    // No, easiest is to get it from the API.
+    let currentNonce = await getCurrentNonce(CONTRACT_ADDRESS, network);
+    console.log(`Starting nonce: ${currentNonce}\n`);
 
-    // Let's assume the user puts their address in env or we just let properly sequential await.
-    // User said "like 20 times", assuming they want it fast? Or just done.
-    // If we await each broadcast, it's fast enough (submission is fast).
-    // The nonce problem: if the first tx is in mempool, the second one might need nonce+1.
-    // The library defaults to fetching "confirmed" nonce? Or "possible next" nonce?
-    // Usually it fetches from node. Node tracks mempool.
-    // So sequential await might work if node updates mempool state quickly.
-    // Let's try sequential await first.
+    let successCount = 0;
+    let failureCount = 0;
 
-    for (let i = 0; i < 20; i++) {
-        console.log(`\n-- - Interaction ${i + 1}/20 ---`);
+    for (let i = 0; i < TOTAL_TXS; i++) {
+        console.log(`\n--- Tx ${i + 1}/${TOTAL_TXS} (Nonce: ${currentNonce}) ---`);
 
-        // We will place a bet on pool 0.
-        // If pool 0 doesn't exist, this fails. 
-        // Ideally we'd ensure pool exists. 
-        // Let's try to create a pool first on iteration 0?
-        // User asked to interact with contract.
-
-        // Changing strategy: 
-        // Iteration 0: Create Pool (if i==0)
-        // Iteration 1-19: Place Bet
-
-        const functionName = i === 0 ? 'create-pool' : 'place-bet';
-        const functionArgs = i === 0
+        // Alternate between create-pool and register-user
+        const functionName = i % 2 === 0 ? 'create-pool' : 'register-user';
+        
+        const functionArgs = functionName === 'create-pool'
             ? [
-                stringAsciiCV("Bitcoin to 100k"),
-                stringAsciiCV("Will BTC hit 100k by EOY?"),
+                stringAsciiCV(`Pool ${i}`),
+                stringAsciiCV(`Test pool ${i}`),
                 stringAsciiCV("Yes"),
                 stringAsciiCV("No"),
-                uintCV(1000) // duration in blocks
+                uintCV(1000)
             ]
-            : [
-                uintCV(0), // pool-id
-                uintCV(i % 2), // random outcome 0 or 1
-                uintCV(1000000) // amount
-            ];
+            : [];
 
         const txOptions = {
             contractAddress: CONTRACT_ADDRESS,
@@ -81,32 +72,49 @@ async function runInteractions() {
             senderKey: PRIVATE_KEY!,
             network,
             anchorMode: AnchorMode.Any,
-            fee: 100000,
-            postConditionMode: 0x01, // Allow
+            fee: LOW_FEE,
+            postConditionMode: 0x01,
+            nonce: currentNonce, // Explicitly set nonce
         };
 
         try {
-            // @ts-ignore - The types might infer nonce management automatically
             const transaction = await makeContractCall(txOptions);
-
             const broadcastResponse = await broadcastTransaction({ transaction, network });
 
             if ('error' in broadcastResponse) {
-                console.error(`Tx ${i} failed:`, broadcastResponse.error);
-                if (broadcastResponse.reason === 'BadNonce') {
-                    console.log("Retrying is needed for BadNonce...");
-                }
+                console.error(`❌ Tx ${i} failed:`, broadcastResponse.error);
+                failureCount++;
             } else {
-                console.log(`Tx ${i} submitted! ID: ${broadcastResponse.txid}`);
+                console.log(`✅ Tx ${i} submitted! ID: ${broadcastResponse.txid}`);
+                successCount++;
+                currentNonce++; // Increment nonce on success
             }
 
-            // Small delay to be nice to the API
-            await new Promise(r => setTimeout(r, 500));
+            // Wait before next transaction
+            if (i < TOTAL_TXS - 1) {
+                console.log(`⏳ Waiting ${DELAY_MS}ms before next transaction...`);
+                await new Promise(r => setTimeout(r, DELAY_MS));
+            }
 
-        } catch (err) {
-            console.error(`Tx ${i} Error:`, err);
+        } catch (err: any) {
+            console.error(`❌ Tx ${i} Error:`, err.message);
+            failureCount++;
+            
+            // If nonce error, fetch fresh nonce
+            if (err.message?.includes('nonce')) {
+                console.log('🔄 Nonce conflict detected, fetching fresh nonce...');
+                currentNonce = await getCurrentNonce(CONTRACT_ADDRESS, network);
+            }
         }
     }
+
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`✓ Completed ${TOTAL_TXS} transactions!`);
+    console.log(`✅ Successful: ${successCount}`);
+    console.log(`❌ Failed: ${failureCount}`);
+    console.log(`Success Rate: ${((successCount / TOTAL_TXS) * 100).toFixed(1)}%`);
+    console.log(`Estimated Cost: ${(LOW_FEE * successCount / 1_000_000).toFixed(4)} STX`);
+    console.log(`${'='.repeat(60)}\n`);
 }
 
-runInteractions();
+runInteractions().catch(console.error);
