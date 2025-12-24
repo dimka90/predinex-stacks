@@ -30,6 +30,8 @@ export interface WalletContextType {
 
 const WalletConnectContext = createContext<WalletContextType | undefined>(undefined);
 
+export { WalletConnectContext };
+
 export function WalletConnectProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<WalletSession | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);

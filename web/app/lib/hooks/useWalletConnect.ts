@@ -6,9 +6,9 @@
 'use client';
 
 import { useContext } from 'react';
-import { WalletConnectContext } from '@/context/WalletConnectContext';
+import { WalletConnectContext, WalletContextType } from '../context/WalletConnectContext';
 
-export function useWalletConnect() {
+export function useWalletConnect(): WalletContextType {
   const context = useContext(WalletConnectContext);
   if (!context) {
     throw new Error('useWalletConnect must be used within WalletConnectProvider');
