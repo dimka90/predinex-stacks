@@ -1051,6 +1051,172 @@ describe("NFT Token Contract", () => {
     });
   });
 
+  describe("Security and Access Control", () => {
+    it("should prevent unauthorized minting", () => {
+      const unauthorizedUsers = [alice, bob, charlie];
+      
+      for (const user of unauthorizedUsers) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(alice),
+            Cl.stringAscii("Unauthorized NFT"),
+            Cl.stringAscii("Should not be minted"),
+            Cl.stringAscii("unauthorized.png")
+          ],
+          user
+        );
+        expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+      }
+
+      // Verify no tokens were minted
+      const totalSupply = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-total-supply",
+        [],
+        deployer
+      );
+      expect(totalSupply.result).toBeOk(Cl.uint(0));
+    });
+
+    it("should prevent unauthorized contract URI updates", () => {
+      const unauthorizedUsers = [alice, bob, charlie];
+      const maliciousUri = "https://malicious.com/fake-contract";
+      
+      for (const user of unauthorizedUsers) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "set-contract-uri",
+          [Cl.stringAscii(maliciousUri)],
+          user
+        );
+        expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+      }
+
+      // Verify URI remains unchanged
+      const uriResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-contract-uri",
+        [],
+        deployer
+      );
+      expect(uriResult.result).toBeOk(Cl.stringAscii("https://predinex.com/contract"));
+    });
+
+    it("should prevent unauthorized batch minting", () => {
+      const recipients = [alice, bob];
+      const names = ["Hack 1", "Hack 2"];
+      const descriptions = ["Hacked NFT 1", "Hacked NFT 2"];
+      const images = ["hack1.png", "hack2.png"];
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        alice // Non-owner attempting batch mint
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should enforce ownership for transfers", () => {
+      // Mint token to Alice
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Ownership Test NFT"),
+          Cl.stringAscii("Testing ownership enforcement"),
+          Cl.stringAscii("ownership.png")
+        ],
+        deployer
+      );
+
+      // Bob tries to transfer Alice's token without approval
+      const unauthorizedTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        bob
+      );
+      expect(unauthorizedTransfer.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+
+      // Charlie tries to transfer Alice's token claiming to be Alice
+      const spoofedTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        charlie
+      );
+      expect(spoofedTransfer.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+
+      // Verify Alice still owns the token
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(alice)));
+    });
+
+    it("should prevent double-spending through approval manipulation", () => {
+      // Mint token to Alice
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Double Spend Test"),
+          Cl.stringAscii("Testing double spend prevention"),
+          Cl.stringAscii("doublespend.png")
+        ],
+        deployer
+      );
+
+      // Alice approves Bob
+      simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+
+      // Bob transfers to Charlie
+      const firstTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        bob
+      );
+      expect(firstTransfer.result).toBeOk(Cl.bool(true));
+
+      // Bob tries to transfer again (should fail - approval cleared)
+      const secondTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(charlie), Cl.principal(bob)],
+        bob
+      );
+      expect(secondTransfer.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+
+      // Verify Charlie owns the token
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(charlie)));
+    });
+  });
+
   describe("Burn Functionality", () => {
     beforeEach(() => {
       // Mint a token to Alice for burn tests
