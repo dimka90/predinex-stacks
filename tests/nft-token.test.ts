@@ -726,6 +726,179 @@ describe("NFT Token Contract", () => {
     });
   });
 
+  describe("Integration Tests", () => {
+    it("should handle complete NFT lifecycle", () => {
+      // 1. Mint NFT
+      const mintResult = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Lifecycle NFT"),
+          Cl.stringAscii("Testing complete lifecycle"),
+          Cl.stringAscii("lifecycle.png")
+        ],
+        deployer
+      );
+      expect(mintResult.result).toBeOk(Cl.uint(0));
+
+      // 2. Approve Bob
+      const approveResult = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(0)],
+        alice
+      );
+      expect(approveResult.result).toBeOk(Cl.bool(true));
+
+      // 3. Bob transfers to Charlie
+      const transferResult = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        bob
+      );
+      expect(transferResult.result).toBeOk(Cl.bool(true));
+
+      // 4. Charlie burns the NFT
+      const burnResult = simnet.callPublicFn(
+        "nft-token",
+        "burn",
+        [Cl.uint(0)],
+        charlie
+      );
+      expect(burnResult.result).toBeOk(Cl.bool(true));
+
+      // 5. Verify NFT no longer exists
+      const existsResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "token-exists",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(existsResult.result).toBeBool(false);
+    });
+
+    it("should handle multiple NFT operations", () => {
+      // Mint multiple NFTs to different owners
+      const recipients = [alice, bob, charlie];
+      const tokenIds: number[] = [];
+
+      for (let i = 0; i < recipients.length; i++) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(recipients[i]),
+            Cl.stringAscii(`Multi NFT ${i}`),
+            Cl.stringAscii(`Description ${i}`),
+            Cl.stringAscii(`image${i}.png`)
+          ],
+          deployer
+        );
+        expect(result.result).toBeOk(Cl.uint(i));
+        tokenIds.push(i);
+      }
+
+      // Set up cross-approvals
+      simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(bob), Cl.bool(true)],
+        alice
+      );
+
+      simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(charlie), Cl.uint(1)],
+        bob
+      );
+
+      // Execute transfers
+      const transfer1 = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        bob
+      );
+      expect(transfer1.result).toBeOk(Cl.bool(true));
+
+      const transfer2 = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(1), Cl.principal(bob), Cl.principal(alice)],
+        charlie
+      );
+      expect(transfer2.result).toBeOk(Cl.bool(true));
+
+      // Verify final ownership
+      const owner0 = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(owner0.result).toBeOk(Cl.some(Cl.principal(charlie)));
+
+      const owner1 = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(1)],
+        deployer
+      );
+      expect(owner1.result).toBeOk(Cl.some(Cl.principal(alice)));
+
+      const owner2 = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(2)],
+        deployer
+      );
+      expect(owner2.result).toBeOk(Cl.some(Cl.principal(charlie)));
+    });
+
+    it("should handle batch operations with mixed success", () => {
+      // Create a scenario where some operations succeed and others fail
+      const recipients = [alice, bob, charlie];
+      const names = ["Valid 1", "Valid 2", "Valid 3"];
+      const descriptions = ["Desc 1", "Desc 2", "Desc 3"];
+      const images = ["img1.png", "img2.png", "img3.png"];
+
+      // Batch mint should succeed
+      const batchResult = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(batchResult.result).toBeOk();
+
+      // Try to transfer non-existent token (should fail)
+      const invalidTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(999), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(invalidTransfer.result).toBeErr(Cl.uint(404));
+
+      // Valid transfers should still work
+      const validTransfer = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(validTransfer.result).toBeOk(Cl.bool(true));
+    });
+  });
+
   describe("Burn Functionality", () => {
     beforeEach(() => {
       // Mint a token to Alice for burn tests
