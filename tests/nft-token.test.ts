@@ -299,6 +299,92 @@ describe("NFT Token Contract", () => {
       );
       expect(approvalResult.result).toBeOk(Cl.bool(true));
     });
+
+    it("should transfer-from with approval-for-all", () => {
+      // Set approval for all
+      simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(bob), Cl.bool(true)],
+        alice
+      );
+
+      // Bob transfers from Alice to Charlie using approval-for-all
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        bob
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check new owner
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(charlie)));
+    });
+
+    it("should revoke approval for all", () => {
+      // First set approval for all
+      simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(bob), Cl.bool(true)],
+        alice
+      );
+
+      // Then revoke it
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-approval-for-all",
+        [Cl.principal(bob), Cl.bool(false)],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check approval for all is revoked
+      const approvalResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-approved-for-all-read",
+        [Cl.principal(alice), Cl.principal(bob)],
+        deployer
+      );
+      expect(approvalResult.result).toBeOk(Cl.bool(false));
+    });
+
+    it("should fail approve from non-owner", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(charlie), Cl.uint(0)],
+        bob // Bob trying to approve for Alice's token
+      );
+      expect(result.result).toBeErr(Cl.uint(403)); // ERR-NOT-OWNER
+    });
+
+    it("should fail transfer-from without approval", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "transfer-from",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(charlie)],
+        bob // Bob trying to transfer without approval
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should fail approve non-existent token", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "approve",
+        [Cl.principal(bob), Cl.uint(999)],
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+    });
   });
 
   describe("Burn Functionality", () => {
