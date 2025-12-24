@@ -19,6 +19,7 @@ epoch = 'latest'
 path = 'contracts/nft-token.clar'
 clarity_version = 2
 epoch = 'latest'
+
 [repl.analysis]
 passes = ['check_checker']
 

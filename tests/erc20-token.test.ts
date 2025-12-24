@@ -267,7 +267,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(alice)],
         deployer
       );
-      expect(aliceBalance.result).toBe(Cl.uint(mintAmount));
+      expect(aliceBalance.result).toStrictEqual(Cl.uint(mintAmount));
 
       // Check total supply increased
       const totalSupply = simnet.callReadOnlyFn(
@@ -307,7 +307,7 @@ describe("ERC20 Token Contract", () => {
         [Cl.principal(deployer)],
         deployer
       );
-      expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - burnAmount));
+      expect(deployerBalance.result).toStrictEqual(Cl.uint(1000000000000 - burnAmount));
 
       // Check total supply decreased
       const totalSupply = simnet.callReadOnlyFn(
