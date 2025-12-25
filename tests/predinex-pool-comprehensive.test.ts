@@ -263,7 +263,54 @@ describe("Predinex Pool Comprehensive Tests", () => {
                 "settle-pool",
                 [
                     Cl.uint(poolId),
-                    deployer
+                    Cl.uint(0)
+                ],
+                deployer
+            );
+            expect(resultSettled.result).toBeErr(Cl.uint(409)); // ERR-POOL-ALREADY-SETTLED
+        });
+
+        it("should allow winner to claim winnings", () => {
+            // Create pool 5
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Claim Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 5;
+
+            // Wallet 1 bets on A
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(0), Cl.uint(1000000)],
+                wallet1
+            );
+
+            // Wallet 2 bets on B
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(1), Cl.uint(1000000)],
+                wallet2
+            );
+
+            // Settle pool with Outcome A winning
+            simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(0)
+                ],
+                deployer
             );
 
             // Wallet 1 Claims
