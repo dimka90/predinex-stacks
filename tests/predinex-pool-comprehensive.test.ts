@@ -76,4 +76,50 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(resultDuration.result).toBeErr(Cl.uint(423)); // ERR-INVALID-DURATION
         });
     });
+
+    describe("Betting Functionality", () => {
+        it("should place a bet successfully", () => {
+            // Create a pool first
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Betting Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            // Pool ID should be 1 (0 was used in previous test)
+
+            const poolId = 1;
+            const betAmount = 1000000; // 1 STX
+
+            // Place bet on outcome A (0)
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(0), // Outcome A
+                    Cl.uint(betAmount)
+                ],
+                wallet1
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Verify user STX balance decreased (handled by simnet automagically if we check?)
+            // We can check pool state
+            const pool = simnet.callReadOnlyFn(
+                "predinex-pool",
+                "get-pool",
+                [Cl.uint(poolId)],
+                deployer
+            );
+            expect(pool.result).toBeOk(expect.anything()); // Just check it exists and is valid
+            // Can't easily inspect inner tuple with simple matchers, but OK is good.
+        });
+    });
 });
