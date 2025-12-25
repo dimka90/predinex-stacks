@@ -539,5 +539,45 @@ describe("Predinex Pool Comprehensive Tests", () => {
             );
             expect(resultConfig.result).toBeOk(Cl.bool(true));
         });
+
+        it("should execute automated resolution", () => {
+            const poolId = 9; // Use pool from previous test
+            // We need to submit oracle data first. 
+            // Previous test set up Wallet 2 as Oracle ID 1.
+
+            // Submit data
+            simnet.callPublicFn(
+                "predinex-pool",
+                "submit-oracle-data",
+                [
+                    Cl.uint(poolId),
+                    Cl.stringAscii("0"), // Result 0
+                    Cl.stringAscii("numeric"),
+                    Cl.uint(100)
+                ],
+                wallet2
+            );
+
+            // Mine blocks to expire (duration 100)
+            simnet.mineEmptyBlocks(101);
+
+            // Attempt resolution
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "attempt-automated-resolution",
+                [Cl.uint(poolId)],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.uint(0)); // Outcome 0
+
+            // Check pool settled
+            const pool = simnet.callReadOnlyFn(
+                "predinex-pool",
+                "get-pool",
+                [Cl.uint(poolId)],
+                deployer
+            );
+            expect(pool.result).toBeOk(expect.anything());
+        });
     });
 });
