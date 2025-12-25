@@ -263,11 +263,36 @@ describe("Predinex Pool Comprehensive Tests", () => {
                 "settle-pool",
                 [
                     Cl.uint(poolId),
-                    Cl.uint(1)
-                ],
+                    deployer
+            );
+
+            // Wallet 1 Claims
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "claim-winnings",
+                [Cl.uint(poolId)],
+                wallet1
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Verify claim status
+            const claim = simnet.callReadOnlyFn(
+                "predinex-pool",
+                "get-claim",
+                [Cl.uint(poolId), Cl.principal(wallet1)],
                 deployer
             );
-            expect(resultSettled.result).toBeErr(Cl.uint(409)); // ERR-POOL-SETTLED
+            // Contract doesn't export get-claim but map is private or public?
+            // "define-map claims" is at top level.
+            // But we can check if they can claim again (should fail)
+
+            const resultSecond = simnet.callPublicFn(
+                "predinex-pool",
+                "claim-winnings",
+                [Cl.uint(poolId)],
+                wallet1
+            );
+            expect(resultSecond.result).toBeErr(Cl.uint(410)); // ERR-ALREADY-CLAIMED
         });
     });
 });
