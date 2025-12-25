@@ -396,3 +396,52 @@ describe("Predinex Pool Comprehensive Tests", () => {
         });
     });
 });
+
+describe("Refunds", () => {
+    it("should allow refund for expired unsettled pool", () => {
+        // Create pool 7
+        simnet.callPublicFn(
+            "predinex-pool",
+            "create-pool",
+            [
+                Cl.stringAscii("Refund Pool"),
+                Cl.stringAscii("Desc"),
+                Cl.stringAscii("A"),
+                Cl.stringAscii("B"),
+                Cl.uint(10) // Short duration
+            ],
+            deployer
+        );
+        const poolId = 7;
+
+        // Bet
+        simnet.callPublicFn(
+            "predinex-pool",
+            "place-bet",
+            [Cl.uint(poolId), Cl.uint(0), Cl.uint(1000000)],
+            wallet1
+        );
+
+        // Advance blocks to expire (duration 10)
+        simnet.mineEmptyBlocks(11);
+
+        // Request Refund
+        const result = simnet.callPublicFn(
+            "predinex-pool",
+            "request-refund",
+            [Cl.uint(poolId)],
+            wallet1
+        );
+        expect(result.result).toBeOk(Cl.bool(true));
+
+        // Request again (fail)
+        const resultSecond = simnet.callPublicFn(
+            "predinex-pool",
+            "request-refund",
+            [Cl.uint(poolId)],
+            wallet1
+        );
+        expect(resultSecond.result).toBeErr(Cl.uint(410)); // ERR-ALREADY-CLAIMED
+    });
+});
+});
