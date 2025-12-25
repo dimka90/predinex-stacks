@@ -294,5 +294,58 @@ describe("Predinex Pool Comprehensive Tests", () => {
             );
             expect(resultSecond.result).toBeErr(Cl.uint(410)); // ERR-ALREADY-CLAIMED
         });
+
+        it("should fail validation for claim-winnings", () => {
+            // Create pool 6
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Claim Fail Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 6;
+
+            // Wallet 1 bets on A (Winner)
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(0), Cl.uint(1000000)],
+                wallet1
+            );
+
+            // Wallet 2 bets on B (Loser)
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(1), Cl.uint(1000000)],
+                wallet2
+            );
+
+            // Settle on A
+            simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [Cl.uint(poolId), Cl.uint(0)],
+                deployer
+            );
+
+            // Loser tries to claim
+            const resultLoser = simnet.callPublicFn(
+                "predinex-pool",
+                "claim-winnings",
+                [Cl.uint(poolId)],
+                wallet2
+            );
+            expect(resultLoser.result).toBeErr(Cl.uint(411)); // ERR-NO-WINNINGS
+
+            // Winner claims twice (already tested in previous test but good to reiterate or skip)
+            // tested explicitly in previous it block.
+        });
     });
 });
