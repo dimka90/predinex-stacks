@@ -43,5 +43,37 @@ describe("Predinex Pool Comprehensive Tests", () => {
             // First pool should have ID 0
             expect(result).toBeOk(Cl.uint(0));
         });
+
+        it("should fail to create pool with invalid parameters", () => {
+            // Empty title
+            const resultTitle = simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii(""), // Invalid
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            expect(resultTitle.result).toBeErr(Cl.uint(420)); // ERR-INVALID-TITLE
+
+            // Zero duration
+            const resultDuration = simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Title"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(0) // Invalid
+                ],
+                deployer
+            );
+            expect(resultDuration.result).toBeErr(Cl.uint(423)); // ERR-INVALID-DURATION
+        });
     });
 });
