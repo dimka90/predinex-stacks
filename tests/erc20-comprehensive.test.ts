@@ -238,6 +238,36 @@ describe("ERC20 Comprehensive Tests", () => {
             );
             expect(remainingAllowance.result).toBe(Cl.uint(approveAmount - transferAmount));
         });
+
+        it("should revoke allowance (approve 0)", () => {
+            const approveAmount = 5000000;
+
+            // Approve first
+            simnet.callPublicFn(
+                "erc20-token",
+                "approve",
+                [Cl.principal(bob), Cl.uint(approveAmount)],
+                alice
+            );
+
+            // Set allowance to 0
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "approve",
+                [Cl.principal(bob), Cl.uint(0)],
+                alice
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check allowance is 0
+            const allowance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-allowance",
+                [Cl.principal(alice), Cl.principal(bob)],
+                deployer
+            );
+            expect(allowance.result).toBe(Cl.uint(0));
+        });
     });
 
     describe("Mint and Burn", () => {
