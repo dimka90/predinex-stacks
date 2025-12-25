@@ -29,4 +29,46 @@ describe("ERC20 Comprehensive Tests", () => {
         expect(alice).toBeDefined();
         expect(bob).toBeDefined();
     });
+
+    describe("Token Metadata", () => {
+        it("should return correct token name", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-name",
+                [],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.stringAscii("PredinexToken"));
+        });
+
+        it("should return correct token symbol", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-symbol",
+                [],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.stringAscii("PDX"));
+        });
+
+        it("should return correct decimals", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-decimals",
+                [],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.uint(6));
+        });
+
+        it("should return correct token URI", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-token-uri",
+                [],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.some(Cl.stringAscii("https://predinex.com/token")));
+        });
+    });
 });
