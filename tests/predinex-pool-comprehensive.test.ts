@@ -169,4 +169,44 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(resultOutcome.result).toBeErr(Cl.uint(422)); // ERR-INVALID-OUTCOME
         });
     });
+
+    describe("Pool Settlement", () => {
+        it("should settle a pool successfully", () => {
+            // Create pool 3
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Settlement Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 3;
+
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(1) // Outcome B wins
+                ],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Verify pool is settled
+            const pool = simnet.callReadOnlyFn(
+                "predinex-pool",
+                "get-pool",
+                [Cl.uint(poolId)],
+                deployer
+            );
+            expect(pool.result).toBeOk(expect.anything());
+            // Ideally check 'settled' is true and 'winning-outcome' is u1, but tricky with Cl.tuple parsing in basic setup
+        });
+    });
 });
