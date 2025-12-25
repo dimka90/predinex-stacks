@@ -156,4 +156,67 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(result.result).toBeErr(Cl.uint(404)); // ERR-INVALID-RECIPIENT
         });
     });
+
+    describe("Approval and Transfer-From", () => {
+        beforeEach(() => {
+            // Transfer some tokens to Alice first
+            simnet.callPublicFn(
+                "erc20-token",
+                "transfer",
+                [Cl.uint(10000000), Cl.principal(alice)], // 10 tokens
+                deployer
+            );
+        });
+
+        it("should approve spender successfully", () => {
+            const approveAmount = 5000000; // 5 tokens
+
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "approve",
+                [Cl.principal(bob), Cl.uint(approveAmount)],
+                alice
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check allowance
+            const allowance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-allowance",
+                [Cl.principal(alice), Cl.principal(bob)],
+                deployer
+            );
+            expect(allowance.result).toBe(Cl.uint(approveAmount));
+        });
+
+        it("should transfer-from with valid allowance", () => {
+            const approveAmount = 5000000;
+            const transferAmount = 3000000;
+
+            // Approve Bob
+            simnet.callPublicFn(
+                "erc20-token",
+                "approve",
+                [Cl.principal(bob), Cl.uint(approveAmount)],
+                alice
+            );
+
+            // Bob transfers from Alice
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "transfer-from",
+                [Cl.principal(alice), Cl.principal(bob), Cl.uint(transferAmount)],
+                bob
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            const remainingAllowance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-allowance",
+                [Cl.principal(alice), Cl.principal(bob)],
+                deployer
+            );
+            expect(remainingAllowance.result).toBe(Cl.uint(approveAmount - transferAmount));
+        });
+    });
 });
