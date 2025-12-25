@@ -18,4 +18,30 @@ describe("Predinex Pool Comprehensive Tests", () => {
         expect(wallet1).toBeDefined();
         expect(wallet2).toBeDefined();
     });
+
+    describe("Pool Creation", () => {
+        it("should create a pool successfully", () => {
+            const title = "Bitcoin vs Ethereum";
+            const description = "Will Bitcoin outperform Ethereum?";
+            const outcomeA = "Bitcoin";
+            const outcomeB = "Ethereum";
+            const duration = 100;
+
+            const { result } = simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii(title),
+                    Cl.stringAscii(description),
+                    Cl.stringAscii(outcomeA),
+                    Cl.stringAscii(outcomeB),
+                    Cl.uint(duration)
+                ],
+                deployer
+            );
+
+            // First pool should have ID 0
+            expect(result).toBeOk(Cl.uint(0));
+        });
+    });
 });
