@@ -121,5 +121,52 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(pool.result).toBeOk(expect.anything()); // Just check it exists and is valid
             // Can't easily inspect inner tuple with simple matchers, but OK is good.
         });
+
+        it("should fail to bet with invalid parameters", () => {
+            // Create a pool for error testing
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Error Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            // Pool ID should be 2 assuming sequential execution
+            // But to be safe, let's just bet on pool 1 which exists from previous test (if state persists)
+            // or pool 2 if we created it. Simnet state persists in Vitest with isolate: false.
+            // Let's explicitly use pool 2.
+            const poolId = 2;
+
+            // Invalid Amount (below minimum)
+            const resultAmount = simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(0),
+                    Cl.uint(10) // Too small
+                ],
+                wallet1
+            );
+            expect(resultAmount.result).toBeErr(Cl.uint(400)); // ERR-INVALID-AMOUNT
+
+            // Invalid Outcome (not 0 or 1)
+            const resultOutcome = simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(2), // Invalid
+                    Cl.uint(1000000)
+                ],
+                wallet1
+            );
+            expect(resultOutcome.result).toBeErr(Cl.uint(422)); // ERR-INVALID-OUTCOME
+        });
     });
 });
