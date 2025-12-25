@@ -219,4 +219,37 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(remainingAllowance.result).toBe(Cl.uint(approveAmount - transferAmount));
         });
     });
+
+    describe("Mint and Burn", () => {
+        it("should mint tokens successfully (owner only)", () => {
+            const mintAmount = 5000000; // 5 tokens
+
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "mint",
+                [Cl.uint(mintAmount), Cl.principal(alice)],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check Alice's balance
+            const aliceBalance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(alice)],
+                deployer
+            );
+            expect(aliceBalance.result).toBe(Cl.uint(mintAmount)); // Alice starts with 0 in this test due to isolation
+        });
+
+        it("should fail mint from non-owner", () => {
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "mint",
+                [Cl.uint(5000000), Cl.principal(alice)],
+                alice
+            );
+            expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+        });
+    });
 });
