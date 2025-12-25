@@ -136,6 +136,26 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(aliceBalance.result).toBe(Cl.uint(transferAmount));
         });
 
+        it("should transfer full balance successfully", () => {
+            const fullBalance = 1000000000000;
+
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "transfer",
+                [Cl.uint(fullBalance), Cl.principal(alice)],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            const deployerBalance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(deployer)],
+                deployer
+            );
+            expect(deployerBalance.result).toBe(Cl.uint(0));
+        });
+
         it("should fail when transferring more than balance", () => {
             const result = simnet.callPublicFn(
                 "erc20-token",
