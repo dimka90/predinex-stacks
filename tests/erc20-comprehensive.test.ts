@@ -83,4 +83,27 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(result.result).toBeOk(Cl.uint(1000000000000));
         });
     });
+
+    describe("Balance Management", () => {
+        it("should show deployer has initial supply", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(deployer)],
+                deployer
+            );
+            expect(result.result).toBe(Cl.uint(1000000000000));
+        });
+
+        it("should show zero balance for new accounts", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(alice)],
+                deployer
+            );
+            expect(result.result).toBe(Cl.uint(0));
+        });
+    });
 });
+```
