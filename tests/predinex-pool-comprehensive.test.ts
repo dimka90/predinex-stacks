@@ -208,5 +208,66 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(pool.result).toBeOk(expect.anything());
             // Ideally check 'settled' is true and 'winning-outcome' is u1, but tricky with Cl.tuple parsing in basic setup
         });
+
+        it("should fail to settle with invalid parameters", () => {
+            // Create a pool for error testing
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Settlement Error Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 4;
+
+            // Unauthorized (Wallet 1 tries to settle)
+            const resultUnauthorized = simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(0)
+                ],
+                wallet1
+            );
+            expect(resultUnauthorized.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+
+            // Invalid Outcome (u2)
+            const resultOutcome = simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(2)
+                ],
+                deployer
+            );
+            expect(resultOutcome.result).toBeErr(Cl.uint(422)); // ERR-INVALID-OUTCOME
+
+            // Settle correctly first
+            simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [Cl.uint(poolId), Cl.uint(0)],
+                deployer
+            );
+
+            // Already Settled
+            const resultSettled = simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [
+                    Cl.uint(poolId),
+                    Cl.uint(1)
+                ],
+                deployer
+            );
+            expect(resultSettled.result).toBeErr(Cl.uint(409)); // ERR-POOL-SETTLED
+        });
     });
 });
