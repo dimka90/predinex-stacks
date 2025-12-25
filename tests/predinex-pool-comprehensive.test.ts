@@ -580,4 +580,24 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(pool.result).toBeOk(expect.anything());
         });
     });
+
+    describe("Dispute System", () => {
+        it("should create a dispute for automated pool", () => {
+            const poolId = 9; // Pool 9 was settled in previous test
+
+            // Wallet 1 creates dispute
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "create-dispute",
+                [
+                    Cl.uint(poolId),
+                    Cl.stringAscii("Oracle result was wrong"),
+                    Cl.none() // evidence hash
+                ],
+                wallet1
+            );
+            // Expected OK (u0) - first dispute
+            expect(result.result).toBeOk(Cl.uint(0));
+        });
+    });
 });
