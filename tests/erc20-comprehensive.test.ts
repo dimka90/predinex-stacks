@@ -262,11 +262,40 @@ describe("ERC20 Comprehensive Tests", () => {
             // Check allowance is 0
             const allowance = simnet.callReadOnlyFn(
                 "erc20-token",
+                expect(allowance.result).toBe(Cl.uint(0));
+        });
+    });
+
+    describe("Allowance Helpers", () => {
+        it("should increase allowance successfully", () => {
+            const initialAllowance = 1000000;
+            const increaseAmount = 2000000;
+
+            // Initial approval
+            simnet.callPublicFn(
+                "erc20-token",
+                "approve",
+                [Cl.principal(bob), Cl.uint(initialAllowance)],
+                alice
+            );
+
+            // Increase allowance
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "increase-allowance",
+                [Cl.principal(bob), Cl.uint(increaseAmount)],
+                alice
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check new allowance
+            const allowance = simnet.callReadOnlyFn(
+                "erc20-token",
                 "get-allowance",
                 [Cl.principal(alice), Cl.principal(bob)],
                 deployer
             );
-            expect(allowance.result).toBe(Cl.uint(0));
+            expect(allowance.result).toBe(Cl.uint(initialAllowance + increaseAmount));
         });
     });
 
