@@ -105,5 +105,35 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(result.result).toBe(Cl.uint(0));
         });
     });
+
+    describe("Transfer Functionality", () => {
+        it("should transfer tokens successfully", () => {
+            const transferAmount = 1000000; // 1 token
+
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "transfer",
+                [Cl.uint(transferAmount), Cl.principal(alice)],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check balances after transfer
+            const deployerBalance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(deployer)],
+                deployer
+            );
+            expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - transferAmount));
+
+            const aliceBalance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(alice)],
+                deployer
+            );
+            expect(aliceBalance.result).toBe(Cl.uint(transferAmount));
+        });
+    });
 });
-```
