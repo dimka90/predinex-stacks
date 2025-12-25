@@ -239,7 +239,7 @@ describe("ERC20 Comprehensive Tests", () => {
                 [Cl.principal(alice)],
                 deployer
             );
-            expect(aliceBalance.result).toBe(Cl.uint(mintAmount)); // Alice starts with 0 in this test due to isolation
+            expect(aliceBalance.result).toBe(Cl.uint(mintAmount));
         });
 
         it("should fail mint from non-owner", () => {
