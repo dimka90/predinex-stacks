@@ -135,5 +135,15 @@ describe("ERC20 Comprehensive Tests", () => {
             );
             expect(aliceBalance.result).toBe(Cl.uint(transferAmount));
         });
+
+        it("should fail when transferring more than balance", () => {
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "transfer",
+                [Cl.uint(2000000000000), Cl.principal(alice)], // More than total supply
+                deployer
+            );
+            expect(result.result).toBeErr(Cl.uint(402)); // ERR-INSUFFICIENT-BALANCE
+        });
     });
 });
