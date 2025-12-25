@@ -251,5 +251,45 @@ describe("ERC20 Comprehensive Tests", () => {
             );
             expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
         });
+
+        it("should burn tokens successfully", () => {
+            const burnAmount = 1000000; // 1 token
+
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "burn",
+                [Cl.uint(burnAmount)],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
+
+            // Check deployer's balance decreased
+            const deployerBalance = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-balance",
+                [Cl.principal(deployer)],
+                deployer
+            );
+            expect(deployerBalance.result).toBe(Cl.uint(1000000000000 - burnAmount));
+
+            // Check total supply decreased
+            const totalSupply = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-total-supply",
+                [],
+                deployer
+            );
+            expect(totalSupply.result).toBeOk(Cl.uint(1000000000000 - burnAmount));
+        });
+
+        it("should fail burn with insufficient balance", () => {
+            const result = simnet.callPublicFn(
+                "erc20-token",
+                "burn",
+                [Cl.uint(1000000)], // Alice has no tokens initially
+                alice
+            );
+            expect(result.result).toBeErr(Cl.uint(402)); // ERR-INSUFFICIENT-BALANCE
+        });
     });
 });
