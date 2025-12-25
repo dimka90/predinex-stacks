@@ -71,4 +71,16 @@ describe("ERC20 Comprehensive Tests", () => {
             expect(result.result).toBeOk(Cl.some(Cl.stringAscii("https://predinex.com/token")));
         });
     });
+
+    describe("Total Supply", () => {
+        it("should return correct total supply", () => {
+            const result = simnet.callReadOnlyFn(
+                "erc20-token",
+                "get-total-supply",
+                [],
+                deployer
+            );
+            expect(result.result).toBeOk(Cl.uint(1000000000000));
+        });
+    });
 });
