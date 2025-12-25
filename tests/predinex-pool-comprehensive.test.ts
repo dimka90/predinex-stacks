@@ -488,4 +488,56 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(resultSubmit.result).toBeOk(expect.anything());
         });
     });
+
+    describe("Automated Resolution", () => {
+        it("should configure automated resolution", () => {
+            // Create Pool 9
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Auto Res Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 9;
+
+            // Configure resolution
+            // Need to know a valid oracle provider ID. If we ran previous tests sequentially, ID 0 is wallet1.
+            // But state might not persist across describe blocks if simnet resets (depends on isolation). 
+            // Previous tests showed simnet persists. 
+            // WE MUST ENSURE ORACLE PROVIDER EXISTS.
+            // Register wallet1 again? Or check if registered.
+            // Actually, if we create a NEW provider it will get ID 1.
+            // Let's safe-guard: Register wallet2 as oracle for this test (ID 1).
+
+            simnet.callPublicFn(
+                "predinex-pool",
+                "register-oracle-provider",
+                [Cl.principal(wallet2), Cl.list([Cl.stringAscii("numeric")])],
+                deployer
+            );
+            // Oracle ID for wallet2 should be next available (e.g. 1)
+
+            const resultConfig = simnet.callPublicFn(
+                "predinex-pool",
+                "configure-pool-resolution",
+                [
+                    Cl.uint(poolId),
+                    Cl.list([Cl.uint(1)]), // Oracle sources (ID 1 - wallet2)
+                    Cl.stringAscii("criteria"),
+                    Cl.stringAscii("numeric"),
+                    Cl.some(Cl.uint(100)), // Threshold
+                    Cl.stringAscii("AND"),
+                    Cl.uint(3) // Retries
+                ],
+                deployer
+            );
+            expect(resultConfig.result).toBeOk(Cl.bool(true));
+        });
+    });
 });
