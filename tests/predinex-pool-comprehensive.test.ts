@@ -395,53 +395,97 @@ describe("Predinex Pool Comprehensive Tests", () => {
             // tested explicitly in previous it block.
         });
     });
-});
 
-describe("Refunds", () => {
-    it("should allow refund for expired unsettled pool", () => {
-        // Create pool 7
-        simnet.callPublicFn(
-            "predinex-pool",
-            "create-pool",
-            [
-                Cl.stringAscii("Refund Pool"),
-                Cl.stringAscii("Desc"),
-                Cl.stringAscii("A"),
-                Cl.stringAscii("B"),
-                Cl.uint(10) // Short duration
-            ],
-            deployer
-        );
-        const poolId = 7;
+    describe("Refunds", () => {
+        it("should allow refund for expired unsettled pool", () => {
+            // Create pool 7
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Refund Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(10) // Short duration
+                ],
+                deployer
+            );
+            const poolId = 7;
 
-        // Bet
-        simnet.callPublicFn(
-            "predinex-pool",
-            "place-bet",
-            [Cl.uint(poolId), Cl.uint(0), Cl.uint(1000000)],
-            wallet1
-        );
+            // Bet
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(0), Cl.uint(1000000)],
+                wallet1
+            );
 
-        // Advance blocks to expire (duration 10)
-        simnet.mineEmptyBlocks(11);
+            // Advance blocks to expire (duration 10)
+            simnet.mineEmptyBlocks(11);
 
-        // Request Refund
-        const result = simnet.callPublicFn(
-            "predinex-pool",
-            "request-refund",
-            [Cl.uint(poolId)],
-            wallet1
-        );
-        expect(result.result).toBeOk(Cl.bool(true));
+            // Request Refund
+            const result = simnet.callPublicFn(
+                "predinex-pool",
+                "request-refund",
+                [Cl.uint(poolId)],
+                wallet1
+            );
+            expect(result.result).toBeOk(Cl.bool(true));
 
-        // Request again (fail)
-        const resultSecond = simnet.callPublicFn(
-            "predinex-pool",
-            "request-refund",
-            [Cl.uint(poolId)],
-            wallet1
-        );
-        expect(resultSecond.result).toBeErr(Cl.uint(410)); // ERR-ALREADY-CLAIMED
+            // Request again (fail)
+            const resultSecond = simnet.callPublicFn(
+                "predinex-pool",
+                "request-refund",
+                [Cl.uint(poolId)],
+                wallet1
+            );
+            expect(resultSecond.result).toBeErr(Cl.uint(410)); // ERR-ALREADY-CLAIMED
+        });
     });
-});
+
+    describe("Oracle System", () => {
+        it("should register oracle and submit data", () => {
+            // Register wallet_1 as oracle
+            const resultRegister = simnet.callPublicFn(
+                "predinex-pool",
+                "register-oracle-provider",
+                [
+                    Cl.principal(wallet1),
+                    Cl.list([Cl.stringAscii("price"), Cl.stringAscii("result")])
+                ],
+                deployer
+            );
+            expect(resultRegister.result).toBeOk(expect.anything());
+
+            // Create Pool 8
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Oracle Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 8;
+
+            // Submit data as wallet_1
+            const resultSubmit = simnet.callPublicFn(
+                "predinex-pool",
+                "submit-oracle-data",
+                [
+                    Cl.uint(poolId),
+                    Cl.stringAscii("1"), // Winning outcome
+                    Cl.stringAscii("result"),
+                    Cl.uint(95) // Confidence
+                ],
+                wallet1
+            );
+            expect(resultSubmit.result).toBeOk(expect.anything());
+        });
+    });
 });
