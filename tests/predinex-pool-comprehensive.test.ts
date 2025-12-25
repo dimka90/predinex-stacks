@@ -600,4 +600,48 @@ describe("Predinex Pool Comprehensive Tests", () => {
             expect(result.result).toBeOk(Cl.uint(0));
         });
     });
+
+    describe("Fee System", () => {
+        it("should collect protocol fees on settlement", () => {
+            // Create Pool 10
+            simnet.callPublicFn(
+                "predinex-pool",
+                "create-pool",
+                [
+                    Cl.stringAscii("Fee Pool"),
+                    Cl.stringAscii("Desc"),
+                    Cl.stringAscii("A"),
+                    Cl.stringAscii("B"),
+                    Cl.uint(100)
+                ],
+                deployer
+            );
+            const poolId = 10;
+
+            // Bet 10000 microstacks
+            simnet.callPublicFn(
+                "predinex-pool",
+                "place-bet",
+                [Cl.uint(poolId), Cl.uint(0), Cl.uint(10000)],
+                wallet1
+            );
+
+            // Settle
+            const { events } = simnet.callPublicFn(
+                "predinex-pool",
+                "settle-pool",
+                [Cl.uint(poolId), Cl.uint(0)],
+                deployer
+            );
+
+            // Check for fee transfer event
+            // 2% of 10000 = 200
+            const feeTransfer = events.find(e =>
+                e.event === "stx_transfer_event" &&
+                e.data.amount === "200" &&
+                e.data.recipient === deployer
+            );
+            expect(feeTransfer).toBeDefined();
+        });
+    });
 });
