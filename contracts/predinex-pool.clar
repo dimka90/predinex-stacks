@@ -22,6 +22,10 @@
 (define-constant ERR-WITHDRAWAL-LOCKED (err u427))
 (define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428))
 (define-constant ERR-NOT-POOL-CREATOR (err u429))
+(define-constant ERR-INVALID-OUTCOME-COUNT (err u430))
+(define-constant ERR-DISPUTE-PERIOD-EXPIRED (err u431))
+(define-constant ERR-NO-DISPUTE-FOUND (err u432))
+(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u433))
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
