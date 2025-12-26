@@ -212,11 +212,38 @@
   )
 )
 
-;; Place a bet on a pool
+;; ============================================
+;; BETTING FUNCTIONS
+;; ============================================
+
+;; Place a bet on a binary outcome pool
+;;
+;; Parameters:
+;;   - pool-id: ID of the pool to bet on
+;;   - outcome: Outcome index (0 for outcome-a, 1 for outcome-b)
+;;   - amount: Bet amount in microstacks (must be >= MIN-BET-AMOUNT)
+;;
+;; Returns: (ok true) on success
+;; Errors: ERR-POOL-NOT-FOUND, ERR-POOL-SETTLED, ERR-INVALID-OUTCOME, ERR-INVALID-AMOUNT
+;;
+;; Security:
+;;   - Validates pool exists and is not settled
+;;   - Validates outcome is 0 or 1 (binary only)
+;;   - Transfers STX from user to contract (atomic)
+;;   - Updates pool totals and user bet tracking
+;;
+;; State Changes:
+;;   - Increments pool total-a or total-b
+;;   - Updates user-bets map with bet amount
+;;   - Increments total-volume counter
+;;   - Records first-bet-block for early bettor tracking
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    ;; Validation: pool must exist and not be settled
     (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    ;; Validation: outcome must be 0 or 1 for binary pools
     (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
+    ;; Validation: amount must be positive
     (asserts! (> amount u0) ERR-INVALID-AMOUNT)
     
     (let ((pool-principal (as-contract tx-sender)))
