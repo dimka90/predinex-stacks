@@ -989,6 +989,46 @@
   )
 )
 
+;; ============================================
+;; EARLY BETTOR UTILITY FUNCTIONS
+;; ============================================
+
+;; Get early bettor window end time for a pool
+(define-read-only (get-early-bettor-window-end (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (+ (get created-at pool) (var-get liquidity-early-window-blocks))
+    u0
+  )
+)
+
+;; Check if current time is within early bettor window
+(define-read-only (is-early-bettor-window-active (pool-id uint))
+  (let ((window-end (get-early-bettor-window-end pool-id)))
+    (and (> window-end u0) (< burn-block-height window-end))
+  )
+)
+
+;; Get remaining blocks in early bettor window
+(define-read-only (get-early-bettor-window-remaining (pool-id uint))
+  (let ((window-end (get-early-bettor-window-end pool-id)))
+    (if (and (> window-end u0) (< burn-block-height window-end))
+      (- window-end burn-block-height)
+      u0
+    )
+  )
+)
+
+;; Calculate early bettor bonus percentage for a pool
+(define-read-only (get-early-bettor-bonus-percent (pool-id uint))
+  (match (map-get? creator-enhanced-pools { pool-id: pool-id })
+    enhanced (if (get is-enhanced enhanced)
+      (min (get enhanced-early-bonus enhanced) (var-get liquidity-creator-max-bonus-percent))
+      (var-get liquidity-early-bonus-percent)
+    )
+    (var-get liquidity-early-bonus-percent)
+  )
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
