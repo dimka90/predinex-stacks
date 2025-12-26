@@ -10,3 +10,4 @@ export function useTheme() {
 // Theme hook improvement 5
 // Theme hook improvement 6
 // Theme hook improvement 7
+// Theme hook improvement 8
