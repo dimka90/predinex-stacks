@@ -988,3 +988,133 @@
     (ok pool-id)
   )
 )
+
+;; Place bet on multiple outcome pool
+(define-public (place-bet-multi-outcome (pool-id uint) (outcome-index uint) (amount uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (< outcome-index (get outcome-count pool)) ERR-INVALID-OUTCOME)
+    
+    (let ((pool-principal (as-contract tx-sender)))
+      (try! (stx-transfer? amount tx-sender pool-principal))
+    )
+
+    ;; Update pool totals based on outcome
+    (if (is-eq outcome-index u0)
+      (map-set pools { pool-id: pool-id } (merge pool { total-a: (+ (get total-a pool) amount) }))
+      (if (is-eq outcome-index u1)
+        (map-set pools { pool-id: pool-id } (merge pool { total-b: (+ (get total-b pool) amount) }))
+        (begin
+          (let ((outcome-data (default-to { name: "", total-bet: u0 } (map-get? pool-outcomes { pool-id: pool-id, outcome-index: outcome-index }))))
+            (map-set pool-outcomes
+              { pool-id: pool-id, outcome-index: outcome-index }
+              { name: (get name outcome-data), total-bet: (+ (get total-bet outcome-data) amount) }
+            )
+          )
+          true
+        )
+      )
+    )
+
+    ;; Update user bet
+    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
+      (map-set user-bets
+        { pool-id: pool-id, user: tx-sender }
+        (merge user-bet { total-bet: (+ (get total-bet user-bet) amount), first-bet-block: (get first-bet-block user-bet) })
+      )
+    )
+
+    (var-set total-volume (+ (var-get total-volume) amount))
+    (ok true)
+  )
+)
+
+;; Oracle-integrated settlement (for automated settlement)
+(define-public (settle-pool-oracle (pool-id uint) (winning-outcome uint) (oracle-signature (buff 65)))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (< winning-outcome (get outcome-count pool)) ERR-INVALID-OUTCOME)
+    ;; In production, verify oracle signature here
+    ;; For now, allow contract owner or admins to settle via oracle
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let ((total-pool-balance (+ (get total-a pool) (get total-b pool)))
+          (fee (/ (* total-pool-balance FEE-PERCENT) u100)))
+      (if (> fee u0)
+        (try! (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)))
+        true
+      )
+    )
+
+    (map-set pools
+      { pool-id: pool-id }
+      (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Challenge a settlement (dispute resolution)
+(define-public (challenge-settlement (pool-id uint) (reason (string-ascii 512)))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    (let ((settled-at (unwrap! (get settled-at pool) ERR-NOT-SETTLED))
+          (dispute-deadline (+ settled-at (get dispute-period pool))))
+      (asserts! (< burn-block-height dispute-deadline) ERR-DISPUTE-PERIOD-EXPIRED)
+    )
+
+    (let ((dispute-id (var-get dispute-counter)))
+      (map-insert disputes
+        { pool-id: pool-id, dispute-id: dispute-id }
+        {
+          challenger: tx-sender,
+          reason: reason,
+          created-at: burn-block-height,
+          status: "pending",
+          resolved-by: none,
+          resolved-at: none
+        }
+      )
+      (var-set dispute-counter (+ dispute-id u1))
+      (ok dispute-id)
+    )
+  )
+)
+
+;; Resolve a dispute (admin/owner only)
+(define-public (resolve-dispute (pool-id uint) (dispute-id uint) (uphold-settlement bool))
+  (let ((dispute (unwrap! (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id }) ERR-NO-DISPUTE-FOUND)))
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    (asserts! (is-eq (get status dispute) "pending") ERR-DISPUTE-ALREADY-RESOLVED)
+
+    (map-set disputes
+      { pool-id: pool-id, dispute-id: dispute-id }
+      (merge dispute {
+        status: (if uphold-settlement "upheld" "overturned"),
+        resolved-by: (some tx-sender),
+        resolved-at: (some burn-block-height)
+      })
+    )
+
+    ;; If overturned, reverse settlement
+    (if (not uphold-settlement)
+      (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+        (map-set pools
+          { pool-id: pool-id }
+          (merge pool { settled: false, winning-outcome: none, settled-at: none })
+        )
+      )
+      true
+    )
+
+    (ok true)
+  )
+)
+
+;; Get dispute information
+(define-read-only (get-dispute (pool-id uint) (dispute-id uint))
+  (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id })
+)
