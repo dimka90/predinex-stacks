@@ -22,34 +22,36 @@
 ;; Contract owner - set at deployment time, cannot be changed
 ;; SECURITY: Owner has fee collection rights and admin management
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED (err u401))
-(define-constant ERR-INVALID-AMOUNT (err u400))
-(define-constant ERR-POOL-NOT-FOUND (err u404))
-(define-constant ERR-POOL-SETTLED (err u409))
-(define-constant ERR-INVALID-OUTCOME (err u422))
-(define-constant ERR-NOT-SETTLED (err u412))
-(define-constant ERR-ALREADY-CLAIMED (err u410))
-(define-constant ERR-NO-WINNINGS (err u411))
-(define-constant ERR-POOL-NOT-EXPIRED (err u413))
-(define-constant ERR-INVALID-TITLE (err u420))
-(define-constant ERR-INVALID-DESCRIPTION (err u421))
-(define-constant ERR-INVALID-DURATION (err u423))
-(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
-(define-constant ERR-WITHDRAWAL-FAILED (err u425))
-(define-constant ERR-INVALID-WITHDRAWAL (err u426))
-(define-constant ERR-WITHDRAWAL-LOCKED (err u427))
-(define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428))
-(define-constant ERR-NOT-POOL-CREATOR (err u429))
-(define-constant ERR-INVALID-OUTCOME-COUNT (err u430))
-(define-constant ERR-DISPUTE-PERIOD-EXPIRED (err u431))
-(define-constant ERR-NO-DISPUTE-FOUND (err u432))
-(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u433))
+;; Error codes - HTTP-style for consistency
+(define-constant ERR-UNAUTHORIZED (err u401))           ;; Unauthorized access attempt
+(define-constant ERR-INVALID-AMOUNT (err u400))          ;; Invalid amount parameter
+(define-constant ERR-POOL-NOT-FOUND (err u404))          ;; Pool does not exist
+(define-constant ERR-POOL-SETTLED (err u409))            ;; Pool already settled
+(define-constant ERR-INVALID-OUTCOME (err u422))         ;; Invalid outcome index
+(define-constant ERR-NOT-SETTLED (err u412))            ;; Pool not yet settled
+(define-constant ERR-ALREADY-CLAIMED (err u410))        ;; Winnings already claimed
+(define-constant ERR-NO-WINNINGS (err u411))            ;; User has no winnings
+(define-constant ERR-POOL-NOT-EXPIRED (err u413))       ;; Pool not expired yet
+(define-constant ERR-INVALID-TITLE (err u420))           ;; Invalid pool title
+(define-constant ERR-INVALID-DESCRIPTION (err u421))   ;; Invalid pool description
+(define-constant ERR-INVALID-DURATION (err u423))       ;; Invalid duration parameter
+(define-constant ERR-INSUFFICIENT-BALANCE (err u424))   ;; User balance insufficient
+(define-constant ERR-WITHDRAWAL-FAILED (err u425))      ;; Withdrawal transfer failed
+(define-constant ERR-INVALID-WITHDRAWAL (err u426))     ;; Invalid withdrawal request
+(define-constant ERR-WITHDRAWAL-LOCKED (err u427))      ;; Withdrawal locked/not ready
+(define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428)) ;; Contract balance too low
+(define-constant ERR-NOT-POOL-CREATOR (err u429))       ;; Not the pool creator
+(define-constant ERR-INVALID-OUTCOME-COUNT (err u430))   ;; Invalid number of outcomes
+(define-constant ERR-DISPUTE-PERIOD-EXPIRED (err u431)) ;; Dispute period ended
+(define-constant ERR-NO-DISPUTE-FOUND (err u432))       ;; Dispute does not exist
+(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u433)) ;; Dispute already resolved
 
-(define-constant FEE-PERCENT u2) ;; 2% fee
-(define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
-(define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
-(define-constant EARLY-BETTOR-WINDOW u50) ;; 50 blocks window for early bettor eligibility
-(define-constant EARLY-BETTOR-BONUS-PERCENT u5) ;; 5% bonus on winnings for early bettors
+;; Economic constants
+(define-constant FEE-PERCENT u2)                        ;; 2% platform fee on winnings
+(define-constant MIN-BET-AMOUNT u10000)                 ;; Minimum bet: 0.01 STX (microstacks)
+(define-constant WITHDRAWAL-DELAY u10)                   ;; 10 blocks delay for security
+(define-constant EARLY-BETTOR-WINDOW u50)               ;; 50 blocks for early bettor eligibility
+(define-constant EARLY-BETTOR-BONUS-PERCENT u5)         ;; 5% bonus on winnings for early bettors
 
 ;; ============================================
 ;; CLARITY 3/4 FEATURES - Builder Challenge
