@@ -1084,6 +1084,74 @@
   }
 )
 
+;; ============================================
+;; INCENTIVE POOL ANALYTICS FUNCTIONS
+;; ============================================
+
+;; Get total available incentive funds for a pool
+(define-read-only (get-total-available-incentive-funds (pool-id uint))
+  (let (
+    (pool-funds (default-to 
+      { creator-contribution: u0, platform-allocation: u0, total-distributed: u0, remaining-balance: u0 }
+      (map-get? pool-incentive-funds { pool-id: pool-id })
+    ))
+    (platform-pool (var-get platform-incentive-pool))
+  )
+    (+ (get remaining-balance pool-funds) platform-pool)
+  )
+)
+
+;; Get incentive fund utilization rate for a pool
+(define-read-only (get-incentive-fund-utilization (pool-id uint))
+  (match (map-get? pool-incentive-funds { pool-id: pool-id })
+    funds (let (
+      (total-funds (+ (get creator-contribution funds) (get platform-allocation funds)))
+      (distributed (get total-distributed funds))
+    )
+      (if (> total-funds u0)
+        (/ (* distributed u100) total-funds)
+        u0
+      )
+    )
+    u0
+  )
+)
+
+;; Get platform-wide incentive statistics
+(define-read-only (get-platform-incentive-stats)
+  {
+    total-platform-pool: (var-get platform-incentive-pool),
+    total-distributed: (var-get total-incentives-distributed),
+    distribution-rate: (if (> (var-get platform-incentive-pool) u0)
+      (/ (* (var-get total-incentives-distributed) u100) (var-get platform-incentive-pool))
+      u0
+    )
+  }
+)
+
+;; Check if pool has sufficient funds for estimated bonuses
+(define-read-only (can-pool-afford-bonuses (pool-id uint) (estimated-bonus-amount uint))
+  (let ((available-funds (get-total-available-incentive-funds pool-id)))
+    (>= available-funds estimated-bonus-amount)
+  )
+)
+
+;; Get creator contribution percentage for a pool
+(define-read-only (get-creator-contribution-percentage (pool-id uint))
+  (match (map-get? pool-incentive-funds { pool-id: pool-id })
+    funds (let (
+      (creator-contrib (get creator-contribution funds))
+      (total-funds (+ creator-contrib (get platform-allocation funds)))
+    )
+      (if (> total-funds u0)
+        (/ (* creator-contrib u100) total-funds)
+        u0
+      )
+    )
+    u0
+  )
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
