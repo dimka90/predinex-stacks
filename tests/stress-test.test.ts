@@ -164,3 +164,77 @@ Clarinet.test({
   },
 });
 
+Clarinet.test({
+  name: "Stress Test: Settlement and claims under load",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!;
+    const bettorCount = 30;
+    
+    // Create pool
+    const createBlock = chain.mineBlock([
+      Tx.contractCall(
+        "predinex-pool",
+        "create-pool",
+        [
+          types.utf8("Settlement Stress Test"),
+          types.utf8("Testing settlement under load"),
+          types.utf8("Winner"),
+          types.utf8("Loser"),
+          types.uint(1000)
+        ],
+        deployer.address
+      )
+    ]);
+    const poolId = createBlock.receipts[0].result.expectOk().expectUint(0);
+
+    // Place bets from multiple users
+    const betAmount = 1000000;
+    const bettors = Array.from({ length: bettorCount }, (_, i) =>
+      accounts.get(`wallet_${i + 1}`) || deployer
+    );
+    
+    const betBlock = chain.mineBlock(
+      bettors.map((bettor, i) =>
+        Tx.contractCall(
+          "predinex-pool",
+          "place-bet",
+          [
+            types.uint(poolId),
+            types.uint(i < bettorCount / 2 ? 0 : 1), // Half bet on each outcome
+            types.uint(betAmount)
+          ],
+          bettor.address
+        )
+      )
+    );
+
+    // Settle pool
+    chain.mineBlock([
+      Tx.contractCall(
+        "predinex-pool",
+        "settle-pool",
+        [types.uint(poolId), types.uint(0)], // Outcome 0 wins
+        deployer.address
+      )
+    ]);
+
+    // Claim winnings concurrently
+    const winners = bettors.slice(0, Math.floor(bettorCount / 2));
+    const claimBlock = chain.mineBlock(
+      winners.map((winner) =>
+        Tx.contractCall(
+          "predinex-pool",
+          "claim-winnings",
+          [types.uint(poolId)],
+          winner.address
+        )
+      )
+    );
+
+    assertEquals(claimBlock.receipts.length, winners.length);
+    claimBlock.receipts.forEach((receipt) => {
+      receipt.result.expectOk().expectBool(true);
+    });
+  },
+});
+
