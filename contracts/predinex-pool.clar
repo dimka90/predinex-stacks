@@ -22,6 +22,10 @@
 (define-constant ERR-WITHDRAWAL-LOCKED (err u427))
 (define-constant ERR-INSUFFICIENT-CONTRACT-BALANCE (err u428))
 (define-constant ERR-NOT-POOL-CREATOR (err u429))
+(define-constant ERR-INVALID-OUTCOME-COUNT (err u430))
+(define-constant ERR-DISPUTE-PERIOD-EXPIRED (err u431))
+(define-constant ERR-NO-DISPUTE-FOUND (err u432))
+(define-constant ERR-DISPUTE-ALREADY-RESOLVED (err u433))
 
 ;; Oracle system error constants
 (define-constant ERR-ORACLE-NOT-FOUND (err u430))
@@ -54,6 +58,8 @@
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
+(define-constant EARLY-BETTOR-WINDOW u50) ;; 50 blocks window for early bettor eligibility
+(define-constant EARLY-BETTOR-BONUS-PERCENT u5) ;; 5% bonus on winnings for early bettors
 
 ;; Resolution and fee constants
 (define-constant RESOLUTION-FEE-PERCENT u5) ;; 0.5% (5/1000)
@@ -87,9 +93,35 @@
     winning-outcome: (optional uint),
     created-at: uint,
     settled-at: (optional uint),
-    expiry: uint
+    expiry: uint,
+    outcome-count: uint,
+    dispute-period: uint
   }
 )
+
+;; Multiple outcomes support (beyond binary)
+(define-map pool-outcomes
+  { pool-id: uint, outcome-index: uint }
+  {
+    name: (string-ascii 128),
+    total-bet: uint
+  }
+)
+
+;; Dispute resolution tracking
+(define-map disputes
+  { pool-id: uint, dispute-id: uint }
+  {
+    challenger: principal,
+    reason: (string-ascii 512),
+    created-at: uint,
+    status: (string-ascii 20),
+    resolved-by: (optional principal),
+    resolved-at: (optional uint)
+  }
+)
+
+(define-data-var dispute-counter uint u0)
 
 (define-map claims
   { pool-id: uint, user: principal }
@@ -101,7 +133,8 @@
   {
     amount-a: uint,
     amount-b: uint,
-    total-bet: uint
+    total-bet: uint,
+    first-bet-block: uint
   }
 )
 
@@ -307,7 +340,9 @@
         winning-outcome: none,
         created-at: burn-block-height,
         settled-at: none,
-        expiry: (+ burn-block-height duration)
+        expiry: (+ burn-block-height duration),
+        outcome-count: u2,
+        dispute-period: u100
       }
     )
     (var-set pool-counter (+ pool-id u1))
@@ -343,12 +378,22 @@
     )
     
     ;; Update user bet
-    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0 } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
+    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
       (map-set user-bets
         { pool-id: pool-id, user: tx-sender }
         (if (is-eq outcome u0)
-          { amount-a: (+ (get amount-a user-bet) amount), amount-b: (get amount-b user-bet), total-bet: (+ (get total-bet user-bet) amount) }
-          { amount-a: (get amount-a user-bet), amount-b: (+ (get amount-b user-bet) amount), total-bet: (+ (get total-bet user-bet) amount) }
+          { 
+            amount-a: (+ (get amount-a user-bet) amount), 
+            amount-b: (get amount-b user-bet), 
+            total-bet: (+ (get total-bet user-bet) amount),
+            first-bet-block: (get first-bet-block user-bet)
+          }
+          { 
+            amount-a: (get amount-a user-bet), 
+            amount-b: (+ (get amount-b user-bet) amount), 
+            total-bet: (+ (get total-bet user-bet) amount),
+            first-bet-block: (get first-bet-block user-bet)
+          }
         )
       )
     )
@@ -408,6 +453,10 @@
         (fee (/ (* total-pool-balance FEE-PERCENT) u100))
         (net-pool-balance (- total-pool-balance fee))
         (claimer tx-sender) ;; Capture the web3 user
+        (first-bet-block (get first-bet-block user-bet))
+        (pool-created-at (get created-at pool))
+        (early-bettor-window-end (+ pool-created-at EARLY-BETTOR-WINDOW))
+        (is-early-bettor (<= first-bet-block early-bettor-window-end))
       )
       
       (asserts! (> user-winning-bet u0) ERR-NO-WINNINGS)
@@ -415,11 +464,14 @@
 
       (let
         (
-          ;; Calculate share: (user_bet_on_winner * net_pool) / total_bet_on_winner
-          (share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
+          ;; Calculate base share: (user_bet_on_winner * net_pool) / total_bet_on_winner
+          (base-share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
+          ;; Calculate early bettor bonus if applicable
+          (bonus (if is-early-bettor (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100) u0))
+          (total-payout (+ base-share bonus))
         )
-        ;; Transfer share to user
-        (try! (as-contract (stx-transfer? share tx-sender claimer)))
+        ;; Transfer total payout (base share + bonus) to user
+        (try! (as-contract (stx-transfer? total-payout tx-sender claimer)))
         
         ;; Mark as claimed
         (map-set claims { pool-id: pool-id, user: claimer } true)
@@ -1816,4 +1868,231 @@
     withdrawal (ok (get status withdrawal))
     (err ERR-INVALID-WITHDRAWAL)
   )
+)
+
+;; ============================================
+;; LIQUIDITY INCENTIVES - Early Bettor Functions
+;; ============================================
+
+;; Check if user is an early bettor for a pool
+(define-read-only (is-early-bettor (pool-id uint) (user principal))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (match (map-get? user-bets { pool-id: pool-id, user: user })
+      bet-data (let (
+        (first-bet-block (get first-bet-block bet-data))
+        (pool-created-at (get created-at pool-data))
+        (early-bettor-window-end (+ pool-created-at EARLY-BETTOR-WINDOW))
+      )
+        (ok (<= first-bet-block early-bettor-window-end))
+      )
+      (ok false)
+    )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
+;; Get early bettor bonus amount for a user's potential winnings
+(define-read-only (get-early-bettor-bonus (pool-id uint) (user principal) (base-share uint))
+  (match (is-early-bettor pool-id user)
+    (ok true) (ok (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100))
+    (ok false) (ok u0)
+    (err error) (err error)
+  )
+)
+
+;; Get liquidity incentive info for a pool
+(define-read-only (get-liquidity-incentive-info (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (ok {
+      early-bettor-window: EARLY-BETTOR-WINDOW,
+      bonus-percent: EARLY-BETTOR-BONUS-PERCENT,
+      pool-created-at: (get created-at pool-data),
+      window-end-block: (+ (get created-at pool-data) EARLY-BETTOR-WINDOW),
+      current-block: burn-block-height,
+      window-active: (< burn-block-height (+ (get created-at pool-data) EARLY-BETTOR-WINDOW))
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
+;; ============================================
+;; ADVANCED MARKET FEATURES - Phase 3
+;; ============================================
+
+;; Create pool with multiple outcomes
+(define-public (create-pool-multi-outcome (title (string-ascii 256)) (description (string-ascii 512)) (outcome-names (list 10 (string-ascii 128))) (duration uint) (dispute-period-blocks uint))
+  (let ((pool-id (var-get pool-counter)))
+    (asserts! (> (len title) u0) ERR-INVALID-TITLE)
+    (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
+    (asserts! (> (len outcome-names) u1) ERR-INVALID-OUTCOME-COUNT)
+    (asserts! (<= (len outcome-names) u10) ERR-INVALID-OUTCOME-COUNT)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+    (asserts! (> dispute-period-blocks u0) ERR-INVALID-DURATION)
+
+    ;; Create pool with first two outcomes for backward compatibility
+    (map-insert pools
+      { pool-id: pool-id }
+      {
+        creator: tx-sender,
+        title: title,
+        description: description,
+        outcome-a-name: (unwrap! (element-at outcome-names u0) ERR-INVALID-OUTCOME),
+        outcome-b-name: (unwrap! (element-at outcome-names u1) ERR-INVALID-OUTCOME),
+        total-a: u0,
+        total-b: u0,
+        settled: false,
+        winning-outcome: none,
+        created-at: burn-block-height,
+        settled-at: none,
+        expiry: (+ burn-block-height duration),
+        outcome-count: (len outcome-names),
+        dispute-period: dispute-period-blocks
+      }
+    )
+
+    ;; Store additional outcomes if more than 2
+    (if (> (len outcome-names) u2)
+      (begin
+        (map-insert pool-outcomes { pool-id: pool-id, outcome-index: u2 } { name: (unwrap! (element-at outcome-names u2) ERR-INVALID-OUTCOME), total-bet: u0 })
+        (if (> (len outcome-names) u3)
+          (map-insert pool-outcomes { pool-id: pool-id, outcome-index: u3 } { name: (unwrap! (element-at outcome-names u3) ERR-INVALID-OUTCOME), total-bet: u0 })
+          true
+        )
+      )
+      true
+    )
+
+    (var-set pool-counter (+ pool-id u1))
+    (ok pool-id)
+  )
+)
+
+;; Place bet on multiple outcome pool
+(define-public (place-bet-multi-outcome (pool-id uint) (outcome-index uint) (amount uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (< outcome-index (get outcome-count pool)) ERR-INVALID-OUTCOME)
+    
+    (let ((pool-principal (as-contract tx-sender)))
+      (try! (stx-transfer? amount tx-sender pool-principal))
+    )
+
+    ;; Update pool totals based on outcome
+    (if (is-eq outcome-index u0)
+      (map-set pools { pool-id: pool-id } (merge pool { total-a: (+ (get total-a pool) amount) }))
+      (if (is-eq outcome-index u1)
+        (map-set pools { pool-id: pool-id } (merge pool { total-b: (+ (get total-b pool) amount) }))
+        (begin
+          (let ((outcome-data (default-to { name: "", total-bet: u0 } (map-get? pool-outcomes { pool-id: pool-id, outcome-index: outcome-index }))))
+            (map-set pool-outcomes
+              { pool-id: pool-id, outcome-index: outcome-index }
+              { name: (get name outcome-data), total-bet: (+ (get total-bet outcome-data) amount) }
+            )
+          )
+          true
+        )
+      )
+    )
+
+    ;; Update user bet
+    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
+      (map-set user-bets
+        { pool-id: pool-id, user: tx-sender }
+        (merge user-bet { total-bet: (+ (get total-bet user-bet) amount), first-bet-block: (get first-bet-block user-bet) })
+      )
+    )
+
+    (var-set total-volume (+ (var-get total-volume) amount))
+    (ok true)
+  )
+)
+
+;; Oracle-integrated settlement (for automated settlement)
+(define-public (settle-pool-oracle (pool-id uint) (winning-outcome uint) (oracle-signature (buff 65)))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (< winning-outcome (get outcome-count pool)) ERR-INVALID-OUTCOME)
+    ;; In production, verify oracle signature here
+    ;; For now, allow contract owner or admins to settle via oracle
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    (let ((total-pool-balance (+ (get total-a pool) (get total-b pool)))
+          (fee (/ (* total-pool-balance FEE-PERCENT) u100)))
+      (if (> fee u0)
+        (try! (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)))
+        true
+      )
+    )
+
+    (map-set pools
+      { pool-id: pool-id }
+      (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Challenge a settlement (dispute resolution)
+(define-public (challenge-settlement (pool-id uint) (reason (string-ascii 512)))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    (let ((settled-at (unwrap! (get settled-at pool) ERR-NOT-SETTLED))
+          (dispute-deadline (+ settled-at (get dispute-period pool))))
+      (asserts! (< burn-block-height dispute-deadline) ERR-DISPUTE-PERIOD-EXPIRED)
+    )
+
+    (let ((dispute-id (var-get dispute-counter)))
+      (map-insert disputes
+        { pool-id: pool-id, dispute-id: dispute-id }
+        {
+          challenger: tx-sender,
+          reason: reason,
+          created-at: burn-block-height,
+          status: "pending",
+          resolved-by: none,
+          resolved-at: none
+        }
+      )
+      (var-set dispute-counter (+ dispute-id u1))
+      (ok dispute-id)
+    )
+  )
+)
+
+;; Resolve a dispute (admin/owner only)
+(define-public (resolve-dispute (pool-id uint) (dispute-id uint) (uphold-settlement bool))
+  (let ((dispute (unwrap! (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id }) ERR-NO-DISPUTE-FOUND)))
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    (asserts! (is-eq (get status dispute) "pending") ERR-DISPUTE-ALREADY-RESOLVED)
+
+    (map-set disputes
+      { pool-id: pool-id, dispute-id: dispute-id }
+      (merge dispute {
+        status: (if uphold-settlement "upheld" "overturned"),
+        resolved-by: (some tx-sender),
+        resolved-at: (some burn-block-height)
+      })
+    )
+
+    ;; If overturned, reverse settlement
+    (if (not uphold-settlement)
+      (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+        (map-set pools
+          { pool-id: pool-id }
+          (merge pool { settled: false, winning-outcome: none, settled-at: none })
+        )
+      )
+      true
+    )
+
+    (ok true)
+  )
+)
+
+;; Get dispute information
+(define-read-only (get-dispute (pool-id uint) (dispute-id uint))
+  (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id })
 )

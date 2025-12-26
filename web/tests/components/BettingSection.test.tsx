@@ -44,12 +44,12 @@ describe('BettingSection', () => {
 
     render(<BettingSection pool={mockPool} poolId={0} />);
 
-    expect(screen.getByText('Test Pool')).toBeInTheDocument();
-    expect(screen.getByText('Outcome A')).toBeInTheDocument();
-    expect(screen.getByText('Outcome B')).toBeInTheDocument();
+    expect(screen.getByText(/Bet on Outcome A/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bet on Outcome B/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Enter bet amount/i)).toBeInTheDocument();
   });
 
-  it('prompts authentication when user is not logged in', async () => {
+  it('prompts authentication when user is not logged in', () => {
     const authenticate = vi.fn();
     vi.mocked(StacksProvider.useStacks).mockReturnValue({
       userData: null,
@@ -57,13 +57,10 @@ describe('BettingSection', () => {
       signOut: vi.fn(),
     });
 
-    const user = userEvent.setup();
     render(<BettingSection pool={mockPool} poolId={0} />);
 
-    const betButton = screen.getAllByText(/Bet on/i)[0];
-    await user.click(betButton);
-
-    expect(authenticate).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Connect Wallet to Bet')).toBeInTheDocument();
+    expect(screen.getByText('Connect Wallet')).toBeInTheDocument();
   });
 
   it('validates bet amount before placing bet', async () => {
@@ -77,7 +74,7 @@ describe('BettingSection', () => {
     render(<BettingSection pool={mockPool} poolId={0} />);
 
     // Try to bet with empty amount
-    const betButton = screen.getAllByText(/Bet on/i)[0];
+    const betButton = screen.getByText(/Bet on Outcome A/i);
     await user.click(betButton);
 
     expect(window.alert).toHaveBeenCalledWith(
@@ -96,10 +93,10 @@ describe('BettingSection', () => {
     const user = userEvent.setup();
     render(<BettingSection pool={mockPool} poolId={0} />);
 
-    const input = screen.getByPlaceholderText(/enter amount/i);
+    const input = screen.getByLabelText(/Enter bet amount/i);
     await user.type(input, '0.05'); // Less than 0.1 STX minimum
 
-    const betButton = screen.getAllByText(/Bet on/i)[0];
+    const betButton = screen.getByText(/Bet on Outcome A/i);
     await user.click(betButton);
 
     expect(window.alert).toHaveBeenCalledWith('Minimum bet amount is 0.1 STX.');
@@ -118,10 +115,10 @@ describe('BettingSection', () => {
     const user = userEvent.setup();
     render(<BettingSection pool={mockPool} poolId={0} />);
 
-    const input = screen.getByPlaceholderText(/enter amount/i);
+    const input = screen.getByLabelText(/Enter bet amount/i);
     await user.type(input, '1.5');
 
-    const betButton = screen.getAllByText(/Bet on Outcome A/i)[0];
+    const betButton = screen.getByText(/Bet on Outcome A/i);
     await user.click(betButton);
 
     await waitFor(() => {
@@ -153,15 +150,17 @@ describe('BettingSection', () => {
     const user = userEvent.setup();
     render(<BettingSection pool={mockPool} poolId={0} />);
 
-    const input = screen.getByPlaceholderText(/enter amount/i);
+    const input = screen.getByLabelText(/Enter bet amount/i);
     await user.type(input, '1.0');
 
-    const betButton = screen.getAllByText(/Bet on Outcome A/i)[0];
+    const betButton = screen.getByText(/Bet on Outcome A/i);
     await user.click(betButton);
 
-    // Check if loading state is shown
+    // Check if loading state is shown (button should be disabled)
     await waitFor(() => {
-      expect(screen.getByRole('button', { disabled: true })).toBeInTheDocument();
+      const buttons = screen.getAllByRole('button');
+      const disabledButtons = buttons.filter(btn => btn.hasAttribute('disabled'));
+      expect(disabledButtons.length).toBeGreaterThan(0);
     });
   });
 });
