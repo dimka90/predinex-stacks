@@ -243,6 +243,10 @@
         (fee (/ (* total-pool-balance FEE-PERCENT) u100))
         (net-pool-balance (- total-pool-balance fee))
         (claimer tx-sender) ;; Capture the web3 user
+        (first-bet-block (get first-bet-block user-bet))
+        (pool-created-at (get created-at pool))
+        (early-bettor-window-end (+ pool-created-at EARLY-BETTOR-WINDOW))
+        (is-early-bettor (<= first-bet-block early-bettor-window-end))
       )
       
       (asserts! (> user-winning-bet u0) ERR-NO-WINNINGS)
@@ -250,11 +254,14 @@
 
       (let
         (
-          ;; Calculate share: (user_bet_on_winner * net_pool) / total_bet_on_winner
-          (share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
+          ;; Calculate base share: (user_bet_on_winner * net_pool) / total_bet_on_winner
+          (base-share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
+          ;; Calculate early bettor bonus if applicable
+          (bonus (if is-early-bettor (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100) u0))
+          (total-payout (+ base-share bonus))
         )
-        ;; Transfer share to user
-        (try! (as-contract (stx-transfer? share tx-sender claimer)))
+        ;; Transfer total payout (base share + bonus) to user
+        (try! (as-contract (stx-transfer? total-payout tx-sender claimer)))
         
         ;; Mark as claimed
         (map-set claims { pool-id: pool-id, user: claimer } true)
