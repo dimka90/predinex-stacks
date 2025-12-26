@@ -1029,6 +1029,61 @@
   )
 )
 
+;; ============================================
+;; MARKET MAKER UTILITY FUNCTIONS
+;; ============================================
+
+;; Get market maker bonus percentage for a pool and outcome
+(define-read-only (get-market-maker-bonus-percent (pool-id uint) (outcome uint))
+  (let (
+    (balance-ratio (calculate-market-balance-ratio pool-id outcome))
+    (threshold-low (var-get liquidity-market-maker-threshold-low))
+    (threshold-high (var-get liquidity-market-maker-threshold-high))
+    (base-bonus-percent (if (< balance-ratio threshold-low)
+      (var-get liquidity-market-maker-bonus-high)
+      (if (< balance-ratio threshold-high)
+        (var-get liquidity-market-maker-bonus-low)
+        u0
+      )
+    ))
+  )
+    (match (map-get? creator-enhanced-pools { pool-id: pool-id })
+      enhanced (if (get is-enhanced enhanced)
+        (min (get enhanced-market-maker-bonus enhanced) (var-get liquidity-creator-max-bonus-percent))
+        base-bonus-percent
+      )
+      base-bonus-percent
+    )
+  )
+)
+
+;; Check if outcome qualifies for market maker bonus
+(define-read-only (is-outcome-underrepresented (pool-id uint) (outcome uint))
+  (let ((balance-ratio (calculate-market-balance-ratio pool-id outcome)))
+    (< balance-ratio (var-get liquidity-market-maker-threshold-high))
+  )
+)
+
+;; Get market imbalance severity (higher = more imbalanced)
+(define-read-only (get-market-imbalance-severity (pool-id uint))
+  (let (
+    (ratio-a (calculate-market-balance-ratio pool-id u0))
+    (ratio-b (calculate-market-balance-ratio pool-id u1))
+    (imbalance (if (> ratio-a ratio-b) (- ratio-a ratio-b) (- ratio-b ratio-a)))
+  )
+    imbalance
+  )
+)
+
+;; Get both outcome ratios for a pool
+(define-read-only (get-pool-balance-ratios (pool-id uint))
+  {
+    outcome-a-ratio: (calculate-market-balance-ratio pool-id u0),
+    outcome-b-ratio: (calculate-market-balance-ratio pool-id u1),
+    imbalance-severity: (get-market-imbalance-severity pool-id)
+  }
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
