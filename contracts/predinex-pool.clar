@@ -705,6 +705,290 @@
   )
 )
 
+;; ============================================
+;; LIQUIDITY INCENTIVES ADMIN FUNCTIONS
+;; ============================================
+
+;; Configure early bettor window duration
+(define-public (set-early-bettor-window (blocks uint))
+  (begin
+    ;; Only contract owner can configure
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate parameter (must be positive and reasonable)
+    (asserts! (> blocks u0) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= blocks u1440) ERR-INVALID-INCENTIVE-CONFIG) ;; Max 10 days
+    
+    (var-set liquidity-early-window-blocks blocks)
+    (ok blocks)
+  )
+)
+
+;; Configure early bettor bonus percentage
+(define-public (set-early-bettor-bonus (percent uint))
+  (begin
+    ;; Only contract owner can configure
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate parameter (0-50%)
+    (asserts! (<= percent u50) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    (var-set liquidity-early-bonus-percent percent)
+    (ok percent)
+  )
+)
+
+;; Configure market maker thresholds and bonuses
+(define-public (set-market-maker-config (threshold-low uint) (threshold-high uint) (bonus-high uint) (bonus-low uint))
+  (begin
+    ;; Only contract owner can configure
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate parameters
+    (asserts! (< threshold-low threshold-high) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= threshold-high u50) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= bonus-high u50) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= bonus-low u50) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (>= bonus-high bonus-low) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    (var-set liquidity-market-maker-threshold-low threshold-low)
+    (var-set liquidity-market-maker-threshold-high threshold-high)
+    (var-set liquidity-market-maker-bonus-high bonus-high)
+    (var-set liquidity-market-maker-bonus-low bonus-low)
+    
+    (ok true)
+  )
+)
+
+;; Configure minimum bet amount for incentives
+(define-public (set-min-bet-for-incentives (amount uint))
+  (begin
+    ;; Only contract owner can configure
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate parameter
+    (asserts! (>= amount MIN-BET-AMOUNT) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    (var-set liquidity-min-bet-for-incentives amount)
+    (ok amount)
+  )
+)
+
+;; Configure maximum creator bonus percentage
+(define-public (set-creator-max-bonus (percent uint))
+  (begin
+    ;; Only contract owner can configure
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate parameter (max 100%)
+    (asserts! (<= percent u100) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    (var-set liquidity-creator-max-bonus-percent percent)
+    (ok percent)
+  )
+)
+
+;; ============================================
+;; CREATOR ENHANCEMENT FUNCTIONS
+;; ============================================
+
+;; Create enhanced pool with creator-funded incentives
+(define-public (create-enhanced-pool 
+  (title (string-ascii 256)) 
+  (description (string-ascii 512)) 
+  (outcome-a (string-ascii 128)) 
+  (outcome-b (string-ascii 128)) 
+  (duration uint)
+  (creator-fund-amount uint)
+  (enhanced-early-bonus uint)
+  (enhanced-mm-bonus uint))
+  (let ((pool-id (var-get pool-counter)))
+    ;; Validate inputs
+    (asserts! (> (len title) u0) ERR-INVALID-TITLE)
+    (asserts! (<= (len title) u256) ERR-INVALID-TITLE)
+    (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
+    (asserts! (<= (len description) u512) ERR-INVALID-DESCRIPTION)
+    (asserts! (> (len outcome-a) u0) ERR-INVALID-OUTCOME)
+    (asserts! (<= (len outcome-a) u128) ERR-INVALID-OUTCOME)
+    (asserts! (> (len outcome-b) u0) ERR-INVALID-OUTCOME)
+    (asserts! (<= (len outcome-b) u128) ERR-INVALID-OUTCOME)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+    (asserts! (< duration u100000) ERR-INVALID-DURATION)
+    
+    ;; Validate enhancement parameters
+    (asserts! (> creator-fund-amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= enhanced-early-bonus (var-get liquidity-creator-max-bonus-percent)) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= enhanced-mm-bonus (var-get liquidity-creator-max-bonus-percent)) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    ;; Transfer creator funds to contract
+    (try! (stx-transfer? creator-fund-amount tx-sender (as-contract tx-sender)))
+    
+    ;; Create the pool
+    (try! (create-pool title description outcome-a outcome-b duration))
+    
+    ;; Set up creator enhancement
+    (map-insert creator-enhanced-pools
+      { pool-id: pool-id }
+      {
+        creator-fund-amount: creator-fund-amount,
+        enhanced-early-bonus: enhanced-early-bonus,
+        enhanced-market-maker-bonus: enhanced-mm-bonus,
+        is-enhanced: true
+      }
+    )
+    
+    ;; Set up pool incentive funds
+    (map-insert pool-incentive-funds
+      { pool-id: pool-id }
+      {
+        creator-contribution: creator-fund-amount,
+        platform-allocation: u0,
+        total-distributed: u0,
+        remaining-balance: creator-fund-amount
+      }
+    )
+    
+    (ok pool-id)
+  )
+)
+
+;; Add creator funding to existing pool
+(define-public (add-creator-funding (pool-id uint) (fund-amount uint) (enhanced-early-bonus uint) (enhanced-mm-bonus uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+  )
+    ;; Only pool creator can add funding
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Pool must not be settled
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Validate parameters
+    (asserts! (> fund-amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= enhanced-early-bonus (var-get liquidity-creator-max-bonus-percent)) ERR-INVALID-INCENTIVE-CONFIG)
+    (asserts! (<= enhanced-mm-bonus (var-get liquidity-creator-max-bonus-percent)) ERR-INVALID-INCENTIVE-CONFIG)
+    
+    ;; Transfer creator funds to contract
+    (try! (stx-transfer? fund-amount tx-sender (as-contract tx-sender)))
+    
+    ;; Update or create enhancement record
+    (let ((current-enhancement (default-to 
+      { creator-fund-amount: u0, enhanced-early-bonus: u0, enhanced-market-maker-bonus: u0, is-enhanced: false }
+      (map-get? creator-enhanced-pools { pool-id: pool-id })
+    )))
+      (map-set creator-enhanced-pools
+        { pool-id: pool-id }
+        {
+          creator-fund-amount: (+ (get creator-fund-amount current-enhancement) fund-amount),
+          enhanced-early-bonus: enhanced-early-bonus,
+          enhanced-market-maker-bonus: enhanced-mm-bonus,
+          is-enhanced: true
+        }
+      )
+    )
+    
+    ;; Update pool incentive funds
+    (let ((current-funds (default-to 
+      { creator-contribution: u0, platform-allocation: u0, total-distributed: u0, remaining-balance: u0 }
+      (map-get? pool-incentive-funds { pool-id: pool-id })
+    )))
+      (map-set pool-incentive-funds
+        { pool-id: pool-id }
+        {
+          creator-contribution: (+ (get creator-contribution current-funds) fund-amount),
+          platform-allocation: (get platform-allocation current-funds),
+          total-distributed: (get total-distributed current-funds),
+          remaining-balance: (+ (get remaining-balance current-funds) fund-amount)
+        }
+      )
+    )
+    
+    (ok fund-amount)
+  )
+)
+
+;; ============================================
+;; LIQUIDITY INCENTIVES READ-ONLY FUNCTIONS
+;; ============================================
+
+;; Get user incentive status for a pool
+(define-read-only (get-user-incentive-status (pool-id uint) (user principal))
+  (map-get? user-incentive-status { pool-id: pool-id, user: user })
+)
+
+;; Get user lifetime incentive statistics
+(define-read-only (get-user-incentive-stats (user principal))
+  (map-get? user-incentive-stats { user: user })
+)
+
+;; Get pool incentive funds information
+(define-read-only (get-pool-incentive-funds (pool-id uint))
+  (map-get? pool-incentive-funds { pool-id: pool-id })
+)
+
+;; Get creator enhancement information for a pool
+(define-read-only (get-creator-enhancement (pool-id uint))
+  (map-get? creator-enhanced-pools { pool-id: pool-id })
+)
+
+;; Get platform incentive pool balance
+(define-read-only (get-platform-incentive-pool-balance)
+  (var-get platform-incentive-pool)
+)
+
+;; Get total incentives distributed
+(define-read-only (get-total-incentives-distributed)
+  (var-get total-incentives-distributed)
+)
+
+;; Get current system configuration
+(define-read-only (get-liquidity-incentive-config)
+  {
+    early-window-blocks: (var-get liquidity-early-window-blocks),
+    early-bonus-percent: (var-get liquidity-early-bonus-percent),
+    market-maker-threshold-low: (var-get liquidity-market-maker-threshold-low),
+    market-maker-threshold-high: (var-get liquidity-market-maker-threshold-high),
+    market-maker-bonus-high: (var-get liquidity-market-maker-bonus-high),
+    market-maker-bonus-low: (var-get liquidity-market-maker-bonus-low),
+    min-bet-for-incentives: (var-get liquidity-min-bet-for-incentives),
+    creator-max-bonus-percent: (var-get liquidity-creator-max-bonus-percent)
+  }
+)
+
+;; Check if user qualifies for early bettor bonus (preview)
+(define-read-only (preview-early-bettor-eligibility (pool-id uint) (bet-amount uint))
+  (is-early-bettor pool-id bet-amount)
+)
+
+;; Check if user qualifies for market maker bonus (preview)
+(define-read-only (preview-market-maker-eligibility (pool-id uint) (outcome uint) (bet-amount uint))
+  (is-market-maker pool-id outcome bet-amount)
+)
+
+;; Get current market balance ratio for an outcome
+(define-read-only (get-market-balance-ratio (pool-id uint) (outcome uint))
+  (calculate-market-balance-ratio pool-id outcome)
+)
+
+;; Calculate potential bonuses for a bet (preview)
+(define-read-only (preview-potential-bonuses (pool-id uint) (outcome uint) (bet-amount uint) (estimated-winnings uint))
+  (let (
+    (is-early (is-early-bettor pool-id bet-amount))
+    (is-mm (is-market-maker pool-id outcome bet-amount))
+    (early-bonus (if is-early (calculate-early-bettor-bonus pool-id tx-sender estimated-winnings) u0))
+    (mm-bonus (if is-mm (calculate-market-maker-bonus pool-id tx-sender outcome estimated-winnings) u0))
+  )
+    {
+      early-bettor-eligible: is-early,
+      market-maker-eligible: is-mm,
+      early-bettor-bonus: early-bonus,
+      market-maker-bonus: mm-bonus,
+      total-bonus: (+ early-bonus mm-bonus),
+      market-balance-ratio: (calculate-market-balance-ratio pool-id outcome)
+    }
+  )
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
