@@ -60,3 +60,42 @@ This document provides a comprehensive security analysis of the Predinex Pool sm
 - Empty string validation present
 - Zero amount checks implemented
 - Invalid pool ID handling with proper errors
+
+### 5. Economic Attacks
+**Status**: ⚠️ Requires Monitoring
+
+**Front-running Protection**:
+- No explicit front-running protection
+- Pool creation and betting are public
+- Settlement timing is controlled by pool creator
+
+**Recommendations**:
+- Consider commit-reveal scheme for sensitive bets
+- Add time delays for large bet settlements
+- Monitor for unusual betting patterns
+
+**Fee Extraction**:
+- 2% fee is fixed and transparent
+- Fee goes to contract owner (centralization risk)
+- Early bettor bonus (5%) is additional incentive
+
+**Recommendations**:
+- Consider fee distribution to stakers
+- Document fee structure clearly for users
+- Add fee adjustment mechanism (with governance)
+
+### 6. State Consistency
+**Status**: ✅ Consistent
+- All state updates are atomic
+- Map operations are transactional
+- No partial state updates possible
+
+**Potential Issues**:
+- Refund mechanism updates multiple maps
+- Pool settlement updates pool state and claims map
+- Withdrawal system has complex state tracking
+
+**Recommendations**:
+- Add state consistency checks in read-only functions
+- Consider event emission for state changes
+- Document state transition diagrams
