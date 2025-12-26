@@ -144,46 +144,7 @@ export default function Dashboard() {
             {/* Active Bets Section */}
             <div className="mb-12">
               <h2 className="text-2xl font-bold mb-6">Active Bets</h2>
-              {activeBets.length === 0 ? (
-                <div className="glass p-8 rounded-xl border border-border text-center">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No active bets. <Link href="/markets" className="text-primary underline">Explore markets</Link>
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {activeBets.map((bet) => (
-                    <Link key={bet.pool.id} href={`/markets/${bet.pool.id}`}>
-                      <div className="glass p-6 rounded-xl hover:border-primary/50 transition-colors cursor-pointer group h-full">
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="text-xs font-mono text-muted-foreground">#POOL-{bet.pool.id}</span>
-                          <span className="px-2 py-1 rounded bg-green-500/10 text-green-500 text-xs font-medium">
-                            Active
-                          </span>
-                        </div>
-
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {bet.pool.title}
-                        </h3>
-
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Your Bet:</span>
-                            <span className="font-semibold">{(bet.totalBet / 1_000_000).toFixed(2)} STX</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">On:</span>
-                            <span className="font-semibold">
-                              {bet.amountA > 0 ? bet.pool.outcomeA : bet.pool.outcomeB}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <ActiveBets bets={activeBets} />
             </div>
 
             {/* Winnings Section */}
