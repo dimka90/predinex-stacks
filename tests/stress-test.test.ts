@@ -238,3 +238,100 @@ Clarinet.test({
   },
 });
 
+Clarinet.test({
+  name: "Stress Test: Maximum pool count limit",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!;
+    const maxPools = 100;
+    
+    // Create maximum number of pools
+    const blocks: any[] = [];
+    for (let i = 0; i < maxPools; i += 50) {
+      const batch = Array.from({ length: Math.min(50, maxPools - i) }, (_, j) =>
+        Tx.contractCall(
+          "predinex-pool",
+          "create-pool",
+          [
+            types.utf8(`Max Pool ${i + j + 1}`),
+            types.utf8(`Testing max pools ${i + j + 1}`),
+            types.utf8("A"),
+            types.utf8("B"),
+            types.uint(1000)
+          ],
+          deployer.address
+        )
+      );
+      const block = chain.mineBlock(batch);
+      blocks.push(block);
+    }
+
+    // Verify pool count
+    const poolCountResult = chain.callReadOnlyFn(
+      "predinex-pool",
+      "get-pool-count",
+      [],
+      deployer.address
+    );
+    assertEquals(poolCountResult.result.expectUint(), BigInt(maxPools));
+  },
+});
+
+Clarinet.test({
+  name: "Stress Test: Large bet amounts",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!;
+    
+    // Create pool
+    const createBlock = chain.mineBlock([
+      Tx.contractCall(
+        "predinex-pool",
+        "create-pool",
+        [
+          types.utf8("Large Bet Test"),
+          types.utf8("Testing large bet amounts"),
+          types.utf8("Yes"),
+          types.utf8("No"),
+          types.uint(1000)
+        ],
+        deployer.address
+      )
+    ]);
+    const poolId = createBlock.receipts[0].result.expectOk().expectUint(0);
+
+    // Place large bets
+    const largeAmounts = [
+      1000000000,  // 1000 STX
+      500000000,   // 500 STX
+      100000000,   // 100 STX
+      10000000,    // 10 STX
+    ];
+
+    const betBlock = chain.mineBlock(
+      largeAmounts.map((amount) =>
+        Tx.contractCall(
+          "predinex-pool",
+          "place-bet",
+          [types.uint(poolId), types.uint(0), types.uint(amount)],
+          deployer.address
+        )
+      )
+    );
+
+    betBlock.receipts.forEach((receipt) => {
+      receipt.result.expectOk().expectBool(true);
+    });
+
+    // Verify total
+    const poolResult = chain.callReadOnlyFn(
+      "predinex-pool",
+      "get-pool",
+      [types.uint(poolId)],
+      deployer.address
+    );
+    const pool = poolResult.result.expectSome().expectTuple();
+    const totalA = pool["total-a"].expectUint();
+    const expectedTotal = largeAmounts.reduce((a, b) => a + BigInt(b), 0n);
+    assertEquals(totalA, expectedTotal);
+  },
+});
+
