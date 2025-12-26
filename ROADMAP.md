@@ -15,9 +15,9 @@ This document outlines the planned features and improvements for the Predinex Pr
 - [x] **Dispute Resolution**: A mechanism to challenge a settlement if the pool creator acts maliciously.
 
 ## Phase 4: User Interface (Frontend)
-- [ ] **Web App**: Next.js application to interact with the contracts.
-- [ ] **Wallet Connection**: Integration with Leather/Xverse wallets.
-- [ ] **Dashboard**: User stats, active bets, and history.
+- [x] **Web App**: Next.js application to interact with the contracts.
+- [x] **Wallet Connection**: Integration with Leather/Xverse wallets.
+- [x] **Dashboard**: User stats, active bets, and history.
 
 ## Phase 5: Testing & Security
 - [ ] **Audit Prep**: Comprehensive code analysis and cleanup.
