@@ -55,11 +55,29 @@
 (define-constant ERR-MANUAL-SETTLEMENT-DISABLED (err u448))
 (define-constant ERR-MAX-RETRIES-NOT-REACHED (err u449))
 
+;; Liquidity incentive error constants
+(define-constant ERR-INSUFFICIENT-INCENTIVE-POOL (err u450))
+(define-constant ERR-INVALID-INCENTIVE-CONFIG (err u451))
+(define-constant ERR-INCENTIVE-ALREADY-CLAIMED (err u452))
+(define-constant ERR-NOT-ELIGIBLE-FOR-INCENTIVE (err u453))
+(define-constant ERR-CREATOR-FUND-INSUFFICIENT (err u454))
+(define-constant ERR-INCENTIVE-POOL-EMPTY (err u455))
+
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
 (define-constant EARLY-BETTOR-WINDOW u50) ;; 50 blocks window for early bettor eligibility
 (define-constant EARLY-BETTOR-BONUS-PERCENT u5) ;; 5% bonus on winnings for early bettors
+
+;; Liquidity incentive constants
+(define-constant LIQUIDITY-EARLY-WINDOW-BLOCKS u144) ;; 24 hours default
+(define-constant LIQUIDITY-EARLY-BONUS-PERCENT u10) ;; 10% bonus for early bettors
+(define-constant LIQUIDITY-MARKET-MAKER-THRESHOLD-LOW u20) ;; 20% threshold
+(define-constant LIQUIDITY-MARKET-MAKER-THRESHOLD-HIGH u30) ;; 30% threshold
+(define-constant LIQUIDITY-MARKET-MAKER-BONUS-HIGH u15) ;; 15% bonus for <20%
+(define-constant LIQUIDITY-MARKET-MAKER-BONUS-LOW u10) ;; 10% bonus for 20-30%
+(define-constant LIQUIDITY-MIN-BET-FOR-INCENTIVES u10000) ;; Minimum bet amount
+(define-constant LIQUIDITY-CREATOR-MAX-BONUS-PERCENT u25) ;; Max creator-enhanced bonus
 
 ;; Resolution and fee constants
 (define-constant RESOLUTION-FEE-PERCENT u5) ;; 0.5% (5/1000)
@@ -298,6 +316,56 @@
   }
 )
 
+;; ============================================
+;; LIQUIDITY INCENTIVES DATA STRUCTURES
+;; ============================================
+
+;; Per-pool incentive tracking
+(define-map pool-incentive-funds
+  { pool-id: uint }
+  {
+    creator-contribution: uint,
+    platform-allocation: uint,
+    total-distributed: uint,
+    remaining-balance: uint
+  }
+)
+
+;; User incentive eligibility per pool
+(define-map user-incentive-status
+  { pool-id: uint, user: principal }
+  {
+    is-early-bettor: bool,
+    early-bet-amount: uint,
+    is-market-maker: bool,
+    market-maker-amount: uint,
+    total-bonus-earned: uint,
+    bonus-claimed: bool
+  }
+)
+
+;; User lifetime incentive statistics
+(define-map user-incentive-stats
+  { user: principal }
+  {
+    total-early-bettor-bonus: uint,
+    total-market-maker-bonus: uint,
+    pools-with-bonuses: uint,
+    last-bonus-claim: uint
+  }
+)
+
+;; Creator-enhanced incentive pools
+(define-map creator-enhanced-pools
+  { pool-id: uint }
+  {
+    creator-fund-amount: uint,
+    enhanced-early-bonus: uint,
+    enhanced-market-maker-bonus: uint,
+    is-enhanced: bool
+  }
+)
+
 (define-data-var pool-counter uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-withdrawn uint u0)
@@ -308,6 +376,18 @@
 (define-data-var oracle-submission-counter uint u0)
 (define-data-var resolution-attempt-counter uint u0)
 (define-data-var dispute-counter uint u0)
+
+;; Liquidity incentive system data variables
+(define-data-var platform-incentive-pool uint u0)
+(define-data-var total-incentives-distributed uint u0)
+(define-data-var liquidity-early-window-blocks uint LIQUIDITY-EARLY-WINDOW-BLOCKS)
+(define-data-var liquidity-early-bonus-percent uint LIQUIDITY-EARLY-BONUS-PERCENT)
+(define-data-var liquidity-market-maker-threshold-low uint LIQUIDITY-MARKET-MAKER-THRESHOLD-LOW)
+(define-data-var liquidity-market-maker-threshold-high uint LIQUIDITY-MARKET-MAKER-THRESHOLD-HIGH)
+(define-data-var liquidity-market-maker-bonus-high uint LIQUIDITY-MARKET-MAKER-BONUS-HIGH)
+(define-data-var liquidity-market-maker-bonus-low uint LIQUIDITY-MARKET-MAKER-BONUS-LOW)
+(define-data-var liquidity-min-bet-for-incentives uint LIQUIDITY-MIN-BET-FOR-INCENTIVES)
+(define-data-var liquidity-creator-max-bonus-percent uint LIQUIDITY-CREATOR-MAX-BONUS-PERCENT)
 
 ;; Create a new prediction pool
 ;; Validates all inputs before creating pool
@@ -353,6 +433,7 @@
 ;; Place a bet on a pool
 ;; Validates bet amount meets minimum requirements
 ;; Ensures pool is still active and not settled
+;; Now includes liquidity incentive detection
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
     (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
@@ -398,10 +479,57 @@
       )
     )
     
-    ;; Update total volume
-    (var-set total-volume (+ (var-get total-volume) amount))
+    ;; Update liquidity incentive status
+    (let (
+      (is-early (update-early-bettor-status pool-id tx-sender amount))
+      (is-mm (update-market-maker-status pool-id tx-sender outcome amount))
+    )
+      ;; Update total volume
+      (var-set total-volume (+ (var-get total-volume) amount))
+      
+      (ok { early-bettor: is-early, market-maker: is-mm })
+    )
+  )
+)
+
+;; Enhanced bet placement with incentive preview
+(define-public (place-bet-with-preview (pool-id uint) (outcome uint) (amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (is-early (is-early-bettor pool-id amount))
+    (is-mm (is-market-maker pool-id outcome amount))
+    (balance-ratio (calculate-market-balance-ratio pool-id outcome))
+  )
+    ;; Validate inputs
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    (asserts! (or (is-eq outcome u0) (is-eq outcome u1)) ERR-INVALID-OUTCOME)
+    (asserts! (>= amount MIN-BET-AMOUNT) ERR-INVALID-AMOUNT)
+    (asserts! (< burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
     
-    (ok true)
+    ;; Calculate potential incentive multipliers
+    (let (
+      (early-bonus-percent (if is-early (var-get liquidity-early-bonus-percent) u0))
+      (mm-bonus-percent (if is-mm
+        (if (< balance-ratio (var-get liquidity-market-maker-threshold-low))
+          (var-get liquidity-market-maker-bonus-high)
+          (var-get liquidity-market-maker-bonus-low)
+        )
+        u0
+      ))
+      (total-bonus-percent (+ early-bonus-percent mm-bonus-percent))
+    )
+      ;; Place the actual bet
+      (try! (place-bet pool-id outcome amount))
+      
+      (ok {
+        early-bettor-eligible: is-early,
+        market-maker-eligible: is-mm,
+        early-bonus-percent: early-bonus-percent,
+        market-maker-bonus-percent: mm-bonus-percent,
+        total-bonus-percent: total-bonus-percent,
+        market-balance-ratio: balance-ratio
+      })
+    )
   )
 )
 
@@ -434,6 +562,7 @@
 )
 
 ;; Claim winnings from a settled pool
+;; Now includes liquidity incentive bonuses
 (define-public (claim-winnings (pool-id uint))
   (let 
     (
@@ -466,18 +595,112 @@
         (
           ;; Calculate base share: (user_bet_on_winner * net_pool) / total_bet_on_winner
           (base-share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
-          ;; Calculate early bettor bonus if applicable
-          (bonus (if is-early-bettor (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100) u0))
-          (total-payout (+ base-share bonus))
+          ;; Calculate original early bettor bonus if applicable
+          (original-bonus (if is-early-bettor (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100) u0))
+          ;; Calculate liquidity incentive bonuses
+          (liquidity-early-bonus (calculate-early-bettor-bonus pool-id claimer base-share))
+          (liquidity-mm-bonus (calculate-market-maker-bonus pool-id claimer winning-outcome base-share))
+          (total-liquidity-bonus (+ liquidity-early-bonus liquidity-mm-bonus))
+          ;; Calculate available incentive funds
+          (pool-incentive-funds (default-to 
+            { creator-contribution: u0, platform-allocation: u0, total-distributed: u0, remaining-balance: u0 }
+            (map-get? pool-incentive-funds { pool-id: pool-id })
+          ))
+          (available-incentive-funds (+ (get remaining-balance pool-incentive-funds) (var-get platform-incentive-pool)))
+          ;; Apply proportional distribution if insufficient funds
+          (actual-liquidity-bonus (if (> total-liquidity-bonus available-incentive-funds)
+            (if (> available-incentive-funds u0)
+              (/ (* total-liquidity-bonus available-incentive-funds) total-liquidity-bonus)
+              u0
+            )
+            total-liquidity-bonus
+          ))
+          (total-payout (+ base-share original-bonus actual-liquidity-bonus))
         )
-        ;; Transfer total payout (base share + bonus) to user
+        ;; Transfer total payout (base share + bonuses) to user
         (try! (as-contract (stx-transfer? total-payout tx-sender claimer)))
+        
+        ;; Update incentive pool balances
+        (if (> actual-liquidity-bonus u0)
+          (begin
+            ;; Deduct from platform incentive pool
+            (var-set platform-incentive-pool (- (var-get platform-incentive-pool) actual-liquidity-bonus))
+            ;; Update total incentives distributed
+            (var-set total-incentives-distributed (+ (var-get total-incentives-distributed) actual-liquidity-bonus))
+            ;; Update user incentive status
+            (let ((current-status (unwrap! (map-get? user-incentive-status { pool-id: pool-id, user: claimer }) ERR-NOT-ELIGIBLE-FOR-INCENTIVE)))
+              (map-set user-incentive-status
+                { pool-id: pool-id, user: claimer }
+                (merge current-status {
+                  total-bonus-earned: actual-liquidity-bonus,
+                  bonus-claimed: true
+                })
+              )
+            )
+            ;; Update user lifetime stats
+            (let ((current-stats (default-to 
+              { total-early-bettor-bonus: u0, total-market-maker-bonus: u0, pools-with-bonuses: u0, last-bonus-claim: u0 }
+              (map-get? user-incentive-stats { user: claimer })
+            )))
+              (map-set user-incentive-stats
+                { user: claimer }
+                {
+                  total-early-bettor-bonus: (+ (get total-early-bettor-bonus current-stats) liquidity-early-bonus),
+                  total-market-maker-bonus: (+ (get total-market-maker-bonus current-stats) liquidity-mm-bonus),
+                  pools-with-bonuses: (+ (get pools-with-bonuses current-stats) u1),
+                  last-bonus-claim: burn-block-height
+                }
+              )
+            )
+          )
+          true
+        )
         
         ;; Mark as claimed
         (map-set claims { pool-id: pool-id, user: claimer } true)
         
-        (ok true)
+        (ok { 
+          base-payout: (+ base-share original-bonus),
+          liquidity-bonus: actual-liquidity-bonus,
+          total-payout: total-payout
+        })
       )
+    )
+  )
+)
+
+;; Distribute creator fund refunds for unused incentives
+(define-public (refund-unused-creator-funds (pool-id uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (enhanced-pool (unwrap! (map-get? creator-enhanced-pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (pool-funds (unwrap! (map-get? pool-incentive-funds { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+  )
+    ;; Only pool creator can request refund
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    
+    ;; Pool must be settled or expired
+    (asserts! (or (get settled pool) (> burn-block-height (get expiry pool))) ERR-POOL-NOT-EXPIRED)
+    
+    ;; Must have creator contribution and remaining balance
+    (asserts! (> (get creator-contribution pool-funds) u0) ERR-CREATOR-FUND-INSUFFICIENT)
+    (asserts! (> (get remaining-balance pool-funds) u0) ERR-INCENTIVE-POOL-EMPTY)
+    
+    (let (
+      (refund-amount (min (get creator-contribution pool-funds) (get remaining-balance pool-funds)))
+    )
+      ;; Transfer refund to creator
+      (try! (as-contract (stx-transfer? refund-amount tx-sender (get creator pool))))
+      
+      ;; Update pool incentive funds
+      (map-set pool-incentive-funds
+        { pool-id: pool-id }
+        (merge pool-funds {
+          remaining-balance: (- (get remaining-balance pool-funds) refund-amount)
+        })
+      )
+      
+      (ok refund-amount)
     )
   )
 )
@@ -1191,6 +1414,220 @@
 ;; Check if pool is in fallback mode
 (define-read-only (is-pool-in-fallback (pool-id uint))
   (is-some (map-get? fallback-resolutions { pool-id: pool-id }))
+)
+
+;; ============================================
+;; LIQUIDITY INCENTIVES FUNCTIONS
+;; ============================================
+
+;; Fund platform incentive pool
+(define-public (fund-platform-incentive-pool (amount uint))
+  (begin
+    ;; Only contract owner or admins can fund incentive pool
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender)) ERR-UNAUTHORIZED)
+    
+    ;; Validate funding amount
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    ;; Transfer STX from sender to contract
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    
+    ;; Update platform incentive pool balance
+    (var-set platform-incentive-pool (+ (var-get platform-incentive-pool) amount))
+    
+    (ok amount)
+  )
+)
+
+;; Withdraw from platform incentive pool
+(define-public (withdraw-platform-incentive-pool (amount uint))
+  (begin
+    ;; Only contract owner can withdraw from incentive pool
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    ;; Validate withdrawal amount
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= amount (var-get platform-incentive-pool)) ERR-INSUFFICIENT-INCENTIVE-POOL)
+    
+    ;; Transfer STX from contract to owner
+    (try! (as-contract (stx-transfer? amount tx-sender CONTRACT-OWNER)))
+    
+    ;; Update platform incentive pool balance
+    (var-set platform-incentive-pool (- (var-get platform-incentive-pool) amount))
+    
+    (ok amount)
+  )
+)
+
+;; Check early bettor eligibility
+(define-private (is-early-bettor (pool-id uint) (bet-amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) false))
+    (pool-created-at (get created-at pool))
+    (early-window-end (+ pool-created-at (var-get liquidity-early-window-blocks)))
+  )
+    (and 
+      (< burn-block-height early-window-end)
+      (>= bet-amount (var-get liquidity-min-bet-for-incentives))
+    )
+  )
+)
+
+;; Update user incentive status for early bettor
+(define-private (update-early-bettor-status (pool-id uint) (user principal) (bet-amount uint))
+  (let (
+    (current-status (default-to 
+      { 
+        is-early-bettor: false, 
+        early-bet-amount: u0, 
+        is-market-maker: false, 
+        market-maker-amount: u0, 
+        total-bonus-earned: u0, 
+        bonus-claimed: false 
+      } 
+      (map-get? user-incentive-status { pool-id: pool-id, user: user })
+    ))
+    (is-early (is-early-bettor pool-id bet-amount))
+  )
+    (if is-early
+      (map-set user-incentive-status
+        { pool-id: pool-id, user: user }
+        (merge current-status {
+          is-early-bettor: true,
+          early-bet-amount: (+ (get early-bet-amount current-status) bet-amount)
+        })
+      )
+      true
+    )
+    is-early
+  )
+)
+
+;; Calculate early bettor bonus
+(define-private (calculate-early-bettor-bonus (pool-id uint) (user principal) (base-winnings uint))
+  (let (
+    (user-status (map-get? user-incentive-status { pool-id: pool-id, user: user }))
+    (enhanced-pool (map-get? creator-enhanced-pools { pool-id: pool-id }))
+  )
+    (match user-status
+      status (if (get is-early-bettor status)
+        (let (
+          (bonus-percent (match enhanced-pool
+            enhanced (if (get is-enhanced enhanced)
+              (get enhanced-early-bonus enhanced)
+              (var-get liquidity-early-bonus-percent)
+            )
+            (var-get liquidity-early-bonus-percent)
+          ))
+          (max-bonus-percent (var-get liquidity-creator-max-bonus-percent))
+          (final-bonus-percent (if (> bonus-percent max-bonus-percent) max-bonus-percent bonus-percent))
+        )
+          (/ (* base-winnings final-bonus-percent) u100)
+        )
+        u0
+      )
+      u0
+    )
+  )
+)
+
+;; Calculate market balance ratio for an outcome
+(define-private (calculate-market-balance-ratio (pool-id uint) (outcome uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) u0))
+    (total-a (get total-a pool))
+    (total-b (get total-b pool))
+    (total-pool (+ total-a total-b))
+  )
+    (if (> total-pool u0)
+      (if (is-eq outcome u0)
+        (/ (* total-a u100) total-pool)
+        (/ (* total-b u100) total-pool)
+      )
+      u50 ;; Default to 50% if no bets placed yet
+    )
+  )
+)
+
+;; Check if user qualifies as market maker
+(define-private (is-market-maker (pool-id uint) (outcome uint) (bet-amount uint))
+  (let (
+    (balance-ratio (calculate-market-balance-ratio pool-id outcome))
+    (threshold-high (var-get liquidity-market-maker-threshold-high))
+  )
+    (and 
+      (< balance-ratio threshold-high)
+      (>= bet-amount (var-get liquidity-min-bet-for-incentives))
+    )
+  )
+)
+
+;; Update user incentive status for market maker
+(define-private (update-market-maker-status (pool-id uint) (user principal) (outcome uint) (bet-amount uint))
+  (let (
+    (current-status (default-to 
+      { 
+        is-early-bettor: false, 
+        early-bet-amount: u0, 
+        is-market-maker: false, 
+        market-maker-amount: u0, 
+        total-bonus-earned: u0, 
+        bonus-claimed: false 
+      } 
+      (map-get? user-incentive-status { pool-id: pool-id, user: user })
+    ))
+    (is-mm (is-market-maker pool-id outcome bet-amount))
+  )
+    (if is-mm
+      (map-set user-incentive-status
+        { pool-id: pool-id, user: user }
+        (merge current-status {
+          is-market-maker: true,
+          market-maker-amount: (+ (get market-maker-amount current-status) bet-amount)
+        })
+      )
+      true
+    )
+    is-mm
+  )
+)
+
+;; Calculate market maker bonus
+(define-private (calculate-market-maker-bonus (pool-id uint) (user principal) (outcome uint) (base-winnings uint))
+  (let (
+    (user-status (map-get? user-incentive-status { pool-id: pool-id, user: user }))
+    (enhanced-pool (map-get? creator-enhanced-pools { pool-id: pool-id }))
+    (balance-ratio (calculate-market-balance-ratio pool-id outcome))
+  )
+    (match user-status
+      status (if (get is-market-maker status)
+        (let (
+          (threshold-low (var-get liquidity-market-maker-threshold-low))
+          (threshold-high (var-get liquidity-market-maker-threshold-high))
+          (base-bonus-percent (if (< balance-ratio threshold-low)
+            (var-get liquidity-market-maker-bonus-high)
+            (if (< balance-ratio threshold-high)
+              (var-get liquidity-market-maker-bonus-low)
+              u0
+            )
+          ))
+          (enhanced-bonus-percent (match enhanced-pool
+            enhanced (if (get is-enhanced enhanced)
+              (get enhanced-market-maker-bonus enhanced)
+              base-bonus-percent
+            )
+            base-bonus-percent
+          ))
+          (max-bonus-percent (var-get liquidity-creator-max-bonus-percent))
+          (final-bonus-percent (if (> enhanced-bonus-percent max-bonus-percent) max-bonus-percent enhanced-bonus-percent))
+        )
+          (/ (* base-winnings final-bonus-percent) u100)
+        )
+        u0
+      )
+      u0
+    )
+  )
 )
 
 ;; ============================================
