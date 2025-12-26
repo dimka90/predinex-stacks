@@ -195,59 +195,7 @@ export default function Dashboard() {
             {/* Betting History Section */}
             <div>
               <h2 className="text-2xl font-bold mb-6">Betting History</h2>
-              {history.length === 0 ? (
-                <div className="glass p-8 rounded-xl border border-border text-center">
-                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No betting history yet.
-                  </p>
-                </div>
-              ) : (
-                <div className="glass rounded-xl border border-border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Pool</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Amount</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Outcome</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold">Result</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {history.map((bet) => (
-                          <tr key={bet.pool.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <Link href={`/markets/${bet.pool.id}`} className="text-primary hover:underline">
-                                {bet.pool.title.slice(0, 30)}...
-                              </Link>
-                            </td>
-                            <td className="px-6 py-4">{(bet.totalBet / 1_000_000).toFixed(2)} STX</td>
-                            <td className="px-6 py-4">
-                              {bet.amountA > 0 ? bet.pool.outcomeA : bet.pool.outcomeB}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                bet.pool.settled ? 'bg-zinc-800 text-zinc-400' : 'bg-green-500/10 text-green-500'
-                              }`}>
-                                {bet.pool.settled ? 'Settled' : 'Active'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {bet.pool.settled ? (
-                                <span className="text-green-400">Won</span>
-                              ) : (
-                                <span className="text-muted-foreground">Pending</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+              <BetHistory bets={history} />
             </div>
           </>
         )}
