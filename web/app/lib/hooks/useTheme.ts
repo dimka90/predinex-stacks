@@ -4,3 +4,4 @@ export function useTheme() {
   return useThemeContext();
 }
 // Theme hook improvement 1
+// Theme hook improvement 2
