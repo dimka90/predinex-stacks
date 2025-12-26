@@ -1,76 +1,110 @@
 'use client';
 
+import { useMemo } from 'react';
 import Navbar from "../components/Navbar";
-import { useEffect, useState } from "react";
-import { fetchActivePools, Pool } from "../lib/stacks-api";
-import Link from "next/link";
-import { Clock, TrendingUp } from "lucide-react";
+import SearchBar from "../components/SearchBar";
+import FilterControls from "../components/FilterControls";
+import SortControls from "../components/SortControls";
+import MarketGrid from "../components/MarketGrid";
+import Pagination from "../components/Pagination";
+import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
 
-export default function Markets() {
-    const [pools, setPools] = useState<Pool[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default function MarketsPage() {
+  const {
+    paginatedMarkets,
+    isLoading,
+    error,
+    filters,
+    pagination,
+    setSearch,
+    setStatusFilter,
+    setSortBy,
+    setPage,
+    retry,
+    filteredMarkets
+  } = useMarketDiscovery();
 
-    useEffect(() => {
-        fetchActivePools().then(data => {
-            setPools(data);
-            setIsLoading(false);
-        });
-    }, []);
+  // Calculate filter counts for display
+  const filterCounts = useMemo(() => {
+    const counts = {
+      all: filteredMarkets.length,
+      active: 0,
+      settled: 0,
+      expired: 0
+    };
 
-    return (
-        <main className="min-h-screen bg-background text-foreground">
-            <Navbar />
+    filteredMarkets.forEach(market => {
+      counts[market.status]++;
+    });
 
-            <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6">
-                <h1 className="text-3xl font-bold mb-8">Active Markets</h1>
+    return counts;
+  }, [filteredMarkets]);
 
-                {isLoading ? (
-                    <div className="text-center py-20">Loading markets...</div>
-                ) : pools.length === 0 ? (
-                    <div className="text-center py-20 text-muted-foreground">
-                        No active pools found. <Link href="/create" className="text-primary underline">Create one?</Link>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {pools.map((pool) => (
-                            <Link key={pool.id} href={`/markets/${pool.id}`}>
-                                <div className="glass p-6 rounded-xl hover:border-primary/50 transition-colors cursor-pointer group h-full flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className="text-xs font-mono text-muted-foreground">#POOL-{pool.id}</span>
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${pool.settled ? 'bg-zinc-800 text-zinc-400' : 'bg-green-500/10 text-green-500'}`}>
-                                                {pool.settled ? 'Settled' : 'Active'}
-                                            </span>
-                                        </div>
+  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all';
 
-                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">{pool.title}</h3>
-                                        <p className="text-sm text-muted-foreground mb-6 line-clamp-3">{pool.description}</p>
-                                    </div>
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <Navbar />
 
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between items-center text-sm p-3 bg-muted/50 rounded-lg">
-                                            <span className="font-medium text-green-400">{pool.outcomeA}</span>
-                                            <span className="text-muted-foreground text-xs">vs</span>
-                                            <span className="font-medium text-red-400">{pool.outcomeB}</span>
-                                        </div>
+      <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Prediction Markets</h1>
+          <p className="text-muted-foreground">
+            Discover and participate in decentralized prediction markets on Stacks
+          </p>
+        </div>
 
-                                        <div className="flex justify-between items-center text-sm">
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <TrendingUp className="w-4 h-4" />
-                                                <span>{(pool.totalA + pool.totalB).toLocaleString()} STX</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Clock className="w-4 h-4" />
-                                                <span>Block {pool.expiry}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+        {/* Controls */}
+        <div className="space-y-6 mb-8">
+          {/* Search */}
+          <div className="max-w-2xl">
+            <SearchBar
+              value={filters.search}
+              onChange={setSearch}
+              placeholder="Search markets by title or description..."
+            />
+          </div>
+
+          {/* Filters and Sort */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Status Filters */}
+            <div className="flex-1">
+              <FilterControls
+                selectedStatus={filters.status}
+                onStatusChange={setStatusFilter}
+                counts={filterCounts}
+              />
             </div>
-        </main>
-    );
+
+            {/* Sort Controls */}
+            <div className="lg:w-64">
+              <SortControls
+                selectedSort={filters.sortBy}
+                onSortChange={setSortBy}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Markets Grid */}
+        <MarketGrid
+          markets={paginatedMarkets}
+          isLoading={isLoading}
+          error={error}
+          onRetry={retry}
+          searchQuery={filters.search}
+          hasFilters={hasActiveFilters}
+        />
+
+        {/* Pagination */}
+        {!isLoading && !error && paginatedMarkets.length > 0 && (
+          <Pagination
+            pagination={pagination}
+            onPageChange={setPage}
+          />
+        )}
+      </div>
+    </main>
+  );
 }

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStacks } from './StacksProvider';
+import { useWalletConnect } from '../lib/hooks/useWalletConnect';
 import { openContractCall } from '@stacks/connect';
 import { uintCV } from '@stacks/transactions';
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../lib/constants';
-import { Loader2, Wallet } from 'lucide-react';
+import { Loader2, Wallet, AlertCircle } from 'lucide-react';
 import { Pool } from '../lib/stacks-api';
 
 interface BettingSectionProps {
@@ -15,8 +16,18 @@ interface BettingSectionProps {
 
 export default function BettingSection({ pool, poolId }: BettingSectionProps) {
     const { userData, authenticate } = useStacks();
+    const { session } = useWalletConnect();
     const [betAmount, setBetAmount] = useState("");
     const [isBetting, setIsBetting] = useState(false);
+    const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+    // Fetch wallet balance when session changes
+    useEffect(() => {
+        if (session?.isConnected) {
+            // In a real app, fetch balance from API
+            setWalletBalance(session.balance || 0);
+        }
+    }, [session]);
 
     const placeBet = async (outcome: number) => {
         if (!userData) {
@@ -35,8 +46,14 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
             return;
         }
 
+        // Check wallet balance
+        if (walletBalance !== null && amount > walletBalance) {
+            alert(`Insufficient balance. You have ${walletBalance} STX.`);
+            return;
+        }
+
         setIsBetting(true);
-        const amountInMicroStx = Math.floor(parseFloat(betAmount) * 1_000_000); // STX to microSTX
+        const amountInMicroStx = Math.floor(parseFloat(betAmount) * 1_000_000);
 
         try {
             await openContractCall({
@@ -75,7 +92,7 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
         );
     }
 
-    if (!userData) {
+    if (!userData && !session?.isConnected) {
         return (
             <div className="text-center py-6 bg-muted/50 rounded-lg">
                 <Wallet className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -94,6 +111,31 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
 
     return (
         <div className="space-y-4">
+            {/* Wallet Info */}
+            {session?.isConnected && (
+                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Connected Wallet</p>
+                            <p className="font-mono text-sm">{session.address.slice(0, 8)}...{session.address.slice(-6)}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Balance</p>
+                            <p className="font-bold">{walletBalance?.toFixed(2) || '0'} STX</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Balance Warning */}
+            {walletBalance !== null && walletBalance < 0.1 && (
+                <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex gap-2">
+                    <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-yellow-600">Insufficient balance to place bets. Minimum: 0.1 STX</p>
+                </div>
+            )}
+
+            {/* Bet Amount Input */}
             <div>
                 <label className="block text-sm font-medium mb-2">Bet Amount (STX)</label>
                 <input
@@ -104,22 +146,23 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                     placeholder="e.g., 10"
                     value={betAmount}
                     onChange={(e) => setBetAmount(e.target.value)}
-                    disabled={isBetting}
+                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
                     aria-label="Enter bet amount in STX"
                 />
             </div>
 
+            {/* Bet Buttons */}
             <div className="grid grid-cols-2 gap-4">
                 <button
                     onClick={() => placeBet(0)}
-                    disabled={isBetting}
+                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
                     className="py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                 >
                     {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeA}`}
                 </button>
                 <button
                     onClick={() => placeBet(1)}
-                    disabled={isBetting}
+                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
                     className="py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                 >
                     {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeB}`}
