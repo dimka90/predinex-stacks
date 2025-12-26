@@ -7,7 +7,7 @@ import BetHistory from "../components/BetHistory";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStacks } from "../components/StacksProvider";
-import { fetchActivePools, Pool, getUserBet } from "../lib/stacks-api";
+import { loadDashboardData } from "../lib/dashboard-api";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
@@ -41,68 +41,19 @@ export default function Dashboard() {
       return;
     }
 
-    loadDashboardData();
+    loadDashboardDataHandler();
   }, [userData, router]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardDataHandler = async () => {
     try {
-      const allPools = await fetchActivePools();
-      setPools(allPools);
-
       const userAddress = userData.profile.stxAddress.mainnet;
-
-      const active: UserBet[] = [];
-      const won: UserBet[] = [];
-      const all: UserBet[] = [];
-
-      let totalBet = 0;
-      let totalWon = 0;
-      let activeCount = 0;
-      let settledCount = 0;
-
-      // Fetch user bets for each pool
-      for (const pool of allPools) {
-        const userBet = await getUserBet(pool.id, userAddress);
-        
-        if (userBet && userBet.totalBet > 0) {
-          const bet: UserBet = {
-            pool,
-            amountA: userBet.amountA,
-            amountB: userBet.amountB,
-            totalBet: userBet.totalBet,
-          };
-
-          all.push(bet);
-          totalBet += userBet.totalBet;
-
-          if (pool.settled) {
-            settledCount++;
-            // Check if user won
-            if (pool.winningOutcome === 0 && userBet.amountA > 0) {
-              won.push(bet);
-              totalWon += userBet.totalBet; // Placeholder - actual winnings would be calculated
-            } else if (pool.winningOutcome === 1 && userBet.amountB > 0) {
-              won.push(bet);
-              totalWon += userBet.totalBet; // Placeholder - actual winnings would be calculated
-            }
-          } else {
-            activeCount++;
-            active.push(bet);
-          }
-        }
-      }
+      const { activeBets: active, winnings: won, history: all, stats: computedStats } =
+        await loadDashboardData(userAddress);
 
       setActiveBets(active);
       setWinnings(won);
       setHistory(all);
-      setStats({
-        totalBet,
-        totalWinnings: totalWon,
-        activeBetsCount: activeCount,
-        settledBetsCount: settledCount,
-        winRate: settledCount > 0 ? (won.length / settledCount) * 100 : 0,
-        totalPoolsParticipated: all.length,
-      });
+      setStats(computedStats);
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     } finally {
