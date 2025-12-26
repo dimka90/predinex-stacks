@@ -1,12 +1,15 @@
 'use client';
 
 import Navbar from "../components/Navbar";
+import UserStats from "../components/UserStats";
+import ActiveBets from "../components/ActiveBets";
+import BetHistory from "../components/BetHistory";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStacks } from "../components/StacksProvider";
 import { fetchActivePools, Pool, getUserBet } from "../lib/stacks-api";
 import Link from "next/link";
-import { TrendingUp, Trophy, Clock, AlertCircle } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 interface UserBet {
   pool: Pool;
@@ -29,6 +32,7 @@ export default function Dashboard() {
     activeBetsCount: 0,
     settledBetsCount: 0,
     winRate: 0,
+    totalPoolsParticipated: 0,
   });
 
   useEffect(() => {
