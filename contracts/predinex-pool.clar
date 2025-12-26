@@ -1251,6 +1251,26 @@
   )
 )
 
+;; ============================================
+;; INCENTIVE CALCULATION HELPERS
+;; ============================================
+
+;; Calculate proportional bonus distribution
+(define-private (calculate-proportional-bonus (requested-bonus uint) (available-funds uint) (total-requested uint))
+  (if (>= available-funds total-requested)
+    requested-bonus
+    (if (> available-funds u0)
+      (/ (* requested-bonus available-funds) total-requested)
+      u0
+    )
+  )
+)
+
+;; Get effective bonus percentage with enhancements
+(define-private (get-effective-bonus-percent (base-percent uint) (enhanced-percent uint))
+  (min enhanced-percent (var-get liquidity-creator-max-bonus-percent))
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
