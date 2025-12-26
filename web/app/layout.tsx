@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
 import { WalletConnectProvider } from "./context/WalletConnectContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 export const metadata: Metadata = {
@@ -15,14 +16,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <ErrorBoundary>
-          <WalletConnectProvider>
-            <StacksProvider>
-              {children}
-            </StacksProvider>
-          </WalletConnectProvider>
+          <ThemeProvider>
+            <WalletConnectProvider>
+              <StacksProvider>
+                {children}
+              </StacksProvider>
+            </WalletConnectProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>
