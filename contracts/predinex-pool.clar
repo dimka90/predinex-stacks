@@ -1271,6 +1271,33 @@
   (min enhanced-percent (var-get liquidity-creator-max-bonus-percent))
 )
 
+;; ============================================
+;; LIQUIDITY METRICS AND REPORTING
+;; ============================================
+
+;; Get pool liquidity health score
+(define-read-only (get-pool-liquidity-health (pool-id uint))
+  (let (
+    (imbalance (get-market-imbalance-severity pool-id))
+    (health-score (if (< imbalance u20) u100 (- u100 imbalance)))
+  )
+    (max health-score u0)
+  )
+)
+
+;; Get incentive effectiveness metrics
+(define-read-only (get-incentive-effectiveness (pool-id uint))
+  {
+    liquidity-health: (get-pool-liquidity-health pool-id),
+    early-bettor-window-active: (is-early-bettor-window-active pool-id),
+    market-maker-opportunities: (+ 
+      (if (is-outcome-underrepresented pool-id u0) u1 u0)
+      (if (is-outcome-underrepresented pool-id u1) u1 u0)
+    ),
+    available-funds: (get-total-available-incentive-funds pool-id)
+  }
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
