@@ -859,3 +859,48 @@
     (err ERR-INVALID-WITHDRAWAL)
   )
 )
+
+;; ============================================
+;; LIQUIDITY INCENTIVES - Early Bettor Functions
+;; ============================================
+
+;; Check if user is an early bettor for a pool
+(define-read-only (is-early-bettor (pool-id uint) (user principal))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (match (map-get? user-bets { pool-id: pool-id, user: user })
+      bet-data (let (
+        (first-bet-block (get first-bet-block bet-data))
+        (pool-created-at (get created-at pool-data))
+        (early-bettor-window-end (+ pool-created-at EARLY-BETTOR-WINDOW))
+      )
+        (ok (<= first-bet-block early-bettor-window-end))
+      )
+      (ok false)
+    )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
+;; Get early bettor bonus amount for a user's potential winnings
+(define-read-only (get-early-bettor-bonus (pool-id uint) (user principal) (base-share uint))
+  (match (is-early-bettor pool-id user)
+    (ok true) (ok (/ (* base-share EARLY-BETTOR-BONUS-PERCENT) u100))
+    (ok false) (ok u0)
+    (err error) (err error)
+  )
+)
+
+;; Get liquidity incentive info for a pool
+(define-read-only (get-liquidity-incentive-info (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool-data (ok {
+      early-bettor-window: EARLY-BETTOR-WINDOW,
+      bonus-percent: EARLY-BETTOR-BONUS-PERCENT,
+      pool-created-at: (get created-at pool-data),
+      window-end-block: (+ (get created-at pool-data) EARLY-BETTOR-WINDOW),
+      current-block: burn-block-height,
+      window-active: (< burn-block-height (+ (get created-at pool-data) EARLY-BETTOR-WINDOW))
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
