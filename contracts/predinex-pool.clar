@@ -168,12 +168,22 @@
     )
     
     ;; Update user bet
-    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0 } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
+    (let ((user-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))))
       (map-set user-bets
         { pool-id: pool-id, user: tx-sender }
         (if (is-eq outcome u0)
-          { amount-a: (+ (get amount-a user-bet) amount), amount-b: (get amount-b user-bet), total-bet: (+ (get total-bet user-bet) amount) }
-          { amount-a: (get amount-a user-bet), amount-b: (+ (get amount-b user-bet) amount), total-bet: (+ (get total-bet user-bet) amount) }
+          { 
+            amount-a: (+ (get amount-a user-bet) amount), 
+            amount-b: (get amount-b user-bet), 
+            total-bet: (+ (get total-bet user-bet) amount),
+            first-bet-block: (get first-bet-block user-bet)
+          }
+          { 
+            amount-a: (get amount-a user-bet), 
+            amount-b: (+ (get amount-b user-bet) amount), 
+            total-bet: (+ (get total-bet user-bet) amount),
+            first-bet-block: (get first-bet-block user-bet)
+          }
         )
       )
     )
