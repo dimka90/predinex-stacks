@@ -291,11 +291,38 @@
   )
 )
 
-;; Settle a pool with winning outcome
+;; ============================================
+;; SETTLEMENT FUNCTIONS
+;; ============================================
+
+;; Settle a pool by declaring the winning outcome
+;;
+;; Parameters:
+;;   - pool-id: ID of the pool to settle
+;;   - winning-outcome: Outcome index that won (0 or 1 for binary pools)
+;;
+;; Returns: (ok true) on success
+;; Errors: ERR-POOL-NOT-FOUND, ERR-UNAUTHORIZED, ERR-POOL-SETTLED, ERR-INVALID-OUTCOME
+;;
+;; Security:
+;;   - Only pool creator can settle (prevents unauthorized settlement)
+;;   - Pool must not already be settled
+;;   - Winning outcome must be valid (0 or 1)
+;;   - Transfers 2% fee to contract owner before settlement
+;;
+;; State Changes:
+;;   - Marks pool as settled
+;;   - Records winning outcome and settlement block height
+;;   - Fee is deducted from pool balance and sent to owner
+;;
+;; Note: After settlement, winners can claim their winnings via claim-winnings
 (define-public (settle-pool (pool-id uint) (winning-outcome uint))
   (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    ;; Access control: only pool creator can settle
     (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    ;; Validation: pool must not already be settled
     (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    ;; Validation: winning outcome must be 0 or 1
     (asserts! (or (is-eq winning-outcome u0) (is-eq winning-outcome u1)) ERR-INVALID-OUTCOME)
     
     ;; Transfer fee
