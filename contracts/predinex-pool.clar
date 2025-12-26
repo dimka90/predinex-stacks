@@ -161,10 +161,27 @@
 (define-data-var total-withdrawn uint u0)
 (define-data-var withdrawal-counter uint u0)
 
-;; Create a new prediction pool
+;; ============================================
+;; POOL CREATION & MANAGEMENT
+;; ============================================
+
+;; Create a new binary prediction pool
+;; 
+;; Parameters:
+;;   - title: Pool title (max 256 chars, non-empty)
+;;   - description: Pool description (max 512 chars, non-empty)
+;;   - outcome-a: Name of first outcome (max 128 chars, non-empty)
+;;   - outcome-b: Name of second outcome (max 128 chars, non-empty)
+;;   - duration: Pool duration in blocks (must be > 0)
+;;
+;; Returns: (ok pool-id) on success
+;; Errors: ERR-INVALID-TITLE, ERR-INVALID-DESCRIPTION, ERR-INVALID-OUTCOME, ERR-INVALID-DURATION
+;;
+;; Security: No access control - anyone can create pools
+;; State: Increments pool-counter, creates new pool entry
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
-    ;; Validation checks
+    ;; Input validation - all fields must be non-empty
     (asserts! (> (len title) u0) ERR-INVALID-TITLE)
     (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
     (asserts! (> (len outcome-a) u0) ERR-INVALID-OUTCOME)
