@@ -60,9 +60,35 @@
     winning-outcome: (optional uint),
     created-at: uint,
     settled-at: (optional uint),
-    expiry: uint
+    expiry: uint,
+    outcome-count: uint,
+    dispute-period: uint
   }
 )
+
+;; Multiple outcomes support (beyond binary)
+(define-map pool-outcomes
+  { pool-id: uint, outcome-index: uint }
+  {
+    name: (string-ascii 128),
+    total-bet: uint
+  }
+)
+
+;; Dispute resolution tracking
+(define-map disputes
+  { pool-id: uint, dispute-id: uint }
+  {
+    challenger: principal,
+    reason: (string-ascii 512),
+    created-at: uint,
+    status: (string-ascii 20),
+    resolved-by: (optional principal),
+    resolved-at: (optional uint)
+  }
+)
+
+(define-data-var dispute-counter uint u0)
 
 (define-map claims
   { pool-id: uint, user: principal }
