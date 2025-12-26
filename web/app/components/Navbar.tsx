@@ -19,12 +19,24 @@ export default function Navbar() {
                         <span className="font-bold text-xl tracking-tight">Predinex</span>
                     </Link>
 
-                    {/* User Info */}
-                    {userData ? (
-                        <div className="flex items-center gap-4">
+                    {/* Navigation Links */}
+                    <div className="hidden md:flex items-center gap-6">
+                        <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            Markets
+                        </Link>
+                        <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            Create
+                        </Link>
+                        {userData && (
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 Dashboard
                             </Link>
+                        )}
+                    </div>
+
+                    {/* User Info */}
+                    {userData ? (
+                        <div className="flex items-center gap-4">
                             <span className="text-sm font-mono text-muted-foreground hidden sm:block">
                                 {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
                             </span>
