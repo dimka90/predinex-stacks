@@ -1152,6 +1152,85 @@
   )
 )
 
+;; ============================================
+;; USER STATISTICS AND TRACKING FUNCTIONS
+;; ============================================
+
+;; Get comprehensive user incentive summary
+(define-read-only (get-user-incentive-summary (user principal))
+  (let (
+    (lifetime-stats (default-to 
+      { total-early-bettor-bonus: u0, total-market-maker-bonus: u0, pools-with-bonuses: u0, last-bonus-claim: u0 }
+      (map-get? user-incentive-stats { user: user })
+    ))
+  )
+    {
+      total-early-bettor-bonus: (get total-early-bettor-bonus lifetime-stats),
+      total-market-maker-bonus: (get total-market-maker-bonus lifetime-stats),
+      total-bonuses-earned: (+ (get total-early-bettor-bonus lifetime-stats) (get total-market-maker-bonus lifetime-stats)),
+      pools-with-bonuses: (get pools-with-bonuses lifetime-stats),
+      last-bonus-claim: (get last-bonus-claim lifetime-stats),
+      average-bonus-per-pool: (if (> (get pools-with-bonuses lifetime-stats) u0)
+        (/ (+ (get total-early-bettor-bonus lifetime-stats) (get total-market-maker-bonus lifetime-stats)) (get pools-with-bonuses lifetime-stats))
+        u0
+      )
+    }
+  )
+)
+
+;; Check if user has claimed bonuses for a specific pool
+(define-read-only (has-user-claimed-bonuses (pool-id uint) (user principal))
+  (match (map-get? user-incentive-status { pool-id: pool-id, user: user })
+    status (get bonus-claimed status)
+    false
+  )
+)
+
+;; Get user's total unclaimed bonuses across all pools
+(define-read-only (get-user-unclaimed-bonuses (user principal))
+  ;; This is a simplified version - in practice, you'd iterate through pools
+  ;; For now, return 0 as a placeholder
+  u0
+)
+
+;; Get user's incentive eligibility for a specific pool
+(define-read-only (get-user-pool-incentive-eligibility (pool-id uint) (user principal))
+  (match (map-get? user-incentive-status { pool-id: pool-id, user: user })
+    status {
+      is-early-bettor: (get is-early-bettor status),
+      early-bet-amount: (get early-bet-amount status),
+      is-market-maker: (get is-market-maker status),
+      market-maker-amount: (get market-maker-amount status),
+      total-bonus-earned: (get total-bonus-earned status),
+      bonus-claimed: (get bonus-claimed status),
+      eligible-for-bonuses: (or (get is-early-bettor status) (get is-market-maker status))
+    }
+    {
+      is-early-bettor: false,
+      early-bet-amount: u0,
+      is-market-maker: false,
+      market-maker-amount: u0,
+      total-bonus-earned: u0,
+      bonus-claimed: false,
+      eligible-for-bonuses: false
+    }
+  )
+)
+
+;; Calculate user's incentive participation rate
+(define-read-only (get-user-incentive-participation-rate (user principal))
+  ;; This would require tracking total pools user participated in
+  ;; For now, return a placeholder calculation
+  (let (
+    (stats (get-user-incentive-summary user))
+    (pools-with-bonuses (get pools-with-bonuses stats))
+  )
+    ;; Return percentage of pools where user earned bonuses
+    ;; In a full implementation, this would be (pools-with-bonuses / total-pools-participated) * 100
+    pools-with-bonuses
+  )
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
