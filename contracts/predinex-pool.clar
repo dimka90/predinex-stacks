@@ -934,3 +934,55 @@
     (err ERR-POOL-NOT-FOUND)
   )
 )
+
+;; ============================================
+;; ADVANCED MARKET FEATURES - Phase 3
+;; ============================================
+
+;; Create pool with multiple outcomes
+(define-public (create-pool-multi-outcome (title (string-ascii 256)) (description (string-ascii 512)) (outcome-names (list 10 (string-ascii 128))) (duration uint) (dispute-period-blocks uint))
+  (let ((pool-id (var-get pool-counter)))
+    (asserts! (> (len title) u0) ERR-INVALID-TITLE)
+    (asserts! (> (len description) u0) ERR-INVALID-DESCRIPTION)
+    (asserts! (> (len outcome-names) u1) ERR-INVALID-OUTCOME-COUNT)
+    (asserts! (<= (len outcome-names) u10) ERR-INVALID-OUTCOME-COUNT)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+    (asserts! (> dispute-period-blocks u0) ERR-INVALID-DURATION)
+
+    ;; Create pool with first two outcomes for backward compatibility
+    (map-insert pools
+      { pool-id: pool-id }
+      {
+        creator: tx-sender,
+        title: title,
+        description: description,
+        outcome-a-name: (unwrap! (element-at outcome-names u0) ERR-INVALID-OUTCOME),
+        outcome-b-name: (unwrap! (element-at outcome-names u1) ERR-INVALID-OUTCOME),
+        total-a: u0,
+        total-b: u0,
+        settled: false,
+        winning-outcome: none,
+        created-at: burn-block-height,
+        settled-at: none,
+        expiry: (+ burn-block-height duration),
+        outcome-count: (len outcome-names),
+        dispute-period: dispute-period-blocks
+      }
+    )
+
+    ;; Store additional outcomes if more than 2
+    (if (> (len outcome-names) u2)
+      (begin
+        (map-insert pool-outcomes { pool-id: pool-id, outcome-index: u2 } { name: (unwrap! (element-at outcome-names u2) ERR-INVALID-OUTCOME), total-bet: u0 })
+        (if (> (len outcome-names) u3)
+          (map-insert pool-outcomes { pool-id: pool-id, outcome-index: u3 } { name: (unwrap! (element-at outcome-names u3) ERR-INVALID-OUTCOME), total-bet: u0 })
+          true
+        )
+      )
+      true
+    )
+
+    (var-set pool-counter (+ pool-id u1))
+    (ok pool-id)
+  )
+)
