@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark Mode Default */
+  /* Light Mode */
+  --background: #ffffff;
+  --foreground: #000000;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --accent: #06b6d4;
+  --border: #e5e7eb;
+}
+
+html.dark {
+  /* Dark Mode */
   --background: #050505;
   --foreground: #fafafa;
   --primary: #8b5cf6;
@@ -40,4 +52,44 @@ body {
 /* Neon Glow */
 .glow-text {
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism utilities */
+.glass {
+    background: rgba(23, 23, 23, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+html.dark .glass {
+    background: rgba(23, 23, 23, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+html:not(.dark) .glass {
+    background: rgba(243, 244, 246, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Neon Glow */
+.glow-text {
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+html:not(.dark) .glow-text {
+    text-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  @apply transition-colors duration-300;
 }
