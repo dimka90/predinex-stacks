@@ -101,6 +101,7 @@ export default function Dashboard() {
         activeBetsCount: activeCount,
         settledBetsCount: settledCount,
         winRate: settledCount > 0 ? (won.length / settledCount) * 100 : 0,
+        totalPoolsParticipated: all.length,
       });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
@@ -131,38 +132,14 @@ export default function Dashboard() {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Total Bet</p>
-                <p className="text-2xl font-bold">
-                  {(stats.totalBet / 1_000_000).toFixed(2)} STX
-                </p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Total Winnings</p>
-                <p className="text-2xl font-bold text-green-400">
-                  {(stats.totalWinnings / 1_000_000).toFixed(2)} STX
-                </p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Active Bets</p>
-                <p className="text-2xl font-bold">{stats.activeBetsCount}</p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Settled Bets</p>
-                <p className="text-2xl font-bold">{stats.settledBetsCount}</p>
-              </div>
-
-              <div className="glass p-6 rounded-xl border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Win Rate</p>
-                <p className="text-2xl font-bold text-accent">
-                  {stats.winRate.toFixed(1)}%
-                </p>
-              </div>
-            </div>
+            <UserStats
+              totalBet={stats.totalBet}
+              totalWinnings={stats.totalWinnings}
+              activeBetsCount={stats.activeBetsCount}
+              settledBetsCount={stats.settledBetsCount}
+              winRate={stats.winRate}
+              totalPoolsParticipated={stats.totalPoolsParticipated}
+            />
 
             {/* Active Bets Section */}
             <div className="mb-12">
