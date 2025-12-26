@@ -1231,6 +1231,26 @@
   )
 )
 
+;; ============================================
+;; POOL ENHANCEMENT VALIDATION FUNCTIONS
+;; ============================================
+
+;; Validate enhancement parameters
+(define-private (validate-enhancement-params (early-bonus uint) (mm-bonus uint))
+  (and 
+    (<= early-bonus (var-get liquidity-creator-max-bonus-percent))
+    (<= mm-bonus (var-get liquidity-creator-max-bonus-percent))
+  )
+)
+
+;; Check if pool is eligible for enhancement
+(define-read-only (is-pool-eligible-for-enhancement (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (and (not (get settled pool)) (< burn-block-height (get expiry pool)))
+    false
+  )
+)
+
 ;; Request refund if pool expired and not settled
 (define-public (request-refund (pool-id uint))
   (let 
