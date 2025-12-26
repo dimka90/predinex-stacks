@@ -165,7 +165,9 @@
         winning-outcome: none,
         created-at: burn-block-height,
         settled-at: none,
-        expiry: (+ burn-block-height duration)
+        expiry: (+ burn-block-height duration),
+        outcome-count: u2,
+        dispute-period: u100
       }
     )
     (var-set pool-counter (+ pool-id u1))
