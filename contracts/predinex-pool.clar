@@ -26,6 +26,8 @@
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX in microstacks (reduced for testing)
 (define-constant WITHDRAWAL-DELAY u10) ;; 10 blocks delay for security
+(define-constant EARLY-BETTOR-WINDOW u50) ;; 50 blocks window for early bettor eligibility
+(define-constant EARLY-BETTOR-BONUS-PERCENT u5) ;; 5% bonus on winnings for early bettors
 
 ;; ============================================
 ;; CLARITY 3/4 FEATURES - Builder Challenge
@@ -68,7 +70,8 @@
   {
     amount-a: uint,
     amount-b: uint,
-    total-bet: uint
+    total-bet: uint,
+    first-bet-block: uint
   }
 )
 
