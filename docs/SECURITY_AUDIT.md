@@ -99,3 +99,42 @@ This document provides a comprehensive security analysis of the Predinex Pool sm
 - Add state consistency checks in read-only functions
 - Consider event emission for state changes
 - Document state transition diagrams
+
+### 7. Withdrawal System Security
+**Status**: ⚠️ Centralized Admin Control
+
+**Current Implementation**:
+- Users request withdrawals
+- Admins approve/reject withdrawals
+- 10-block delay for security (WITHDRAWAL-DELAY)
+- Emergency withdrawal for pool creators
+
+**Security Concerns**:
+- Admin approval required (centralization)
+- No automatic approval mechanism
+- Potential for admin abuse
+
+**Recommendations**:
+- Implement time-based auto-approval
+- Add multi-sig for admin operations
+- Consider removing admin requirement for small amounts
+- Document withdrawal process clearly
+
+### 8. Oracle Integration Security
+**Status**: ⚠️ Basic Implementation
+
+**Current State**:
+- Oracle signature parameter exists but not verified
+- Only contract owner/admins can use oracle settlement
+- No signature validation logic
+
+**Security Risks**:
+- Oracle signature not validated (placeholder)
+- Centralized oracle control
+- No oracle key management
+
+**Recommendations**:
+- Implement proper signature verification
+- Add multiple oracle support
+- Consider Chainlink/Pyth integration
+- Document oracle key management
