@@ -138,3 +138,78 @@ This document provides a comprehensive security analysis of the Predinex Pool sm
 - Add multiple oracle support
 - Consider Chainlink/Pyth integration
 - Document oracle key management
+
+### 9. Dispute Resolution Security
+**Status**: ✅ Well Designed
+
+**Implementation**:
+- Time-limited dispute period
+- Only settled pools can be disputed
+- Admin/owner resolution with uphold/overturn options
+- Settlement reversal on overturn
+
+**Security Features**:
+- Dispute period prevents indefinite challenges
+- Status tracking prevents duplicate disputes
+- Resolution history maintained
+
+**Recommendations**:
+- Consider community voting for disputes
+- Add dispute fee to prevent spam
+- Document dispute resolution process
+
+### 10. Gas Optimization
+**Status**: ✅ Optimized
+
+**Optimizations Present**:
+- Efficient map lookups
+- Minimal state updates
+- Batch operations for withdrawals
+- Read-only functions for queries
+
+**Potential Improvements**:
+- Consider pagination for large data sets
+- Cache frequently accessed data
+- Optimize loop operations
+
+## Critical Findings Summary
+
+### High Priority
+1. **Oracle Signature Validation**: Not implemented - placeholder code
+2. **Withdrawal Centralization**: Admin approval required for all withdrawals
+3. **Fee Recipient**: Fixed to contract owner (centralization)
+
+### Medium Priority
+1. **Front-running**: No explicit protection mechanisms
+2. **Large Pool Precision**: Fee calculations may lose precision
+3. **Dispute Spam**: No fee to prevent spam disputes
+
+### Low Priority
+1. **Gas Optimization**: Minor improvements possible
+2. **Documentation**: Some functions need better comments
+3. **Error Messages**: Could be more descriptive
+
+## Recommendations for Production
+
+1. **Before Mainnet Deployment**:
+   - Implement oracle signature verification
+   - Add multi-sig for contract owner
+   - Implement withdrawal auto-approval for small amounts
+   - Add comprehensive test coverage
+   - Conduct external security audit
+
+2. **Ongoing Monitoring**:
+   - Monitor for unusual betting patterns
+   - Track withdrawal approval times
+   - Monitor contract balance vs expected balances
+   - Alert on large pool creations
+
+3. **Governance Considerations**:
+   - Fee adjustment mechanism
+   - Admin management process
+   - Dispute resolution improvements
+   - Oracle key rotation procedures
+
+## Conclusion
+
+The Predinex Pool contract demonstrates strong security practices with comprehensive input validation, access control, and state management. The main areas for improvement are oracle integration, withdrawal decentralization, and fee distribution mechanisms. With the recommended improvements, the contract is suitable for production deployment after external audit.
