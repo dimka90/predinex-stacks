@@ -93,3 +93,4 @@ html:not(.dark) .glow-text {
 * {
   @apply transition-colors duration-300;
 }
+/* CSS enhancement 1 */
