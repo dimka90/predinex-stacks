@@ -7,7 +7,7 @@ This document outlines the planned features and improvements for the Predinex Pr
 
 ## Phase 2: Economics & Incentives
 - [x] **Platform Fees**: precise mechanism to take a small percentage (e.g., 2%) of the winning pool as a protocol fee.
-- [ ] **Liquidity Incentives**: Rewards for early bettors to bootstrap pools.
+- [x] **Liquidity Incentives**: Rewards for early bettors to bootstrap pools.
 
 ## Phase 3: Advanced Market Features
 - [ ] **Multiple Outcomes**: Support for more than just binary (Yes/No) options.
