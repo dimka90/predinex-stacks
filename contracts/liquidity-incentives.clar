@@ -689,3 +689,19 @@
     )
   )
 )
+
+;; [ENHANCEMENT] Get pool participation metrics
+(define-read-only (get-pool-participation-rate (pool-id uint))
+  (match (map-get? pool-incentive-stats { pool-id: pool-id })
+    stats {
+      total-rewarded: (get total-bettors-rewarded stats),
+      early-bird-count: (get early-bird-count stats),
+      participation-score: (if (> (get total-bettors-rewarded stats) u0) u100 u0)
+    }
+    {
+      total-rewarded: u0,
+      early-bird-count: u0,
+      participation-score: u0
+    }
+  )
+)
