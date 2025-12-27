@@ -755,3 +755,26 @@
     u0
   )
 )
+
+;; [ENHANCEMENT] Get pool incentive utilization rate
+(define-read-only (get-pool-incentive-utilization (pool-id uint))
+  (match (map-get? incentive-configs { pool-id: pool-id })
+    config (let (
+      (allocated (get total-incentives-allocated config))
+      (claimed (get total-incentives-claimed config))
+    )
+      {
+        allocated: allocated,
+        claimed: claimed,
+        remaining: (if (>= allocated claimed) (- allocated claimed) u0),
+        utilization-percent: (if (> allocated u0) (/ (* claimed u100) allocated) u0)
+      }
+    )
+    {
+      allocated: u0,
+      claimed: u0,
+      remaining: u0,
+      utilization-percent: u0
+    }
+  )
+)
