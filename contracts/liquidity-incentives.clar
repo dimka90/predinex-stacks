@@ -778,3 +778,8 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Validate bonus amount against cap
+(define-read-only (is-bonus-within-cap (bonus-amount uint))
+  (<= bonus-amount MAX-BONUS-PER-BET)
+)
