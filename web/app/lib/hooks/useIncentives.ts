@@ -178,3 +178,4 @@ export function useIncentives() {
 // useIncentives hook improvement 4
 // useIncentives hook improvement 5
 // useIncentives hook improvement 6
+// useIncentives hook improvement 7
