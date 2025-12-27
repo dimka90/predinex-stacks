@@ -657,3 +657,11 @@
     )
   )
 )
+
+;; [ENHANCEMENT] Check if incentive has expired
+(define-read-only (has-incentive-expired (pool-id uint) (user principal) (incentive-type (string-ascii 32)))
+  (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: incentive-type })
+    incentive (>= burn-block-height (get claim-deadline incentive))
+    false
+  )
+)
