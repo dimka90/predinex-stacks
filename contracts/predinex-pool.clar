@@ -1,8 +1,26 @@
-;; Predinex Pool - Prediction Market on Stacks
-;; A decentralized prediction market with Clarity 4 features
-;; Built for Stacks Builder Challenge Week 1
+;; ============================================
+;; PREDINEX POOL - PREDICTION MARKET CONTRACT
+;; ============================================
+;; A decentralized prediction market built on Stacks blockchain
+;; Features: Binary/multi-outcome pools, liquidity incentives, dispute resolution
+;; Language: Clarity 4
+;; Security: Comprehensive access control, input validation, state consistency
+;;
+;; Key Features:
+;; - Create prediction pools with custom outcomes
+;; - Place bets on pool outcomes
+;; - Settle pools and claim winnings
+;; - Early bettor bonuses (5% on winnings)
+;; - Dispute resolution mechanism
+;; - Oracle-integrated settlement
+;; - Withdrawal system with admin approval
+;;
+;; ============================================
+;; CONSTANTS & ERROR CODES
+;; ============================================
 
-;; Constants
+;; Contract owner - set at deployment time, cannot be changed
+;; SECURITY: Owner has fee collection rights and admin management
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant ERR-UNAUTHORIZED (err u401))
 (define-constant ERR-INVALID-AMOUNT (err u400))
@@ -430,7 +448,7 @@
   )
 )
 
-;; Place a bet on a pool
+;; Place a bet on a pooli
 ;; Validates bet amount meets minimum requirements
 ;; Ensures pool is still active and not settled
 ;; Now includes liquidity incentive detection
@@ -1327,7 +1345,7 @@
 
       (ok true)
     )
-  )
+  )i
 )
 
 ;; ============================================
