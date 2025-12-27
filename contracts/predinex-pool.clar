@@ -1751,7 +1751,7 @@
 
 ;; Resolve a dispute after voting deadline
 (define-public (resolve-dispute (dispute-id uint))
-  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+  (let ((dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
     ;; Validate dispute is active
     (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
     
@@ -1766,7 +1766,7 @@
       (dispute-bond (get dispute-bond dispute))
     )
       ;; Update dispute status and resolution
-      (map-set disputes
+      (map-set pool-disputes
         { dispute-id: dispute-id }
         (merge dispute {
           status: "resolved",
@@ -1787,7 +1787,7 @@
 
 ;; Get dispute details
 (define-read-only (get-dispute (dispute-id uint))
-  (map-get? disputes { dispute-id: dispute-id })
+  (map-get? pool-disputes { dispute-id: dispute-id })
 )
 
 ;; Get dispute vote details
