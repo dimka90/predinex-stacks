@@ -554,3 +554,11 @@
     (is-none (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" }))
   )
 )
+
+;; [ENHANCEMENT] Check if referral bonus can be awarded
+(define-read-only (can-award-referral-bonus (referrer principal) (referred-user principal) (pool-id uint))
+  (and
+    (not (is-eq referrer referred-user))
+    (is-none (map-get? referral-tracking { referrer: referrer, referred-user: referred-user, pool-id: pool-id }))
+  )
+)
