@@ -562,3 +562,11 @@
     (is-none (map-get? referral-tracking { referrer: referrer, referred-user: referred-user, pool-id: pool-id }))
   )
 )
+
+;; [ENHANCEMENT] Check if user qualifies for loyalty bonus
+(define-read-only (is-loyalty-bonus-eligible (pool-id uint) (user principal))
+  (match (map-get? user-loyalty-history { user: user })
+    history (> (get total-bets-placed history) u0)
+    false
+  )
+)
