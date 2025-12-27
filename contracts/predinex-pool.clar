@@ -1904,7 +1904,7 @@
 ;; Refund resolution fee for upheld disputes
 (define-public (refund-resolution-fee (pool-id uint) (dispute-id uint))
   (let (
-    (dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
+    (dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
     (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
     (disputer (get disputer dispute))
   )
