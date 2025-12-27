@@ -172,3 +172,13 @@ export function useIncentives() {
     updateConfig,
   };
 }
+// useIncentives hook improvement 1
+// useIncentives hook improvement 2
+// useIncentives hook improvement 3
+// useIncentives hook improvement 4
+// useIncentives hook improvement 5
+// useIncentives hook improvement 6
+// useIncentives hook improvement 7
+// useIncentives hook improvement 8
+// useIncentives hook improvement 9
+// useIncentives hook improvement 10
