@@ -642,3 +642,8 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Get referral tracking information
+(define-read-only (get-referral-info (referrer principal) (referred-user principal) (pool-id uint))
+  (map-get? referral-tracking { referrer: referrer, referred-user: referred-user, pool-id: pool-id })
+)
