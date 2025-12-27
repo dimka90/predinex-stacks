@@ -536,3 +536,13 @@
     (err ERR-POOL-NOT-FOUND)
   )
 )
+
+;; [ENHANCEMENT] Check if user is eligible for early bird bonus
+(define-read-only (is-early-bird-eligible (pool-id uint) (user principal))
+  (match (map-get? pool-bet-tracking { pool-id: pool-id, user: user })
+    bet-tracking (let ((bet-count (get bet-count bet-tracking)))
+      (and (<= bet-count EARLY-BIRD-THRESHOLD) (> bet-count u0))
+    )
+    false
+  )
+)
