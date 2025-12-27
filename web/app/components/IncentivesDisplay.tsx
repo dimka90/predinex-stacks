@@ -177,3 +177,4 @@ export default function IncentivesDisplay({ betterId, poolId }: IncentivesDispla
 // IncentivesDisplay enhancement 2
 // IncentivesDisplay enhancement 3
 // IncentivesDisplay enhancement 4
+// IncentivesDisplay enhancement 5
