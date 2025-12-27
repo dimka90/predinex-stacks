@@ -727,3 +727,23 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Get user's complete incentive history
+(define-read-only (get-user-incentive-history (user principal))
+  (match (map-get? user-loyalty-history { user: user })
+    history {
+      pools-participated: (get total-pools-participated history),
+      total-bets: (get total-bets-placed history),
+      total-earned: (get total-incentives-earned history),
+      total-claimed: (get total-incentives-claimed history),
+      pending-amount: (- (get total-incentives-earned history) (get total-incentives-claimed history))
+    }
+    {
+      pools-participated: u0,
+      total-bets: u0,
+      total-earned: u0,
+      total-claimed: u0,
+      pending-amount: u0
+    }
+  )
+)
