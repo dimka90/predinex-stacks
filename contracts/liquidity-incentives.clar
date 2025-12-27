@@ -586,3 +586,19 @@
     u0
   )
 )
+
+;; [ENHANCEMENT] Calculate incentive claim rate for a pool
+(define-read-only (get-pool-claim-rate (pool-id uint))
+  (match (map-get? incentive-configs { pool-id: pool-id })
+    config (let (
+      (allocated (get total-incentives-allocated config))
+      (claimed (get total-incentives-claimed config))
+    )
+      (if (> allocated u0)
+        (/ (* claimed u100) allocated)
+        u0
+      )
+    )
+    u0
+  )
+)
