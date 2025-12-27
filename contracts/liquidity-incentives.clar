@@ -783,3 +783,23 @@
 (define-read-only (is-bonus-within-cap (bonus-amount uint))
   (<= bonus-amount MAX-BONUS-PER-BET)
 )
+
+;; [ENHANCEMENT] Audit incentive configuration for compliance
+(define-read-only (audit-pool-incentive-config (pool-id uint))
+  (match (map-get? incentive-configs { pool-id: pool-id })
+    config {
+      pool-id: pool-id,
+      all-incentives-enabled: (and (and (get early-bird-enabled config) (get volume-bonus-enabled config)) (and (get referral-enabled config) (get loyalty-enabled config))),
+      total-allocated: (get total-incentives-allocated config),
+      total-claimed: (get total-incentives-claimed config),
+      config-created-at: (get created-at config)
+    }
+    {
+      pool-id: pool-id,
+      all-incentives-enabled: false,
+      total-allocated: u0,
+      total-claimed: u0,
+      config-created-at: u0
+    }
+  )
+)
