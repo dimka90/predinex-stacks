@@ -2667,7 +2667,7 @@
     (volume (var-get total-volume))
     (volume-str (int-to-ascii volume))
   )
-    { pool-id-ascii: pool-id-str, total-volume-ascii: volume-str }
+    { pool-id-ascii: pool-id-str, volume-ascii: volume-str }, total-volume-ascii: volume-str }
   )
 )
 
