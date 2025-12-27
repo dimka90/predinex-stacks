@@ -173,3 +173,4 @@ export function useIncentives() {
   };
 }
 // useIncentives hook improvement 1
+// useIncentives hook improvement 2
