@@ -647,3 +647,13 @@
 (define-read-only (get-referral-info (referrer principal) (referred-user principal) (pool-id uint))
   (map-get? referral-tracking { referrer: referrer, referred-user: referred-user, pool-id: pool-id })
 )
+
+;; [ENHANCEMENT] Count total successful referrals for a user
+(define-read-only (get-user-referral-count (referrer principal))
+  (let ((loyalty-history (map-get? user-loyalty-history { user: referrer })))
+    (match loyalty-history
+      history (get total-pools-participated history)
+      u0
+    )
+  )
+)
