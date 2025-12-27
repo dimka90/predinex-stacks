@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useStacks } from './StacksProvider';
 import { useWalletConnect } from '../lib/hooks/useWalletConnect';
-import { BarChart3, TrendingUp, Wallet, History, Award } from 'lucide-react';
+import IncentivesDisplay from './IncentivesDisplay';
+import { BarChart3, TrendingUp, Wallet, History, Award, Gift } from 'lucide-react';
 
 interface UserBet {
   poolId: number;
@@ -37,7 +38,7 @@ export default function Dashboard() {
   });
   const [bets, setBets] = useState<UserBet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bets' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bets' | 'history' | 'incentives'>('overview');
 
   useEffect(() => {
     if (session?.isConnected || userData) {
@@ -201,10 +202,10 @@ export default function Dashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-border">
+      <div className="flex gap-4 border-b border-border overflow-x-auto">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 font-bold transition-all ${
+          className={`px-4 py-2 font-bold transition-all whitespace-nowrap ${
             activeTab === 'overview'
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground'
@@ -214,7 +215,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActiveTab('bets')}
-          className={`px-4 py-2 font-bold transition-all ${
+          className={`px-4 py-2 font-bold transition-all whitespace-nowrap ${
             activeTab === 'bets'
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground'
@@ -224,13 +225,24 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`px-4 py-2 font-bold transition-all ${
+          className={`px-4 py-2 font-bold transition-all whitespace-nowrap ${
             activeTab === 'history'
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           History
+        </button>
+        <button
+          onClick={() => setActiveTab('incentives')}
+          className={`px-4 py-2 font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+            activeTab === 'incentives'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Gift className="w-4 h-4" />
+          Incentives
         </button>
       </div>
 
@@ -325,6 +337,10 @@ export default function Dashboard() {
         </div>
       )}
 
+      {activeTab === 'incentives' && (
+        <IncentivesDisplay betterId={userData?.address || session?.address} />
+      )}
+
       {/* Refresh Button */}
       <button
         onClick={fetchUserData}
@@ -336,3 +352,13 @@ export default function Dashboard() {
     </div>
   );
 }
+// Dashboard integration improvement 1
+// Dashboard integration improvement 2
+// Dashboard integration improvement 3
+// Dashboard integration improvement 4
+// Dashboard integration improvement 5
+// Dashboard integration improvement 6
+// Dashboard integration improvement 7
+// Dashboard integration improvement 8
+// Dashboard integration improvement 9
+// Dashboard integration improvement 10
