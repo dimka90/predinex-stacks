@@ -5,15 +5,7 @@
 
 import { AppConfig, UserSession, showConnect, FinishedAuthData } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet, StacksNetwork } from '@stacks/network';
-import { 
-  makeContractCall, 
-  broadcastTransaction, 
-  AnchorMode, 
-  PostConditionMode,
-  TransactionVersion,
-  ClarityValue,
-  StacksTransaction
-} from '@stacks/transactions';
+import { ClarityValue } from '@stacks/transactions';
 
 export type WalletType = 'hiro' | 'xverse' | 'leather' | 'unknown';
 export type NetworkType = 'mainnet' | 'testnet';
@@ -160,27 +152,27 @@ export class WalletService {
 
     const userData = this.getUserData();
     
-    const txOptions = {
-      contractAddress: payload.contractAddress,
-      contractName: payload.contractName,
-      functionName: payload.functionName,
-      functionArgs: payload.functionArgs,
-      senderKey: userData.appPrivateKey,
-      network: this.network,
-      anchorMode: AnchorMode.Any,
-      postConditionMode: PostConditionMode.Allow,
-      fee: payload.fee,
-      nonce: payload.nonce,
-    };
-
-    const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTransaction(transaction, this.network);
+    // Import TransactionService here to avoid circular dependency
+    const { TransactionService } = await import('./transaction-service');
+    const txService = new TransactionService(this.network);
     
-    if (broadcastResponse.error) {
-      throw new Error(`Transaction failed: ${broadcastResponse.error}`);
+    // Validate payload
+    const validation = txService.validatePayload(payload);
+    if (!validation.isValid) {
+      throw new Error(`Invalid transaction: ${validation.errors.join(', ')}`);
     }
 
-    return broadcastResponse.txid;
+    try {
+      const result = await txService.executeTransaction(payload, userData.appPrivateKey, {
+        fee: payload.fee,
+        nonce: payload.nonce,
+      });
+      
+      return result.txId;
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      throw error;
+    }
   }
 
   /**
