@@ -173,3 +173,4 @@ export default function IncentivesDisplay({ betterId, poolId }: IncentivesDispla
     </div>
   );
 }
+// IncentivesDisplay enhancement 1
