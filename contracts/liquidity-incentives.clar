@@ -665,3 +665,14 @@
     false
   )
 )
+
+;; [ENHANCEMENT] Get contract health metrics
+(define-read-only (get-contract-health)
+  {
+    total-distributed: (var-get total-incentives-distributed),
+    total-claimed: (var-get total-incentives-claimed),
+    current-balance: (var-get contract-balance),
+    active-pools: (var-get active-pools-with-incentives),
+    available-for-claims: (var-get contract-balance)
+  }
+)
