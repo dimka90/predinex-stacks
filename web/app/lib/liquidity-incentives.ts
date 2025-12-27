@@ -169,3 +169,4 @@ export function getIncentiveDescription(bonusType: string): string {
 // Liquidity incentives system improvement 3
 // Liquidity incentives system improvement 4
 // Liquidity incentives system improvement 5
+// Liquidity incentives system improvement 6
