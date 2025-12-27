@@ -803,3 +803,15 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Generate system-wide incentive report
+(define-read-only (get-system-incentive-report)
+  {
+    total-distributed: (var-get total-incentives-distributed),
+    total-claimed: (var-get total-incentives-claimed),
+    contract-balance: (var-get contract-balance),
+    active-pools: (var-get active-pools-with-incentives),
+    system-efficiency: (get-incentive-efficiency),
+    contract-health: (get-contract-health)
+  }
+)
