@@ -747,3 +747,11 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Calculate return on investment for incentives
+(define-read-only (calculate-incentive-roi (user-total-bet uint) (total-incentives-earned uint))
+  (if (> user-total-bet u0)
+    (/ (* total-incentives-earned u100) user-total-bet)
+    u0
+  )
+)
