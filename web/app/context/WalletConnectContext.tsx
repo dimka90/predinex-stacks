@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { WalletService, WalletSession, TransactionPayload, WalletProvider, NetworkType } from '../lib/wallet-service';
 import { SessionStorageService } from '../lib/session-storage';
+import { SessionValidator } from '../lib/session-validator';
 import { fetchAccountStxBalance } from '@stacks/blockchain-api-client';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 
@@ -47,10 +48,10 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
         const wallets = service.getAvailableWallets();
         setAvailableWallets(wallets);
 
-        // Try to restore session
-        const storedSession = SessionStorageService.retrieveSession();
+        // Try to restore session with validation
+        const storedSession = await SessionValidator.validateStoredSession();
         if (storedSession && service.isSignedIn()) {
-          // Validate the session is still active
+          // Double-check with wallet service
           const userData = service.getUserData();
           if (userData && userData.profile?.stxAddress) {
             const restoredSession: WalletSession = {
@@ -61,8 +62,10 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
             
             setSession(restoredSession);
             
-            // Refresh balance
-            await refreshBalanceForSession(restoredSession, service);
+            // Refresh balance if needed
+            if (SessionValidator.needsRefresh(restoredSession)) {
+              await refreshBalanceForSession(restoredSession, service);
+            }
           } else {
             // Invalid session, clear it
             SessionStorageService.clearSession();
@@ -206,9 +209,10 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
       // For now, return a placeholder
       console.log('Signing message:', message);
       
-      // Update activity
+      // Update activity timestamp
       if (session) {
-        SessionStorageService.updateActivity(session);
+        const refreshedSession = SessionValidator.refreshActivity(session);
+        setSession(refreshedSession);
       }
       
       return 'signature_placeholder';
@@ -227,8 +231,9 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
     try {
       const txId = await walletService.sendTransaction(tx);
       
-      // Update activity
-      SessionStorageService.updateActivity(session);
+      // Update activity timestamp
+      const refreshedSession = SessionValidator.refreshActivity(session);
+      setSession(refreshedSession);
       
       return txId;
     } catch (err) {
