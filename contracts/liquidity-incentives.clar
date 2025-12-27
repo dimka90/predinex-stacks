@@ -546,3 +546,11 @@
     false
   )
 )
+
+;; [ENHANCEMENT] Check if user qualifies for volume bonus
+(define-read-only (is-volume-bonus-eligible (pool-id uint) (user principal) (pool-volume uint))
+  (and
+    (>= pool-volume VOLUME-THRESHOLD)
+    (is-none (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" }))
+  )
+)
