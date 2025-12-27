@@ -602,3 +602,21 @@
     u0
   )
 )
+
+;; [ENHANCEMENT] Get comprehensive incentive summary for user
+(define-read-only (get-user-incentive-summary (pool-id uint) (user principal))
+  (let (
+    (early-bird (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "early-bird" }))
+    (volume (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" }))
+    (referral (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "referral" }))
+    (loyalty (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "loyalty" }))
+  )
+    {
+      has-early-bird: (is-some early-bird),
+      has-volume: (is-some volume),
+      has-referral: (is-some referral),
+      has-loyalty: (is-some loyalty),
+      total-pending: (get-user-total-pending-incentives pool-id user)
+    }
+  )
+)
