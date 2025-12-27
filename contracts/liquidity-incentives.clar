@@ -620,3 +620,25 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Get detailed breakdown of incentives by type for pool
+(define-read-only (get-pool-incentive-breakdown (pool-id uint))
+  (match (map-get? pool-incentive-stats { pool-id: pool-id })
+    stats {
+      early-bird-total: (get total-early-bird-bonuses stats),
+      volume-total: (get total-volume-bonuses stats),
+      referral-total: (get total-referral-bonuses stats),
+      loyalty-total: (get total-loyalty-bonuses stats),
+      total-bettors-rewarded: (get total-bettors-rewarded stats),
+      early-bird-count: (get early-bird-count stats)
+    }
+    {
+      early-bird-total: u0,
+      volume-total: u0,
+      referral-total: u0,
+      loyalty-total: u0,
+      total-bettors-rewarded: u0,
+      early-bird-count: u0
+    }
+  )
+)
