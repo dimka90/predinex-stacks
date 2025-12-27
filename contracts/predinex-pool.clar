@@ -864,6 +864,11 @@
         total-distributed: u0,
         remaining-balance: creator-fund-amount
       }
+    )ator-fund-amount,
+        platform-allocation: u0,
+        total-distributed: u0,
+        remaining-balance: creator-fund-amount
+      }
     )
     
     (ok pool-id)
