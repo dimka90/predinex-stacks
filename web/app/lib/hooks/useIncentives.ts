@@ -172,3 +172,4 @@ export function useIncentives() {
     updateConfig,
   };
 }
+// useIncentives hook improvement 1
