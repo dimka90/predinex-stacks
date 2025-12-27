@@ -676,3 +676,16 @@
     available-for-claims: (var-get contract-balance)
   }
 )
+
+;; [ENHANCEMENT] Calculate incentive distribution efficiency
+(define-read-only (get-incentive-efficiency)
+  (let (
+    (distributed (var-get total-incentives-distributed))
+    (claimed (var-get total-incentives-claimed))
+  )
+    (if (> distributed u0)
+      (/ (* claimed u100) distributed)
+      u0
+    )
+  )
+)
