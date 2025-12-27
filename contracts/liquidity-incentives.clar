@@ -522,3 +522,17 @@
     (+ early-bird volume referral loyalty)
   )
 )
+
+;; [ENHANCEMENT] Pool incentive configuration validation
+(define-read-only (validate-pool-incentive-config (pool-id uint))
+  (match (map-get? incentive-configs { pool-id: pool-id })
+    config (ok {
+      is-configured: true,
+      early-bird-enabled: (get early-bird-enabled config),
+      volume-bonus-enabled: (get volume-bonus-enabled config),
+      referral-enabled: (get referral-enabled config),
+      loyalty-enabled: (get loyalty-enabled config)
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
