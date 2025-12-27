@@ -705,3 +705,25 @@
     }
   )
 )
+
+;; [ENHANCEMENT] Get distribution of bonuses by type
+(define-read-only (get-bonus-type-distribution (pool-id uint))
+  (match (map-get? pool-incentive-stats { pool-id: pool-id })
+    stats (let (
+      (total (+ (+ (+ (get total-early-bird-bonuses stats) (get total-volume-bonuses stats)) (get total-referral-bonuses stats)) (get total-loyalty-bonuses stats)))
+    )
+      {
+        early-bird-percent: (if (> total u0) (/ (* (get total-early-bird-bonuses stats) u100) total) u0),
+        volume-percent: (if (> total u0) (/ (* (get total-volume-bonuses stats) u100) total) u0),
+        referral-percent: (if (> total u0) (/ (* (get total-referral-bonuses stats) u100) total) u0),
+        loyalty-percent: (if (> total u0) (/ (* (get total-loyalty-bonuses stats) u100) total) u0)
+      }
+    )
+    {
+      early-bird-percent: u0,
+      volume-percent: u0,
+      referral-percent: u0,
+      loyalty-percent: u0
+    }
+  )
+)
