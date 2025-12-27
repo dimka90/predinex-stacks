@@ -578,3 +578,11 @@
     false
   )
 )
+
+;; [ENHANCEMENT] Calculate total incentives allocated for a pool
+(define-read-only (get-pool-total-incentives-allocated (pool-id uint))
+  (match (map-get? incentive-configs { pool-id: pool-id })
+    config (get total-incentives-allocated config)
+    u0
+  )
+)
