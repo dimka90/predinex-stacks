@@ -2178,6 +2178,36 @@
   )
 )
 
+;; Update user incentive status for early bettor
+(define-private (update-early-bettor-status (pool-id uint) (user principal) (bet-amount uint))
+  (let (
+    (current-status (default-to 
+      { 
+        is-early-bettor: false, 
+        early-bet-amount: u0, 
+        is-market-maker: false, 
+        market-maker-amount: u0, 
+        total-bonus-earned: u0, 
+        bonus-claimed: false 
+      } 
+      (map-get? user-incentive-status { pool-id: pool-id, user: user })
+    ))
+    (is-early (is-early-bettor pool-id bet-amount))
+  )
+    (if is-early
+      (map-set user-incentive-status
+        { pool-id: pool-id, user: user }
+        (merge current-status {
+          is-early-bettor: true,
+          early-bet-amount: (+ (get early-bet-amount current-status) bet-amount)
+        })
+      )
+      true
+    )
+    is-early
+  )
+)
+
 ;; Update user incentive status for market maker
 (define-private (update-market-maker-status (pool-id uint) (user principal) (outcome uint) (bet-amount uint))
   (let (
