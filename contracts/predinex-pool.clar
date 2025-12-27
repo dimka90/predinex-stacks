@@ -1357,6 +1357,38 @@
 ;; ORACLE SYSTEM FUNCTIONS
 ;; ============================================
 
+;; Helper function to get provider ID by address
+(define-private (get-provider-id-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-id-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider ID by address
+(define-private (find-provider-id-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some current-id)
+        (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Helper function to register data types for a provider
+(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
+  (begin
+    (map-insert oracle-data-types
+      { provider-id: provider-id, data-type: data-type }
+      true
+    )
+    provider-id
+  )
+)
+
 ;; Register a new oracle provider
 (define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
   (let ((provider-id (var-get oracle-provider-counter)))
@@ -1388,17 +1420,6 @@
     (var-set oracle-provider-counter (+ provider-id u1))
     
     (ok provider-id)
-  )
-)
-
-;; Helper function to register data types for a provider
-(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
-  (begin
-    (map-insert oracle-data-types
-      { provider-id: provider-id, data-type: data-type }
-      true
-    )
-    provider-id
   )
 )
 
