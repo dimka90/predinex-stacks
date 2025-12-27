@@ -3,6 +3,7 @@ import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
 import { WalletConnectProvider } from "./context/WalletConnectContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { WalletErrorBoundary } from "./components/WalletErrorBoundary";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 export const metadata: Metadata = {
@@ -20,11 +21,13 @@ export default function RootLayout({
       <body className="antialiased">
         <ErrorBoundary>
           <ThemeProvider>
-            <WalletConnectProvider>
-              <StacksProvider>
-                {children}
-              </StacksProvider>
-            </WalletConnectProvider>
+            <WalletErrorBoundary>
+              <WalletConnectProvider>
+                <StacksProvider>
+                  {children}
+                </StacksProvider>
+              </WalletConnectProvider>
+            </WalletErrorBoundary>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
