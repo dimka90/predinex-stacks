@@ -273,7 +273,7 @@
 )
 
 ;; Dispute system data structures
-(define-map disputes
+(define-map pool-disputes
   { dispute-id: uint }
   {
     pool-id: uint,
