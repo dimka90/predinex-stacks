@@ -1,31 +1,29 @@
 /**
  * WalletConnect Context
- * Challenge #3: Build on Stacks with WalletConnect
- * Manages wallet connection state and operations
+ * Enhanced Stacks wallet connection management
+ * Manages wallet connection state and operations using @stacks/connect
  */
 
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { WALLETCONNECT_CONFIG } from '../lib/walletconnect-config';
-
-export interface WalletSession {
-  address: string;
-  publicKey: string;
-  network: 'mainnet' | 'testnet';
-  balance: number;
-  isConnected: boolean;
-}
+import { WalletService, WalletSession, TransactionPayload, WalletProvider, NetworkType } from '../lib/wallet-service';
+import { SessionStorageService } from '../lib/session-storage';
+import { SessionValidator } from '../lib/session-validator';
+import { fetchAccountStxBalance } from '@stacks/blockchain-api-client';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
 
 export interface WalletContextType {
   session: WalletSession | null;
   isConnecting: boolean;
   error: string | null;
-  connect: () => Promise<void>;
+  availableWallets: WalletProvider[];
+  connect: (walletType?: string) => Promise<void>;
   disconnect: () => Promise<void>;
-  switchNetwork: (network: 'mainnet' | 'testnet') => Promise<void>;
+  switchNetwork: (network: NetworkType) => Promise<void>;
   signMessage: (message: string) => Promise<string>;
-  sendTransaction: (tx: any) => Promise<string>;
+  sendTransaction: (tx: TransactionPayload) => Promise<string>;
+  refreshBalance: () => Promise<void>;
 }
 
 const WalletConnectContext = createContext<WalletContextType | undefined>(undefined);
@@ -36,50 +34,121 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
   const [session, setSession] = useState<WalletSession | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [walletService, setWalletService] = useState<WalletService | null>(null);
+  const [availableWallets, setAvailableWallets] = useState<WalletProvider[]>([]);
 
-  // Load session from storage on mount
+  // Initialize wallet service and load session on mount
   useEffect(() => {
-    const loadSession = async () => {
+    const initializeWallet = async () => {
       try {
-        const stored = localStorage.getItem(WALLETCONNECT_CONFIG.storage.key);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          // Verify session is still valid
-          if (parsed.address && parsed.publicKey) {
-            setSession(parsed);
+        const service = new WalletService('mainnet');
+        setWalletService(service);
+        
+        // Get available wallets
+        const wallets = service.getAvailableWallets();
+        setAvailableWallets(wallets);
+
+        // Try to restore session with validation
+        const storedSession = await SessionValidator.validateStoredSession();
+        if (storedSession && service.isSignedIn()) {
+          // Double-check with wallet service
+          const userData = service.getUserData();
+          if (userData && userData.profile?.stxAddress) {
+            const restoredSession: WalletSession = {
+              ...storedSession,
+              address: userData.profile.stxAddress.mainnet || userData.profile.stxAddress.testnet,
+              isConnected: true,
+            };
+            
+            setSession(restoredSession);
+            
+            // Refresh balance if needed
+            if (SessionValidator.needsRefresh(restoredSession)) {
+              await refreshBalanceForSession(restoredSession, service);
+            }
+          } else {
+            // Invalid session, clear it
+            SessionStorageService.clearSession();
           }
         }
       } catch (err) {
-        console.error('Failed to load session:', err);
+        console.error('Failed to initialize wallet:', err);
+        setError('Failed to initialize wallet connection');
       }
     };
 
-    loadSession();
+    initializeWallet();
   }, []);
 
-  const connect = useCallback(async () => {
+  const refreshBalanceForSession = async (sessionData: WalletSession, service: WalletService) => {
+    try {
+      const network = service.getCurrentNetwork() === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+      const balanceResponse = await fetchAccountStxBalance({
+        url: network.coreApiUrl,
+        principal: sessionData.address,
+      });
+      
+      const updatedSession = {
+        ...sessionData,
+        balance: parseInt(balanceResponse.balance),
+        lastActivity: new Date(),
+      };
+      
+      setSession(updatedSession);
+      SessionStorageService.storeSession(updatedSession);
+    } catch (err) {
+      console.error('Failed to refresh balance:', err);
+    }
+  };
+
+  const connect = useCallback(async (walletType?: string) => {
+    if (!walletService) {
+      setError('Wallet service not initialized');
+      return;
+    }
+
     setIsConnecting(true);
     setError(null);
 
     try {
-      // WalletConnect connection logic
-      // This would integrate with actual WalletConnect SDK
-      console.log('Connecting to WalletConnect...');
+      let selectedWallet: WalletProvider | undefined;
+      
+      if (walletType) {
+        selectedWallet = availableWallets.find(w => w.type === walletType);
+      } else {
+        // Default to first available wallet (usually Hiro)
+        selectedWallet = availableWallets[0];
+      }
 
-      // Mock session for now
-      const mockSession: WalletSession = {
-        address: 'SP...',
-        publicKey: 'pk...',
-        network: 'mainnet',
-        balance: 0,
-        isConnected: true,
-      };
+      if (!selectedWallet) {
+        throw new Error('No compatible wallet found');
+      }
 
-      setSession(mockSession);
-      localStorage.setItem(
-        WALLETCONNECT_CONFIG.storage.key,
-        JSON.stringify(mockSession)
-      );
+      // Connect using the selected wallet
+      const authData = await selectedWallet.connect();
+      
+      if (authData && authData.userSession) {
+        const userData = authData.userSession.loadUserData();
+        
+        const newSession: WalletSession = {
+          address: userData.profile?.stxAddress?.mainnet || userData.profile?.stxAddress?.testnet || '',
+          publicKey: userData.publicKey || '',
+          network: walletService.getCurrentNetwork(),
+          balance: 0,
+          isConnected: true,
+          walletType: selectedWallet.type,
+          connectedAt: new Date(),
+          lastActivity: new Date(),
+        };
+
+        setSession(newSession);
+        SessionStorageService.storeSession(newSession);
+        
+        // Fetch balance
+        await refreshBalanceForSession(newSession, walletService);
+      } else {
+        throw new Error('Failed to get user data from wallet');
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Connection failed';
       setError(message);
@@ -87,65 +156,112 @@ export function WalletConnectProvider({ children }: { children: React.ReactNode 
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [walletService, availableWallets]);
 
   const disconnect = useCallback(async () => {
     try {
+      if (walletService) {
+        walletService.signOut();
+      }
+      
       setSession(null);
-      localStorage.removeItem(WALLETCONNECT_CONFIG.storage.key);
+      SessionStorageService.clearSession();
+      setError(null);
     } catch (err) {
       console.error('Disconnect error:', err);
+      setError('Failed to disconnect wallet');
     }
-  }, []);
+  }, [walletService]);
 
-  const switchNetwork = useCallback(async (network: 'mainnet' | 'testnet') => {
-    if (!session) throw new Error('No session');
+  const switchNetwork = useCallback(async (network: NetworkType) => {
+    if (!session || !walletService) {
+      throw new Error('No active session');
+    }
 
     try {
-      setSession(prev => prev ? { ...prev, network } : null);
+      walletService.switchNetwork(network);
+      
+      const updatedSession = {
+        ...session,
+        network,
+        lastActivity: new Date(),
+      };
+      
+      setSession(updatedSession);
+      SessionStorageService.storeSession(updatedSession);
+      
+      // Refresh balance for new network
+      await refreshBalanceForSession(updatedSession, walletService);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network switch failed';
       setError(message);
+      throw err;
     }
-  }, [session]);
+  }, [session, walletService]);
 
   const signMessage = useCallback(async (message: string): Promise<string> => {
-    if (!session) throw new Error('No session');
+    if (!session || !walletService) {
+      throw new Error('No active session');
+    }
 
     try {
-      // WalletConnect sign message logic
+      // This would integrate with wallet-specific message signing
+      // For now, return a placeholder
       console.log('Signing message:', message);
-      return 'signature...';
+      
+      // Update activity timestamp
+      if (session) {
+        const refreshedSession = SessionValidator.refreshActivity(session);
+        setSession(refreshedSession);
+      }
+      
+      return 'signature_placeholder';
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signing failed';
       setError(message);
       throw err;
     }
-  }, [session]);
+  }, [session, walletService]);
 
-  const sendTransaction = useCallback(async (tx: any): Promise<string> => {
-    if (!session) throw new Error('No session');
+  const sendTransaction = useCallback(async (tx: TransactionPayload): Promise<string> => {
+    if (!session || !walletService) {
+      throw new Error('No active session');
+    }
 
     try {
-      // WalletConnect send transaction logic
-      console.log('Sending transaction:', tx);
-      return 'txid...';
+      const txId = await walletService.sendTransaction(tx);
+      
+      // Update activity timestamp
+      const refreshedSession = SessionValidator.refreshActivity(session);
+      setSession(refreshedSession);
+      
+      return txId;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Transaction failed';
       setError(message);
       throw err;
     }
-  }, [session]);
+  }, [session, walletService]);
+
+  const refreshBalance = useCallback(async () => {
+    if (!session || !walletService) {
+      return;
+    }
+
+    await refreshBalanceForSession(session, walletService);
+  }, [session, walletService]);
 
   const value: WalletContextType = {
     session,
     isConnecting,
     error,
+    availableWallets,
     connect,
     disconnect,
     switchNetwork,
     signMessage,
     sendTransaction,
+    refreshBalance,
   };
 
   return (
