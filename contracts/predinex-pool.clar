@@ -1687,7 +1687,7 @@
     (try! (stx-transfer? dispute-bond tx-sender (as-contract tx-sender)))
     
     ;; Create dispute record
-    (map-insert disputes
+    (map-insert pool-disputes
       { dispute-id: dispute-id }
       {
         pool-id: pool-id,
@@ -1713,7 +1713,7 @@
 
 ;; Vote on a dispute
 (define-public (vote-on-dispute (dispute-id uint) (vote bool))
-  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+  (let ((dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
     ;; Validate dispute is active
     (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
     
@@ -1736,7 +1736,7 @@
       )
       
       ;; Update dispute vote counts
-      (map-set disputes
+      (map-set pool-disputes
         { dispute-id: dispute-id }
         (merge dispute {
           votes-for: (if vote (+ (get votes-for dispute) voting-power) (get votes-for dispute)),
