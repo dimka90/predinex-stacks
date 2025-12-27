@@ -273,7 +273,7 @@
 )
 
 ;; Dispute system data structures
-(define-map disputes
+(define-map pool-disputes
   { dispute-id: uint }
   {
     pool-id: uint,
@@ -1345,12 +1345,44 @@
 
       (ok true)
     )
-  )i
+  )
 )
 
 ;; ============================================
 ;; ORACLE SYSTEM FUNCTIONS
 ;; ============================================
+
+;; Helper function to get provider ID by address
+(define-private (get-provider-id-by-address (provider-address principal))
+  (let ((provider-count (var-get oracle-provider-counter)))
+    (find-provider-id-by-address provider-address u0 provider-count)
+  )
+)
+
+;; Helper function to find provider ID by address
+(define-private (find-provider-id-by-address (provider-address principal) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    none
+    (match (map-get? oracle-providers { provider-id: current-id })
+      provider (if (is-eq (get provider-address provider) provider-address)
+        (some current-id)
+        (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+      )
+      (find-provider-id-by-address provider-address (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Helper function to register data types for a provider
+(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
+  (begin
+    (map-insert oracle-data-types
+      { provider-id: provider-id, data-type: data-type }
+      true
+    )
+    provider-id
+  )
+)
 
 ;; Register a new oracle provider
 (define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
@@ -1383,17 +1415,6 @@
     (var-set oracle-provider-counter (+ provider-id u1))
     
     (ok provider-id)
-  )
-)
-
-;; Helper function to register data types for a provider
-(define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
-  (begin
-    (map-insert oracle-data-types
-      { provider-id: provider-id, data-type: data-type }
-      true
-    )
-    provider-id
   )
 )
 
@@ -1682,7 +1703,7 @@
     (try! (stx-transfer? dispute-bond tx-sender (as-contract tx-sender)))
     
     ;; Create dispute record
-    (map-insert disputes
+    (map-insert pool-disputes
       { dispute-id: dispute-id }
       {
         pool-id: pool-id,
@@ -1708,7 +1729,7 @@
 
 ;; Vote on a dispute
 (define-public (vote-on-dispute (dispute-id uint) (vote bool))
-  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+  (let ((dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
     ;; Validate dispute is active
     (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
     
@@ -1731,7 +1752,7 @@
       )
       
       ;; Update dispute vote counts
-      (map-set disputes
+      (map-set pool-disputes
         { dispute-id: dispute-id }
         (merge dispute {
           votes-for: (if vote (+ (get votes-for dispute) voting-power) (get votes-for dispute)),
@@ -1746,7 +1767,7 @@
 
 ;; Resolve a dispute after voting deadline
 (define-public (resolve-dispute (dispute-id uint))
-  (let ((dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
+  (let ((dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND)))
     ;; Validate dispute is active
     (asserts! (is-eq (get status dispute) "active") ERR-DISPUTE-ALREADY-RESOLVED)
     
@@ -1761,7 +1782,7 @@
       (dispute-bond (get dispute-bond dispute))
     )
       ;; Update dispute status and resolution
-      (map-set disputes
+      (map-set pool-disputes
         { dispute-id: dispute-id }
         (merge dispute {
           status: "resolved",
@@ -1782,7 +1803,7 @@
 
 ;; Get dispute details
 (define-read-only (get-dispute (dispute-id uint))
-  (map-get? disputes { dispute-id: dispute-id })
+  (map-get? pool-disputes { dispute-id: dispute-id })
 )
 
 ;; Get dispute vote details
@@ -1899,7 +1920,7 @@
 ;; Refund resolution fee for upheld disputes
 (define-public (refund-resolution-fee (pool-id uint) (dispute-id uint))
   (let (
-    (dispute (unwrap! (map-get? disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
+    (dispute (unwrap! (map-get? pool-disputes { dispute-id: dispute-id }) ERR-DISPUTE-NOT-FOUND))
     (fee-info (unwrap! (map-get? resolution-fees { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
     (disputer (get disputer dispute))
   )
@@ -2611,7 +2632,7 @@
     (volume (var-get total-volume))
     (volume-str (int-to-ascii volume))
   )
-    { pool-id-ascii: pool-id-str, total-volume-ascii: volume-str }
+    { pool-id-ascii: pool-id-str, volume-ascii: volume-str }
   )
 )
 
