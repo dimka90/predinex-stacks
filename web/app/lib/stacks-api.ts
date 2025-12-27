@@ -1,9 +1,9 @@
-import { STACKS_MAINNET, StacksNetwork } from "@stacks/network";
+import { STACKS_MAINNET, STACKS_TESTNET, StacksNetwork } from "@stacks/network";
 import { fetchCallReadOnlyFunction, cvToValue, uintCV, principalCV, ClarityValue } from "@stacks/transactions";
-import { CONTRACT_ADDRESS, CONTRACT_NAME } from "./constants";
+import { CONTRACT_ADDRESS, CONTRACT_NAME, DEFAULT_NETWORK, NETWORK_CONFIG } from "./constants";
 
-// Use mainnet for production
-const network: StacksNetwork = STACKS_MAINNET;
+// Use network based on environment
+const network: StacksNetwork = DEFAULT_NETWORK === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
 
 export interface Pool {
     id: number;

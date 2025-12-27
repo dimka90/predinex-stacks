@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { LogOut, Wallet } from "lucide-react";
-import { useStacks } from "./StacksProvider";
+import { useWalletConnect } from "@/context/WalletConnectContext";
+import { WalletConnectButton } from "./WalletConnectButton";
+import { NetworkSwitcher } from "./NetworkSwitcher";
 
 export default function Navbar() {
-    const { userData, signOut, authenticate } = useStacks();
+    const { session } = useWalletConnect();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -27,38 +29,18 @@ export default function Navbar() {
                         <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                             Create
                         </Link>
-                        {userData && (
+                        {session?.isConnected && (
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 Dashboard
                             </Link>
                         )}
                     </div>
 
-                    {/* User Info */}
-                    {userData ? (
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm font-mono text-muted-foreground hidden sm:block">
-                                {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
-                            </span>
-                            <button
-                                onClick={signOut}
-                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                                aria-label="Sign out of your wallet"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                Sign Out
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={authenticate}
-                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            aria-label="Connect your Stacks wallet"
-                        >
-                            <Wallet className="w-4 h-4" />
-                            Connect Wallet
-                        </button>
-                    )}
+                    {/* Wallet Connection and Network Switcher */}
+                    <div className="flex items-center gap-4">
+                        {session?.isConnected && <NetworkSwitcher />}
+                        <WalletConnectButton />
+                    </div>
                 </div>
             </div>
         </nav>
