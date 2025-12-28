@@ -277,3 +277,32 @@
     })
   )
 )
+;; Marketplace functionality
+(define-map listings uint { seller: principal, price: uint, listed-at: uint })
+(define-map offers { token-id: uint, buyer: principal } { amount: uint, expires-at: uint })
+
+;; List NFT for sale
+(define-public (list-for-sale (token-id uint) (price uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (> price u0) ERR-INVALID-TOKEN-ID)
+    (map-set listings token-id { seller: owner, price: price, listed-at: burn-block-height })
+    (ok true)
+  )
+)
+
+;; Buy listed NFT
+(define-public (buy-nft (token-id uint))
+  (let (
+    (listing (unwrap! (map-get? listings token-id) ERR-NOT-FOUND))
+    (seller (get seller listing))
+    (price (get price listing))
+    (royalty-info (unwrap-panic (get-royalty-info token-id price)))
+  )
+    (try! (stx-transfer? price tx-sender seller))
+    (try! (nft-transfer? predinex-nft token-id seller tx-sender))
+    (map-delete listings token-id)
+    (map-set token-owners token-id tx-sender)
+    (ok true)
+  )
+)
