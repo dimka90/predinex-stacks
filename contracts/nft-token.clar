@@ -757,3 +757,49 @@
 (define-read-only (get-evolution-info (token-id uint))
   (ok (map-get? token-evolution token-id))
 )
+;; Batch operations for gas efficiency
+(define-public (batch-transfer (transfers (list 20 { token-id: uint, from: principal, to: principal })))
+  (ok (map execute-single-transfer transfers))
+)
+
+(define-private (execute-single-transfer (transfer-data { token-id: uint, from: principal, to: principal }))
+  (let (
+    (token-id (get token-id transfer-data))
+    (from (get from transfer-data))
+    (to (get to transfer-data))
+  )
+    (match (transfer token-id from to)
+      success true
+      error false
+    )
+  )
+)
+
+;; Batch approve
+(define-public (batch-approve (approvals (list 20 { token-id: uint, spender: principal })))
+  (ok (map execute-single-approval approvals))
+)
+
+(define-private (execute-single-approval (approval-data { token-id: uint, spender: principal }))
+  (let (
+    (token-id (get token-id approval-data))
+    (spender (get spender approval-data))
+  )
+    (match (approve spender token-id)
+      success true
+      error false
+    )
+  )
+)
+
+;; Batch burn
+(define-public (batch-burn (token-ids (list 20 uint)))
+  (ok (map execute-single-burn token-ids))
+)
+
+(define-private (execute-single-burn (token-id uint))
+  (match (burn token-id)
+    success true
+    error false
+  )
+)
