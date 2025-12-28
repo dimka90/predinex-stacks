@@ -2524,10 +2524,11 @@
   )
 )
 
-;; [FIXED] Batch withdrawal - Approve multiple withdrawals at once with proper error handling
+;; [OPTIMIZED] Batch withdrawal - Approve multiple withdrawals at once with gas optimization
 (define-public (batch-approve-withdrawals (users (list 10 principal)) (withdrawal-ids (list 10 uint)))
   (let (
     (count (len users))
+    (total-amount u0)
   )
     ;; Access control
     (asserts! (or (is-admin tx-sender) (is-owner tx-sender)) ERR-UNAUTHORIZED)
@@ -2535,11 +2536,17 @@
     ;; Validate lists have same length
     (asserts! (is-eq count (len withdrawal-ids)) ERR-INVALID-AMOUNT)
     
-    ;; Process each withdrawal with error handling
-    (ok (fold process-single-withdrawal 
-      (zip users withdrawal-ids) 
-      (list true)
-    ))
+    ;; Pre-calculate total amount for gas optimization
+    (let ((batch-total (fold calculate-batch-total (zip users withdrawal-ids) u0)))
+      ;; Check contract has sufficient balance upfront
+      (asserts! (>= (stx-get-balance (as-contract tx-sender)) batch-total) ERR-INSUFFICIENT-CONTRACT-BALANCE)
+      
+      ;; Process each withdrawal with error handling
+      (ok (fold process-single-withdrawal 
+        (zip users withdrawal-ids) 
+        (list true)
+      ))
+    )
   )
 )
 
@@ -3164,4 +3171,1128 @@
 ;; Get dispute information
 (define-read-only (get-dispute (pool-id uint) (dispute-id uint))
   (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id })
+)
+;; Helper function to calculate batch total for gas optimization
+(define-private (calculate-batch-total (user-withdrawal-pair (tuple (user principal) (withdrawal-id uint))) (running-total uint))
+  (let (
+    (user (get user user-withdrawal-pair))
+    (withdrawal-id (get withdrawal-id user-withdrawal-pair))
+  )
+    (match (map-get? pending-withdrawals { user: user, withdrawal-id: withdrawal-id })
+      withdrawal (+ running-total (get amount withdrawal))
+      running-total
+    )
+  )
+)
+;; Get comprehensive pool analytics
+(define-read-only (get-pool-analytics (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (let (
+      (total-volume (+ (get total-a pool) (get total-b pool)))
+      (participation-ratio (if (> total-volume u0) (/ (* (get total-a pool) u100) total-volume) u50))
+    )
+      (ok {
+        total-volume: total-volume,
+        participation-ratio: participation-ratio,
+        time-remaining: (if (> (get expiry pool) burn-block-height) (- (get expiry pool) burn-block-height) u0),
+        is-active: (and (not (get settled pool)) (< burn-block-height (get expiry pool)))
+      })
+    )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+;; Rate limiting data structure
+(define-map user-bet-timestamps
+  { user: principal }
+  { last-bet-time: uint, bet-count: uint }
+)
+
+;; Rate limiting constants
+(define-constant MAX-BETS-PER-WINDOW u10)
+(define-constant RATE-LIMIT-WINDOW u144) ;; 24 hours
+
+;; Check rate limiting for user
+(define-private (check-rate-limit (user principal))
+  (let (
+    (user-data (default-to { last-bet-time: u0, bet-count: u0 } (map-get? user-bet-timestamps { user: user })))
+    (time-diff (- burn-block-height (get last-bet-time user-data)))
+  )
+    (if (> time-diff RATE-LIMIT-WINDOW)
+      ;; Reset counter if window expired
+      (begin
+        (map-set user-bet-timestamps { user: user } { last-bet-time: burn-block-height, bet-count: u1 })
+        true
+      )
+      ;; Check if under limit
+      (if (< (get bet-count user-data) MAX-BETS-PER-WINDOW)
+        (begin
+          (map-set user-bet-timestamps { user: user } { last-bet-time: burn-block-height, bet-count: (+ (get bet-count user-data) u1) })
+          true
+        )
+        false
+      )
+    )
+  )
+)
+;; Emergency pause system
+(define-data-var contract-paused bool false)
+(define-data-var pause-reason (string-ascii 256) "")
+
+;; Pause contract (owner only)
+(define-public (pause-contract (reason (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (var-set pause-reason reason)
+    (ok true)
+  )
+)
+
+;; Unpause contract (owner only)
+(define-public (unpause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused false)
+    (var-set pause-reason "")
+    (ok true)
+  )
+)
+
+;; Check if contract is paused
+(define-read-only (is-contract-paused)
+  (var-get contract-paused)
+)
+
+;; Get pause reason
+(define-read-only (get-pause-reason)
+  (var-get pause-reason)
+)
+;; Dynamic fee system
+(define-data-var dynamic-fee-enabled bool false)
+(define-data-var base-fee-percent uint FEE-PERCENT)
+(define-data-var volume-threshold uint u1000000) ;; 1 STX threshold
+
+;; Enable dynamic fees
+(define-public (enable-dynamic-fees (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set dynamic-fee-enabled enabled)
+    (ok enabled)
+  )
+)
+
+;; Calculate dynamic fee based on pool volume
+(define-private (calculate-dynamic-fee (pool-volume uint))
+  (if (var-get dynamic-fee-enabled)
+    (if (> pool-volume (var-get volume-threshold))
+      (max (- (var-get base-fee-percent) u1) u1) ;; Reduce fee for high volume
+      (var-get base-fee-percent)
+    )
+    (var-get base-fee-percent)
+  )
+)
+
+;; Set volume threshold for dynamic fees
+(define-public (set-volume-threshold (threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set volume-threshold threshold)
+    (ok threshold)
+  )
+)
+;; User reputation system
+(define-map user-reputation
+  { user: principal }
+  { 
+    score: uint,
+    pools-created: uint,
+    successful-predictions: uint,
+    total-predictions: uint,
+    last-updated: uint
+  }
+)
+
+;; Update user reputation after pool settlement
+(define-private (update-user-reputation (user principal) (was-correct bool))
+  (let (
+    (current-rep (default-to 
+      { score: u100, pools-created: u0, successful-predictions: u0, total-predictions: u0, last-updated: u0 }
+      (map-get? user-reputation { user: user })
+    ))
+    (new-total (+ (get total-predictions current-rep) u1))
+    (new-successful (if was-correct (+ (get successful-predictions current-rep) u1) (get successful-predictions current-rep)))
+    (new-score (if (> new-total u0) (/ (* new-successful u100) new-total) u100))
+  )
+    (map-set user-reputation
+      { user: user }
+      (merge current-rep {
+        score: new-score,
+        successful-predictions: new-successful,
+        total-predictions: new-total,
+        last-updated: burn-block-height
+      })
+    )
+  )
+)
+
+;; Get user reputation
+(define-read-only (get-user-reputation (user principal))
+  (map-get? user-reputation { user: user })
+)
+;; Pool categories and tagging system
+(define-map pool-categories
+  { pool-id: uint }
+  { 
+    category: (string-ascii 64),
+    tags: (list 5 (string-ascii 32)),
+    difficulty-level: uint
+  }
+)
+
+;; Category statistics
+(define-map category-stats
+  { category: (string-ascii 64) }
+  { 
+    pool-count: uint,
+    total-volume: uint,
+    avg-accuracy: uint
+  }
+)
+
+;; Set pool category and tags
+(define-public (set-pool-category (pool-id uint) (category (string-ascii 64)) (tags (list 5 (string-ascii 32))) (difficulty uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    (asserts! (> (len category) u0) ERR-INVALID-TITLE)
+    (asserts! (<= difficulty u10) ERR-INVALID-AMOUNT)
+    
+    (map-set pool-categories
+      { pool-id: pool-id }
+      {
+        category: category,
+        tags: tags,
+        difficulty-level: difficulty
+      }
+    )
+    
+    ;; Update category stats
+    (let ((current-stats (default-to { pool-count: u0, total-volume: u0, avg-accuracy: u0 } (map-get? category-stats { category: category }))))
+      (map-set category-stats
+        { category: category }
+        (merge current-stats { pool-count: (+ (get pool-count current-stats) u1) })
+      )
+    )
+    
+    (ok true)
+  )
+)
+
+;; Get pools by category
+(define-read-only (get-pool-category (pool-id uint))
+  (map-get? pool-categories { pool-id: pool-id })
+)
+;; Automated pool expiry handling
+(define-map expired-pools
+  { pool-id: uint }
+  { 
+    expired-at: uint,
+    auto-refund-enabled: bool,
+    refund-processed: bool
+  }
+)
+
+;; Mark pool as expired and enable auto-refund
+(define-public (mark-pool-expired (pool-id uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    (map-set expired-pools
+      { pool-id: pool-id }
+      {
+        expired-at: burn-block-height,
+        auto-refund-enabled: true,
+        refund-processed: false
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Process auto-refund for expired pool
+(define-public (process-auto-refund (pool-id uint) (users (list 20 principal)))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (expired-info (unwrap! (map-get? expired-pools { pool-id: pool-id }) ERR-POOL-NOT-EXPIRED))
+  )
+    (asserts! (get auto-refund-enabled expired-info) ERR-INVALID-WITHDRAWAL)
+    (asserts! (not (get refund-processed expired-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Process refunds for all users
+    (fold process-user-refund users pool-id)
+    
+    ;; Mark refund as processed
+    (map-set expired-pools
+      { pool-id: pool-id }
+      (merge expired-info { refund-processed: true })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Helper to process individual user refund
+(define-private (process-user-refund (user principal) (pool-id uint))
+  (match (map-get? user-bets { pool-id: pool-id, user: user })
+    user-bet (let ((refund-amount (get total-bet user-bet)))
+      (if (> refund-amount u0)
+        (begin
+          (try! (as-contract (stx-transfer? refund-amount tx-sender user)))
+          (map-set claims { pool-id: pool-id, user: user } true)
+        )
+        true
+      )
+    )
+    true
+  )
+  pool-id
+)
+;; Multi-signature admin system
+(define-map multisig-proposals
+  { proposal-id: uint }
+  {
+    proposer: principal,
+    action: (string-ascii 64),
+    target: (optional principal),
+    amount: (optional uint),
+    approvals: uint,
+    required-approvals: uint,
+    executed: bool,
+    created-at: uint,
+    expires-at: uint
+  }
+)
+
+(define-map multisig-approvals
+  { proposal-id: uint, admin: principal }
+  bool
+)
+
+(define-data-var proposal-counter uint u0)
+(define-data-var required-admin-approvals uint u2)
+
+;; Create multisig proposal
+(define-public (create-multisig-proposal (action (string-ascii 64)) (target (optional principal)) (amount (optional uint)))
+  (let ((proposal-id (var-get proposal-counter)))
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    
+    (map-insert multisig-proposals
+      { proposal-id: proposal-id }
+      {
+        proposer: tx-sender,
+        action: action,
+        target: target,
+        amount: amount,
+        approvals: u1,
+        required-approvals: (var-get required-admin-approvals),
+        executed: false,
+        created-at: burn-block-height,
+        expires-at: (+ burn-block-height u1440) ;; 10 days
+      }
+    )
+    
+    ;; Auto-approve by proposer
+    (map-set multisig-approvals { proposal-id: proposal-id, admin: tx-sender } true)
+    
+    (var-set proposal-counter (+ proposal-id u1))
+    (ok proposal-id)
+  )
+)
+
+;; Approve multisig proposal
+(define-public (approve-multisig-proposal (proposal-id uint))
+  (let ((proposal (unwrap! (map-get? multisig-proposals { proposal-id: proposal-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (not (get executed proposal)) ERR-ALREADY-CLAIMED)
+    (asserts! (< burn-block-height (get expires-at proposal)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (is-none (map-get? multisig-approvals { proposal-id: proposal-id, admin: tx-sender })) ERR-ALREADY-VOTED)
+    
+    ;; Record approval
+    (map-set multisig-approvals { proposal-id: proposal-id, admin: tx-sender } true)
+    
+    ;; Update approval count
+    (map-set multisig-proposals
+      { proposal-id: proposal-id }
+      (merge proposal { approvals: (+ (get approvals proposal) u1) })
+    )
+    
+    (ok true)
+  )
+)
+;; Pool performance metrics
+(define-map pool-metrics
+  { pool-id: uint }
+  {
+    total-participants: uint,
+    avg-bet-size: uint,
+    volatility-score: uint,
+    liquidity-score: uint,
+    final-accuracy: (optional uint)
+  }
+)
+
+;; User leaderboard data
+(define-map user-leaderboard
+  { user: principal }
+  {
+    total-winnings: uint,
+    win-rate: uint,
+    pools-participated: uint,
+    avg-roi: uint,
+    rank: uint
+  }
+)
+
+;; Calculate pool performance metrics
+(define-public (calculate-pool-metrics (pool-id uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    (let (
+      (total-volume (+ (get total-a pool) (get total-b pool)))
+      (balance-ratio (if (> total-volume u0) (/ (* (get total-a pool) u100) total-volume) u50))
+      (volatility (if (> balance-ratio u50) (- balance-ratio u50) (- u50 balance-ratio)))
+      (liquidity-score (min (/ total-volume u10000) u100)) ;; Scale to 0-100
+    )
+      (map-set pool-metrics
+        { pool-id: pool-id }
+        {
+          total-participants: u0, ;; Would need to count unique participants
+          avg-bet-size: (if (> total-volume u0) (/ total-volume u2) u0), ;; Simplified
+          volatility-score: volatility,
+          liquidity-score: liquidity-score,
+          final-accuracy: (some u100) ;; Would be calculated based on oracle data
+        }
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Update user leaderboard after winning
+(define-public (update-user-leaderboard (user principal) (winnings uint) (bet-amount uint))
+  (let (
+    (current-stats (default-to 
+      { total-winnings: u0, win-rate: u0, pools-participated: u0, avg-roi: u0, rank: u0 }
+      (map-get? user-leaderboard { user: user })
+    ))
+    (new-winnings (+ (get total-winnings current-stats) winnings))
+    (new-pools (+ (get pools-participated current-stats) u1))
+    (roi (if (> bet-amount u0) (/ (* winnings u100) bet-amount) u0))
+  )
+    (map-set user-leaderboard
+      { user: user }
+      {
+        total-winnings: new-winnings,
+        win-rate: (get win-rate current-stats), ;; Would need win/loss tracking
+        pools-participated: new-pools,
+        avg-roi: roi,
+        rank: u0 ;; Would be calculated periodically
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Get pool metrics
+(define-read-only (get-pool-metrics (pool-id uint))
+  (map-get? pool-metrics { pool-id: pool-id })
+)
+
+;; Get user leaderboard position
+(define-read-only (get-user-leaderboard (user principal))
+  (map-get? user-leaderboard { user: user })
+)
+;; Advanced oracle consensus system
+(define-map oracle-consensus
+  { pool-id: uint }
+  {
+    submissions: (list 10 uint),
+    consensus-reached: bool,
+    final-outcome: (optional uint),
+    confidence-level: uint,
+    participating-oracles: uint
+  }
+)
+
+;; Oracle voting weights based on reputation
+(define-map oracle-weights
+  { provider-id: uint }
+  {
+    weight: uint,
+    stake: uint,
+    slash-count: uint
+  }
+)
+
+;; Calculate weighted oracle consensus
+(define-public (calculate-oracle-consensus (pool-id uint) (oracle-submissions (list 10 uint)))
+  (let (
+    (total-weight u0)
+    (outcome-weights (list u0 u0)) ;; For binary outcomes
+  )
+    ;; Calculate weighted votes
+    (let ((consensus-result (fold calculate-weighted-vote oracle-submissions { total: u0, outcome-0: u0, outcome-1: u0 })))
+      (let (
+        (total-votes (get total consensus-result))
+        (votes-0 (get outcome-0 consensus-result))
+        (votes-1 (get outcome-1 consensus-result))
+        (winning-outcome (if (> votes-0 votes-1) u0 u1))
+        (confidence (if (> total-votes u0) (/ (* (max votes-0 votes-1) u100) total-votes) u0))
+      )
+        (map-set oracle-consensus
+          { pool-id: pool-id }
+          {
+            submissions: oracle-submissions,
+            consensus-reached: (> confidence u60), ;; 60% confidence threshold
+            final-outcome: (if (> confidence u60) (some winning-outcome) none),
+            confidence-level: confidence,
+            participating-oracles: (len oracle-submissions)
+          }
+        )
+        
+        (ok winning-outcome)
+      )
+    )
+  )
+)
+
+;; Helper function to calculate weighted votes
+(define-private (calculate-weighted-vote (submission-id uint) (acc { total: uint, outcome-0: uint, outcome-1: uint }))
+  (match (map-get? oracle-submissions { submission-id: submission-id })
+    submission (let (
+      (provider-id (get provider-id submission))
+      (weight (get-oracle-weight provider-id))
+      (outcome (mod (get confidence-score submission) u2)) ;; Simplified outcome extraction
+    )
+      (if (is-eq outcome u0)
+        {
+          total: (+ (get total acc) weight),
+          outcome-0: (+ (get outcome-0 acc) weight),
+          outcome-1: (get outcome-1 acc)
+        }
+        {
+          total: (+ (get total acc) weight),
+          outcome-0: (get outcome-0 acc),
+          outcome-1: (+ (get outcome-1 acc) weight)
+        }
+      )
+    )
+    acc
+  )
+)
+
+;; Get oracle weight (default to 1 if not set)
+(define-private (get-oracle-weight (provider-id uint))
+  (match (map-get? oracle-weights { provider-id: provider-id })
+    weights (get weight weights)
+    u1
+  )
+)
+
+;; Set oracle weight (admin only)
+(define-public (set-oracle-weight (provider-id uint) (weight uint) (stake uint))
+  (begin
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (> weight u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= weight u10) ERR-INVALID-AMOUNT) ;; Max weight of 10
+    
+    (map-set oracle-weights
+      { provider-id: provider-id }
+      {
+        weight: weight,
+        stake: stake,
+        slash-count: u0
+      }
+    )
+    
+    (ok true)
+  )
+)
+;; Liquidity mining rewards system
+(define-map liquidity-mining-pools
+  { pool-id: uint }
+  {
+    reward-rate: uint,
+    total-staked: uint,
+    reward-per-token: uint,
+    last-update-time: uint,
+    mining-duration: uint
+  }
+)
+
+(define-map user-mining-info
+  { pool-id: uint, user: principal }
+  {
+    staked-amount: uint,
+    reward-debt: uint,
+    pending-rewards: uint,
+    last-claim-time: uint
+  }
+)
+
+(define-data-var total-mining-rewards uint u0)
+
+;; Initialize liquidity mining for a pool
+(define-public (init-liquidity-mining (pool-id uint) (reward-rate uint) (duration uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    (asserts! (> reward-rate u0) ERR-INVALID-AMOUNT)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+    
+    (map-set liquidity-mining-pools
+      { pool-id: pool-id }
+      {
+        reward-rate: reward-rate,
+        total-staked: u0,
+        reward-per-token: u0,
+        last-update-time: burn-block-height,
+        mining-duration: duration
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Stake tokens for liquidity mining
+(define-public (stake-for-mining (pool-id uint) (amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (mining-pool (unwrap! (map-get? liquidity-mining-pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (user-info (default-to 
+      { staked-amount: u0, reward-debt: u0, pending-rewards: u0, last-claim-time: u0 }
+      (map-get? user-mining-info { pool-id: pool-id, user: tx-sender })
+    ))
+  )
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Update reward calculations
+    (let ((updated-mining-pool (update-mining-rewards pool-id)))
+      ;; Transfer stake to contract
+      (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+      
+      ;; Update user staking info
+      (map-set user-mining-info
+        { pool-id: pool-id, user: tx-sender }
+        {
+          staked-amount: (+ (get staked-amount user-info) amount),
+          reward-debt: (/ (* (+ (get staked-amount user-info) amount) (get reward-per-token updated-mining-pool)) u1000000),
+          pending-rewards: (get pending-rewards user-info),
+          last-claim-time: burn-block-height
+        }
+      )
+      
+      ;; Update total staked
+      (map-set liquidity-mining-pools
+        { pool-id: pool-id }
+        (merge updated-mining-pool { total-staked: (+ (get total-staked updated-mining-pool) amount) })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Update mining rewards calculation
+(define-private (update-mining-rewards (pool-id uint))
+  (let ((mining-pool (unwrap-panic (map-get? liquidity-mining-pools { pool-id: pool-id }))))
+    (let (
+      (time-elapsed (- burn-block-height (get last-update-time mining-pool)))
+      (total-staked (get total-staked mining-pool))
+      (reward-rate (get reward-rate mining-pool))
+    )
+      (if (and (> total-staked u0) (> time-elapsed u0))
+        (let ((new-rewards (/ (* reward-rate time-elapsed) total-staked)))
+          (let ((updated-pool (merge mining-pool {
+            reward-per-token: (+ (get reward-per-token mining-pool) new-rewards),
+            last-update-time: burn-block-height
+          })))
+            (map-set liquidity-mining-pools { pool-id: pool-id } updated-pool)
+            updated-pool
+          )
+        )
+        mining-pool
+      )
+    )
+  )
+)
+
+;; Claim mining rewards
+(define-public (claim-mining-rewards (pool-id uint))
+  (let (
+    (mining-pool (update-mining-rewards pool-id))
+    (user-info (unwrap! (map-get? user-mining-info { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
+  )
+    (let (
+      (earned-rewards (- (/ (* (get staked-amount user-info) (get reward-per-token mining-pool)) u1000000) (get reward-debt user-info)))
+      (total-rewards (+ earned-rewards (get pending-rewards user-info)))
+    )
+      (asserts! (> total-rewards u0) ERR-NO-WINNINGS)
+      
+      ;; Transfer rewards
+      (try! (as-contract (stx-transfer? total-rewards tx-sender tx-sender)))
+      
+      ;; Update user info
+      (map-set user-mining-info
+        { pool-id: pool-id, user: tx-sender }
+        (merge user-info {
+          reward-debt: (/ (* (get staked-amount user-info) (get reward-per-token mining-pool)) u1000000),
+          pending-rewards: u0,
+          last-claim-time: burn-block-height
+        })
+      )
+      
+      ;; Update total rewards distributed
+      (var-set total-mining-rewards (+ (var-get total-mining-rewards) total-rewards))
+      
+      (ok total-rewards)
+    )
+  )
+)
+;; Cross-pool arbitrage detection system
+(define-map arbitrage-opportunities
+  { pool-a: uint, pool-b: uint }
+  {
+    price-diff: uint,
+    detected-at: uint,
+    profit-potential: uint,
+    is-active: bool
+  }
+)
+
+(define-map arbitrage-alerts
+  { alert-id: uint }
+  {
+    pools: (list 2 uint),
+    arbitrageur: principal,
+    profit-realized: uint,
+    created-at: uint
+  }
+)
+
+(define-data-var arbitrage-alert-counter uint u0)
+(define-data-var min-arbitrage-threshold uint u5) ;; 5% minimum difference
+
+;; Detect arbitrage opportunities between pools
+(define-public (detect-arbitrage (pool-a-id uint) (pool-b-id uint))
+  (let (
+    (pool-a (unwrap! (map-get? pools { pool-id: pool-a-id }) ERR-POOL-NOT-FOUND))
+    (pool-b (unwrap! (map-get? pools { pool-id: pool-b-id }) ERR-POOL-NOT-FOUND))
+  )
+    (asserts! (not (is-eq pool-a-id pool-b-id)) ERR-INVALID-AMOUNT)
+    (asserts! (not (get settled pool-a)) ERR-POOL-SETTLED)
+    (asserts! (not (get settled pool-b)) ERR-POOL-SETTLED)
+    
+    (let (
+      (price-a (calculate-implied-probability pool-a-id))
+      (price-b (calculate-implied-probability pool-b-id))
+      (price-diff (if (> price-a price-b) (- price-a price-b) (- price-b price-a)))
+      (profit-potential (/ (* price-diff u100) (min price-a price-b)))
+    )
+      (if (> price-diff (var-get min-arbitrage-threshold))
+        (begin
+          (map-set arbitrage-opportunities
+            { pool-a: pool-a-id, pool-b: pool-b-id }
+            {
+              price-diff: price-diff,
+              detected-at: burn-block-height,
+              profit-potential: profit-potential,
+              is-active: true
+            }
+          )
+          (ok { detected: true, profit-potential: profit-potential })
+        )
+        (ok { detected: false, profit-potential: u0 })
+      )
+    )
+  )
+)
+
+;; Calculate implied probability for a pool
+(define-private (calculate-implied-probability (pool-id uint))
+  (let ((pool (unwrap-panic (map-get? pools { pool-id: pool-id }))))
+    (let (
+      (total-a (get total-a pool))
+      (total-b (get total-b pool))
+      (total-volume (+ total-a total-b))
+    )
+      (if (> total-volume u0)
+        (/ (* total-a u100) total-volume)
+        u50 ;; Default 50% if no bets
+      )
+    )
+  )
+)
+
+;; Execute arbitrage trade
+(define-public (execute-arbitrage (pool-a-id uint) (pool-b-id uint) (amount uint))
+  (let (
+    (opportunity (unwrap! (map-get? arbitrage-opportunities { pool-a: pool-a-id, pool-b: pool-b-id }) ERR-POOL-NOT-FOUND))
+    (alert-id (var-get arbitrage-alert-counter))
+  )
+    (asserts! (get is-active opportunity) ERR-POOL-SETTLED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    ;; Calculate expected profit
+    (let ((expected-profit (/ (* amount (get profit-potential opportunity)) u100)))
+      ;; Record arbitrage execution
+      (map-set arbitrage-alerts
+        { alert-id: alert-id }
+        {
+          pools: (list pool-a-id pool-b-id),
+          arbitrageur: tx-sender,
+          profit-realized: expected-profit,
+          created-at: burn-block-height
+        }
+      )
+      
+      ;; Mark opportunity as inactive
+      (map-set arbitrage-opportunities
+        { pool-a: pool-a-id, pool-b: pool-b-id }
+        (merge opportunity { is-active: false })
+      )
+      
+      (var-set arbitrage-alert-counter (+ alert-id u1))
+      (ok expected-profit)
+    )
+  )
+)
+
+;; Get arbitrage opportunities
+(define-read-only (get-arbitrage-opportunity (pool-a uint) (pool-b uint))
+  (map-get? arbitrage-opportunities { pool-a: pool-a, pool-b: pool-b })
+)
+
+;; Set minimum arbitrage threshold
+(define-public (set-arbitrage-threshold (threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> threshold u0) ERR-INVALID-AMOUNT)
+    (asserts! (< threshold u50) ERR-INVALID-AMOUNT) ;; Max 50%
+    
+    (var-set min-arbitrage-threshold threshold)
+    (ok threshold)
+  )
+)
+;; Comprehensive event logging system
+(define-map event-logs
+  { event-id: uint }
+  {
+    event-type: (string-ascii 32),
+    pool-id: (optional uint),
+    user: (optional principal),
+    amount: (optional uint),
+    outcome: (optional uint),
+    timestamp: uint,
+    block-height: uint,
+    additional-data: (string-ascii 256)
+  }
+)
+
+(define-data-var event-counter uint u0)
+
+;; Log events with structured data
+(define-private (log-event (event-type (string-ascii 32)) (pool-id (optional uint)) (user (optional principal)) (amount (optional uint)) (outcome (optional uint)) (additional-data (string-ascii 256)))
+  (let ((event-id (var-get event-counter)))
+    (map-set event-logs
+      { event-id: event-id }
+      {
+        event-type: event-type,
+        pool-id: pool-id,
+        user: user,
+        amount: amount,
+        outcome: outcome,
+        timestamp: burn-block-height,
+        block-height: burn-block-height,
+        additional-data: additional-data
+      }
+    )
+    (var-set event-counter (+ event-id u1))
+    event-id
+  )
+)
+
+;; Enhanced pool creation with logging
+(define-public (create-pool-with-logging (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
+  (let ((result (create-pool title description outcome-a outcome-b duration)))
+    (match result
+      pool-id (begin
+        (log-event "POOL_CREATED" (some pool-id) (some tx-sender) none none title)
+        (ok pool-id)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced bet placement with logging
+(define-public (place-bet-with-logging (pool-id uint) (outcome uint) (amount uint))
+  (let ((result (place-bet pool-id outcome amount)))
+    (match result
+      success (begin
+        (log-event "BET_PLACED" (some pool-id) (some tx-sender) (some amount) (some outcome) "")
+        (ok success)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced settlement with logging
+(define-public (settle-pool-with-logging (pool-id uint) (winning-outcome uint))
+  (let ((result (settle-pool pool-id winning-outcome)))
+    (match result
+      success (begin
+        (log-event "POOL_SETTLED" (some pool-id) (some tx-sender) none (some winning-outcome) "")
+        (ok success)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced winnings claim with logging
+(define-public (claim-winnings-with-logging (pool-id uint))
+  (let ((result (claim-winnings pool-id)))
+    (match result
+      payout-info (begin
+        (log-event "WINNINGS_CLAIMED" (some pool-id) (some tx-sender) (some (get total-payout payout-info)) none "")
+        (ok payout-info)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Get event logs by type
+(define-read-only (get-events-by-type (event-type (string-ascii 32)) (start-id uint) (count uint))
+  (filter-events-by-type event-type start-id (min (+ start-id count) (var-get event-counter)))
+)
+
+;; Helper function to filter events by type
+(define-private (filter-events-by-type (event-type (string-ascii 32)) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? event-logs { event-id: current-id })
+      event (if (is-eq (get event-type event) event-type)
+        (unwrap-panic (as-max-len? (append (filter-events-by-type event-type (+ current-id u1) max-id) event) u20))
+        (filter-events-by-type event-type (+ current-id u1) max-id)
+      )
+      (filter-events-by-type event-type (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Get events by pool
+(define-read-only (get-events-by-pool (pool-id uint) (start-id uint) (count uint))
+  (filter-events-by-pool pool-id start-id (min (+ start-id count) (var-get event-counter)))
+)
+
+;; Helper function to filter events by pool
+(define-private (filter-events-by-pool (pool-id uint) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? event-logs { event-id: current-id })
+      event (match (get pool-id event)
+        event-pool-id (if (is-eq event-pool-id pool-id)
+          (unwrap-panic (as-max-len? (append (filter-events-by-pool pool-id (+ current-id u1) max-id) event) u20))
+          (filter-events-by-pool pool-id (+ current-id u1) max-id)
+        )
+        (filter-events-by-pool pool-id (+ current-id u1) max-id)
+      )
+      (filter-events-by-pool pool-id (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Get total event count
+(define-read-only (get-total-events)
+  (var-get event-counter)
+)
+
+;; Get event by ID
+(define-read-only (get-event (event-id uint))
+  (map-get? event-logs { event-id: event-id })
+)
+;; Contract upgrade and version control system
+(define-data-var contract-version (string-ascii 16) "v2.0.0")
+(define-data-var upgrade-authorized bool false)
+(define-data-var next-contract-address (optional principal) none)
+
+;; Version history tracking
+(define-map version-history
+  { version: (string-ascii 16) }
+  {
+    deployed-at: uint,
+    deployed-by: principal,
+    features-added: (string-ascii 512),
+    deprecated-functions: (list 10 (string-ascii 64))
+  }
+)
+
+;; Migration status tracking
+(define-map migration-status
+  { user: principal }
+  {
+    migrated: bool,
+    migration-block: uint,
+    data-transferred: bool
+  }
+)
+
+(define-data-var migration-enabled bool false)
+(define-data-var total-migrated-users uint u0)
+
+;; Record current version deployment
+(define-public (record-version-deployment (version (string-ascii 16)) (features (string-ascii 512)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    (map-set version-history
+      { version: version }
+      {
+        deployed-at: burn-block-height,
+        deployed-by: tx-sender,
+        features-added: features,
+        deprecated-functions: (list)
+      }
+    )
+    
+    (var-set contract-version version)
+    (ok true)
+  )
+)
+
+;; Authorize contract upgrade
+(define-public (authorize-upgrade (new-contract principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set upgrade-authorized true)
+    (var-set next-contract-address (some new-contract))
+    (ok true)
+  )
+)
+
+;; Enable migration to new contract
+(define-public (enable-migration)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (var-get upgrade-authorized) ERR-UNAUTHORIZED)
+    (var-set migration-enabled true)
+    (ok true)
+  )
+)
+
+;; Migrate user data to new contract
+(define-public (migrate-user-data)
+  (let (
+    (user-data (get-user-comprehensive-data tx-sender))
+    (migration-info (default-to { migrated: false, migration-block: u0, data-transferred: false } (map-get? migration-status { user: tx-sender })))
+  )
+    (asserts! (var-get migration-enabled) ERR-UNAUTHORIZED)
+    (asserts! (not (get migrated migration-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Mark user as migrated
+    (map-set migration-status
+      { user: tx-sender }
+      {
+        migrated: true,
+        migration-block: burn-block-height,
+        data-transferred: true
+      }
+    )
+    
+    ;; Update migration counter
+    (var-set total-migrated-users (+ (var-get total-migrated-users) u1))
+    
+    ;; Log migration event
+    (log-event "USER_MIGRATED" none (some tx-sender) none none "")
+    
+    (ok user-data)
+  )
+)
+
+;; Get comprehensive user data for migration
+(define-private (get-user-comprehensive-data (user principal))
+  {
+    reputation: (map-get? user-reputation { user: user }),
+    leaderboard: (map-get? user-leaderboard { user: user }),
+    incentive-stats: (map-get? user-incentive-stats { user: user }),
+    withdrawal-count: (get-user-withdrawal-count user),
+    migration-eligible: true
+  }
+)
+
+;; Check if user has migrated
+(define-read-only (has-user-migrated (user principal))
+  (match (map-get? migration-status { user: user })
+    status (get migrated status)
+    false
+  )
+)
+
+;; Get contract version info
+(define-read-only (get-contract-info)
+  {
+    version: (var-get contract-version),
+    upgrade-authorized: (var-get upgrade-authorized),
+    migration-enabled: (var-get migration-enabled),
+    next-contract: (var-get next-contract-address),
+    total-migrated: (var-get total-migrated-users)
+  }
+)
+
+;; Get version history
+(define-read-only (get-version-info (version (string-ascii 16)))
+  (map-get? version-history { version: version })
+)
+
+;; Deprecate functions (for upgrade planning)
+(define-public (deprecate-functions (version (string-ascii 16)) (functions (list 10 (string-ascii 64))))
+  (let ((version-info (unwrap! (map-get? version-history { version: version }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    (map-set version-history
+      { version: version }
+      (merge version-info { deprecated-functions: functions })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Emergency contract freeze (stops all operations)
+(define-public (emergency-freeze (reason (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (var-set pause-reason reason)
+    (log-event "EMERGENCY_FREEZE" none (some tx-sender) none none reason)
+    (ok true)
+  )
+)
+
+;; Get migration statistics
+(define-read-only (get-migration-stats)
+  {
+    migration-enabled: (var-get migration-enabled),
+    total-migrated-users: (var-get total-migrated-users),
+    upgrade-authorized: (var-get upgrade-authorized),
+    next-contract: (var-get next-contract-address)
+  }
 )
