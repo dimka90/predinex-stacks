@@ -72,8 +72,7 @@ describe('AuthGuard', () => {
       signOut: vi.fn(),
     });
 
-    const { user } = await import('@testing-library/user-event');
-    const userEvent = user.setup();
+    const userEvent = (await import('@testing-library/user-event')).default.setup();
 
     render(<AuthGuard><div>Content</div></AuthGuard>);
 
