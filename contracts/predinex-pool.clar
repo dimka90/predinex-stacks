@@ -3989,3 +3989,143 @@
     (ok threshold)
   )
 )
+;; Comprehensive event logging system
+(define-map event-logs
+  { event-id: uint }
+  {
+    event-type: (string-ascii 32),
+    pool-id: (optional uint),
+    user: (optional principal),
+    amount: (optional uint),
+    outcome: (optional uint),
+    timestamp: uint,
+    block-height: uint,
+    additional-data: (string-ascii 256)
+  }
+)
+
+(define-data-var event-counter uint u0)
+
+;; Log events with structured data
+(define-private (log-event (event-type (string-ascii 32)) (pool-id (optional uint)) (user (optional principal)) (amount (optional uint)) (outcome (optional uint)) (additional-data (string-ascii 256)))
+  (let ((event-id (var-get event-counter)))
+    (map-set event-logs
+      { event-id: event-id }
+      {
+        event-type: event-type,
+        pool-id: pool-id,
+        user: user,
+        amount: amount,
+        outcome: outcome,
+        timestamp: burn-block-height,
+        block-height: burn-block-height,
+        additional-data: additional-data
+      }
+    )
+    (var-set event-counter (+ event-id u1))
+    event-id
+  )
+)
+
+;; Enhanced pool creation with logging
+(define-public (create-pool-with-logging (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
+  (let ((result (create-pool title description outcome-a outcome-b duration)))
+    (match result
+      pool-id (begin
+        (log-event "POOL_CREATED" (some pool-id) (some tx-sender) none none title)
+        (ok pool-id)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced bet placement with logging
+(define-public (place-bet-with-logging (pool-id uint) (outcome uint) (amount uint))
+  (let ((result (place-bet pool-id outcome amount)))
+    (match result
+      success (begin
+        (log-event "BET_PLACED" (some pool-id) (some tx-sender) (some amount) (some outcome) "")
+        (ok success)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced settlement with logging
+(define-public (settle-pool-with-logging (pool-id uint) (winning-outcome uint))
+  (let ((result (settle-pool pool-id winning-outcome)))
+    (match result
+      success (begin
+        (log-event "POOL_SETTLED" (some pool-id) (some tx-sender) none (some winning-outcome) "")
+        (ok success)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Enhanced winnings claim with logging
+(define-public (claim-winnings-with-logging (pool-id uint))
+  (let ((result (claim-winnings pool-id)))
+    (match result
+      payout-info (begin
+        (log-event "WINNINGS_CLAIMED" (some pool-id) (some tx-sender) (some (get total-payout payout-info)) none "")
+        (ok payout-info)
+      )
+      error (err error)
+    )
+  )
+)
+
+;; Get event logs by type
+(define-read-only (get-events-by-type (event-type (string-ascii 32)) (start-id uint) (count uint))
+  (filter-events-by-type event-type start-id (min (+ start-id count) (var-get event-counter)))
+)
+
+;; Helper function to filter events by type
+(define-private (filter-events-by-type (event-type (string-ascii 32)) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? event-logs { event-id: current-id })
+      event (if (is-eq (get event-type event) event-type)
+        (unwrap-panic (as-max-len? (append (filter-events-by-type event-type (+ current-id u1) max-id) event) u20))
+        (filter-events-by-type event-type (+ current-id u1) max-id)
+      )
+      (filter-events-by-type event-type (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Get events by pool
+(define-read-only (get-events-by-pool (pool-id uint) (start-id uint) (count uint))
+  (filter-events-by-pool pool-id start-id (min (+ start-id count) (var-get event-counter)))
+)
+
+;; Helper function to filter events by pool
+(define-private (filter-events-by-pool (pool-id uint) (current-id uint) (max-id uint))
+  (if (>= current-id max-id)
+    (list)
+    (match (map-get? event-logs { event-id: current-id })
+      event (match (get pool-id event)
+        event-pool-id (if (is-eq event-pool-id pool-id)
+          (unwrap-panic (as-max-len? (append (filter-events-by-pool pool-id (+ current-id u1) max-id) event) u20))
+          (filter-events-by-pool pool-id (+ current-id u1) max-id)
+        )
+        (filter-events-by-pool pool-id (+ current-id u1) max-id)
+      )
+      (filter-events-by-pool pool-id (+ current-id u1) max-id)
+    )
+  )
+)
+
+;; Get total event count
+(define-read-only (get-total-events)
+  (var-get event-counter)
+)
+
+;; Get event by ID
+(define-read-only (get-event (event-id uint))
+  (map-get? event-logs { event-id: event-id })
+)
