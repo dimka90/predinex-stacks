@@ -3300,3 +3300,42 @@
     (ok threshold)
   )
 )
+;; User reputation system
+(define-map user-reputation
+  { user: principal }
+  { 
+    score: uint,
+    pools-created: uint,
+    successful-predictions: uint,
+    total-predictions: uint,
+    last-updated: uint
+  }
+)
+
+;; Update user reputation after pool settlement
+(define-private (update-user-reputation (user principal) (was-correct bool))
+  (let (
+    (current-rep (default-to 
+      { score: u100, pools-created: u0, successful-predictions: u0, total-predictions: u0, last-updated: u0 }
+      (map-get? user-reputation { user: user })
+    ))
+    (new-total (+ (get total-predictions current-rep) u1))
+    (new-successful (if was-correct (+ (get successful-predictions current-rep) u1) (get successful-predictions current-rep)))
+    (new-score (if (> new-total u0) (/ (* new-successful u100) new-total) u100))
+  )
+    (map-set user-reputation
+      { user: user }
+      (merge current-rep {
+        score: new-score,
+        successful-predictions: new-successful,
+        total-predictions: new-total,
+        last-updated: burn-block-height
+      })
+    )
+  )
+)
+
+;; Get user reputation
+(define-read-only (get-user-reputation (user principal))
+  (map-get? user-reputation { user: user })
+)
