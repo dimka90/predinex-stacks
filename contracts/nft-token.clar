@@ -1070,3 +1070,107 @@
 (define-read-only (verify-bridge-signature (token-id uint) (signature (buff 65)))
   (ok true) ;; Placeholder - would implement actual signature verification
 )
+;; Emergency functions and governance
+(define-data-var contract-paused bool false)
+(define-data-var emergency-admin (optional principal) none)
+(define-map governance-proposals uint { 
+  proposer: principal, 
+  description: (string-ascii 256), 
+  votes-for: uint, 
+  votes-against: uint,
+  voting-deadline: uint,
+  executed: bool 
+})
+(define-data-var proposal-counter uint u0)
+
+;; Pause contract (emergency)
+(define-public (pause-contract)
+  (begin
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-eq (some tx-sender) (var-get emergency-admin))) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (ok true)
+  )
+)
+
+;; Unpause contract
+(define-public (unpause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused false)
+    (ok true)
+  )
+)
+
+;; Set emergency admin
+(define-public (set-emergency-admin (admin principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set emergency-admin (some admin))
+    (ok true)
+  )
+)
+
+;; Emergency token recovery
+(define-public (emergency-recover (token-id uint) (new-owner principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (var-get contract-paused) ERR-UNAUTHORIZED)
+    
+    (try! (nft-transfer? predinex-nft token-id (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) new-owner))
+    (map-set token-owners token-id new-owner)
+    (ok true)
+  )
+)
+
+;; Create governance proposal
+(define-public (create-proposal (description (string-ascii 256)))
+  (let ((proposal-id (var-get proposal-counter)))
+    (map-set governance-proposals proposal-id {
+      proposer: tx-sender,
+      description: description,
+      votes-for: u0,
+      votes-against: u0,
+      voting-deadline: (+ burn-block-height u1440), ;; 10 days
+      executed: false
+    })
+    (var-set proposal-counter (+ proposal-id u1))
+    (ok proposal-id)
+  )
+)
+
+;; Vote on proposal
+(define-public (vote-on-proposal (proposal-id uint) (vote-for bool))
+  (let (
+    (proposal (unwrap! (map-get? governance-proposals proposal-id) ERR-NOT-FOUND))
+    (user-balance (unwrap-panic (balance-of tx-sender))) ;; Use NFT balance as voting power
+  )
+    (asserts! (< burn-block-height (get voting-deadline proposal)) ERR-UNAUTHORIZED)
+    (asserts! (not (get executed proposal)) ERR-ALREADY-EXISTS)
+    
+    (if vote-for
+      (map-set governance-proposals proposal-id (merge proposal { votes-for: (+ (get votes-for proposal) (get count user-balance)) }))
+      (map-set governance-proposals proposal-id (merge proposal { votes-against: (+ (get votes-against proposal) (get count user-balance)) }))
+    )
+    (ok true)
+  )
+)
+
+;; Check if contract is paused
+(define-read-only (is-contract-paused)
+  (var-get contract-paused)
+)
+
+;; Get governance proposal
+(define-read-only (get-proposal (proposal-id uint))
+  (ok (map-get? governance-proposals proposal-id))
+)
+
+;; Contract version and upgrade info
+(define-read-only (get-contract-version)
+  (ok "v2.0.0")
+)
+
+;; Get emergency admin
+(define-read-only (get-emergency-admin)
+  (ok (var-get emergency-admin))
+)
