@@ -437,3 +437,86 @@
 (define-read-only (get-token-collection (token-id uint))
   (ok (map-get? token-collections token-id))
 )
+;; Auction system
+(define-map auctions uint { 
+  seller: principal, 
+  starting-price: uint, 
+  current-bid: uint, 
+  highest-bidder: (optional principal),
+  end-time: uint,
+  active: bool 
+})
+(define-map auction-bids { auction-id: uint, bidder: principal } uint)
+
+;; Start auction
+(define-public (start-auction (token-id uint) (starting-price uint) (duration uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (> starting-price u0) ERR-INVALID-TOKEN-ID)
+    (asserts! (> duration u0) ERR-INVALID-TOKEN-ID)
+    
+    (map-set auctions token-id {
+      seller: owner,
+      starting-price: starting-price,
+      current-bid: starting-price,
+      highest-bidder: none,
+      end-time: (+ burn-block-height duration),
+      active: true
+    })
+    (ok true)
+  )
+)
+
+;; Place bid
+(define-public (place-bid (token-id uint) (bid-amount uint))
+  (let (
+    (auction (unwrap! (map-get? auctions token-id) ERR-NOT-FOUND))
+  )
+    (asserts! (get active auction) ERR-UNAUTHORIZED)
+    (asserts! (< burn-block-height (get end-time auction)) ERR-UNAUTHORIZED)
+    (asserts! (> bid-amount (get current-bid auction)) ERR-INVALID-TOKEN-ID)
+    
+    ;; Transfer bid amount to contract
+    (try! (stx-transfer? bid-amount tx-sender (as-contract tx-sender)))
+    
+    ;; Refund previous highest bidder
+    (match (get highest-bidder auction)
+      prev-bidder (try! (as-contract (stx-transfer? (get current-bid auction) tx-sender prev-bidder)))
+      true
+    )
+    
+    ;; Update auction
+    (map-set auctions token-id (merge auction {
+      current-bid: bid-amount,
+      highest-bidder: (some tx-sender)
+    }))
+    
+    (ok true)
+  )
+)
+
+;; End auction
+(define-public (end-auction (token-id uint))
+  (let (
+    (auction (unwrap! (map-get? auctions token-id) ERR-NOT-FOUND))
+  )
+    (asserts! (get active auction) ERR-UNAUTHORIZED)
+    (asserts! (>= burn-block-height (get end-time auction)) ERR-UNAUTHORIZED)
+    
+    (match (get highest-bidder auction)
+      winner (begin
+        ;; Transfer NFT to winner
+        (try! (nft-transfer? predinex-nft token-id (get seller auction) winner))
+        ;; Transfer payment to seller
+        (try! (as-contract (stx-transfer? (get current-bid auction) tx-sender (get seller auction))))
+        (map-set token-owners token-id winner)
+      )
+      ;; No bids, return NFT to seller
+      true
+    )
+    
+    ;; Mark auction as inactive
+    (map-set auctions token-id (merge auction { active: false }))
+    (ok true)
+  )
+)
