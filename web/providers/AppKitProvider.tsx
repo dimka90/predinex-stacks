@@ -10,8 +10,11 @@ const queryClient = new QueryClient();
 // Initialize AppKit
 createAppKit({
   projectId: WALLETCONNECT_PROJECT_ID,
-  chains: [stacksNetworks.mainnet] as any,
+  chains: [stacksNetworks.mainnet, stacksNetworks.testnet] as any, // Cast to any to bypass strict typing for custom chains
   metadata: appKitMetadata,
+  features: {
+    analytics: true,
+  }
 });
 
 export function AppKitProvider({ children }: { children: ReactNode }) {
