@@ -520,3 +520,83 @@
     (ok true)
   )
 )
+;; NFT lending system
+(define-map loans uint { 
+  lender: principal, 
+  borrower: principal, 
+  collateral: uint, 
+  interest-rate: uint,
+  duration: uint,
+  start-time: uint,
+  active: bool 
+})
+
+;; Offer NFT for lending
+(define-public (offer-loan (token-id uint) (collateral-required uint) (interest-rate uint) (duration uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (> collateral-required u0) ERR-INVALID-TOKEN-ID)
+    
+    (map-set loans token-id {
+      lender: owner,
+      borrower: owner, ;; Placeholder until borrowed
+      collateral: collateral-required,
+      interest-rate: interest-rate,
+      duration: duration,
+      start-time: u0,
+      active: false
+    })
+    (ok true)
+  )
+)
+
+;; Borrow NFT
+(define-public (borrow-nft (token-id uint))
+  (let (
+    (loan (unwrap! (map-get? loans token-id) ERR-NOT-FOUND))
+    (collateral (get collateral loan))
+  )
+    (asserts! (not (get active loan)) ERR-ALREADY-EXISTS)
+    
+    ;; Transfer collateral to contract
+    (try! (stx-transfer? collateral tx-sender (as-contract tx-sender)))
+    
+    ;; Transfer NFT to borrower
+    (try! (nft-transfer? predinex-nft token-id (get lender loan) tx-sender))
+    (map-set token-owners token-id tx-sender)
+    
+    ;; Update loan
+    (map-set loans token-id (merge loan {
+      borrower: tx-sender,
+      start-time: burn-block-height,
+      active: true
+    }))
+    
+    (ok true)
+  )
+)
+
+;; Repay loan
+(define-public (repay-loan (token-id uint))
+  (let (
+    (loan (unwrap! (map-get? loans token-id) ERR-NOT-FOUND))
+    (interest (/ (* (get collateral loan) (get interest-rate loan)) u10000))
+  )
+    (asserts! (is-eq tx-sender (get borrower loan)) ERR-NOT-OWNER)
+    (asserts! (get active loan) ERR-UNAUTHORIZED)
+    
+    ;; Pay interest to lender
+    (try! (stx-transfer? interest tx-sender (get lender loan)))
+    
+    ;; Return NFT to lender
+    (try! (nft-transfer? predinex-nft token-id tx-sender (get lender loan)))
+    (map-set token-owners token-id (get lender loan))
+    
+    ;; Return collateral to borrower
+    (try! (as-contract (stx-transfer? (get collateral loan) tx-sender (get borrower loan))))
+    
+    ;; Mark loan as inactive
+    (map-set loans token-id (merge loan { active: false }))
+    (ok true)
+  )
+)
