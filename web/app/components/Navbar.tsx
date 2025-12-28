@@ -39,7 +39,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-4">
                         {/* We use the AppKit button as the primary connect method now */}
                         <AppKitButton />
-                        
+
                         {userData && (
                             <button
                                 onClick={signOut}
