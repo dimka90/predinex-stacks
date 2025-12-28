@@ -3458,3 +3458,75 @@
   )
   pool-id
 )
+;; Multi-signature admin system
+(define-map multisig-proposals
+  { proposal-id: uint }
+  {
+    proposer: principal,
+    action: (string-ascii 64),
+    target: (optional principal),
+    amount: (optional uint),
+    approvals: uint,
+    required-approvals: uint,
+    executed: bool,
+    created-at: uint,
+    expires-at: uint
+  }
+)
+
+(define-map multisig-approvals
+  { proposal-id: uint, admin: principal }
+  bool
+)
+
+(define-data-var proposal-counter uint u0)
+(define-data-var required-admin-approvals uint u2)
+
+;; Create multisig proposal
+(define-public (create-multisig-proposal (action (string-ascii 64)) (target (optional principal)) (amount (optional uint)))
+  (let ((proposal-id (var-get proposal-counter)))
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    
+    (map-insert multisig-proposals
+      { proposal-id: proposal-id }
+      {
+        proposer: tx-sender,
+        action: action,
+        target: target,
+        amount: amount,
+        approvals: u1,
+        required-approvals: (var-get required-admin-approvals),
+        executed: false,
+        created-at: burn-block-height,
+        expires-at: (+ burn-block-height u1440) ;; 10 days
+      }
+    )
+    
+    ;; Auto-approve by proposer
+    (map-set multisig-approvals { proposal-id: proposal-id, admin: tx-sender } true)
+    
+    (var-set proposal-counter (+ proposal-id u1))
+    (ok proposal-id)
+  )
+)
+
+;; Approve multisig proposal
+(define-public (approve-multisig-proposal (proposal-id uint))
+  (let ((proposal (unwrap! (map-get? multisig-proposals { proposal-id: proposal-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (not (get executed proposal)) ERR-ALREADY-CLAIMED)
+    (asserts! (< burn-block-height (get expires-at proposal)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (is-none (map-get? multisig-approvals { proposal-id: proposal-id, admin: tx-sender })) ERR-ALREADY-VOTED)
+    
+    ;; Record approval
+    (map-set multisig-approvals { proposal-id: proposal-id, admin: tx-sender } true)
+    
+    ;; Update approval count
+    (map-set multisig-proposals
+      { proposal-id: proposal-id }
+      (merge proposal { approvals: (+ (get approvals proposal) u1) })
+    )
+    
+    (ok true)
+  )
+)
