@@ -3391,3 +3391,70 @@
 (define-read-only (get-pool-category (pool-id uint))
   (map-get? pool-categories { pool-id: pool-id })
 )
+;; Automated pool expiry handling
+(define-map expired-pools
+  { pool-id: uint }
+  { 
+    expired-at: uint,
+    auto-refund-enabled: bool,
+    refund-processed: bool
+  }
+)
+
+;; Mark pool as expired and enable auto-refund
+(define-public (mark-pool-expired (pool-id uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (> burn-block-height (get expiry pool)) ERR-POOL-NOT-EXPIRED)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    (map-set expired-pools
+      { pool-id: pool-id }
+      {
+        expired-at: burn-block-height,
+        auto-refund-enabled: true,
+        refund-processed: false
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Process auto-refund for expired pool
+(define-public (process-auto-refund (pool-id uint) (users (list 20 principal)))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (expired-info (unwrap! (map-get? expired-pools { pool-id: pool-id }) ERR-POOL-NOT-EXPIRED))
+  )
+    (asserts! (get auto-refund-enabled expired-info) ERR-INVALID-WITHDRAWAL)
+    (asserts! (not (get refund-processed expired-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Process refunds for all users
+    (fold process-user-refund users pool-id)
+    
+    ;; Mark refund as processed
+    (map-set expired-pools
+      { pool-id: pool-id }
+      (merge expired-info { refund-processed: true })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Helper to process individual user refund
+(define-private (process-user-refund (user principal) (pool-id uint))
+  (match (map-get? user-bets { pool-id: pool-id, user: user })
+    user-bet (let ((refund-amount (get total-bet user-bet)))
+      (if (> refund-amount u0)
+        (begin
+          (try! (as-contract (stx-transfer? refund-amount tx-sender user)))
+          (map-set claims { pool-id: pool-id, user: user } true)
+        )
+        true
+      )
+    )
+    true
+  )
+  pool-id
+)
