@@ -7,17 +7,17 @@ This document outlines the planned features and improvements for the Predinex Pr
 
 ## Phase 2: Economics & Incentives
 - [x] **Platform Fees**: precise mechanism to take a small percentage (e.g., 2%) of the winning pool as a protocol fee.
-- [ ] **Liquidity Incentives**: Rewards for early bettors to bootstrap pools.
+- [x] **Liquidity Incentives**: Rewards for early bettors to bootstrap pools.
 
 ## Phase 3: Advanced Market Features
-- [ ] **Multiple Outcomes**: Support for more than just binary (Yes/No) options.
-- [ ] **Oracle Integration**: Automated settlement using trusted off-chain data (e.g., Pyth or Chainlink via Stacks).
-- [ ] **Dispute Resolution**: A mechanism to challenge a settlement if the pool creator acts maliciously.
+- [x] **Multiple Outcomes**: Support for more than just binary (Yes/No) options.
+- [x] **Oracle Integration**: Automated settlement using trusted off-chain data (e.g., Pyth or Chainlink via Stacks).
+- [x] **Dispute Resolution**: A mechanism to challenge a settlement if the pool creator acts maliciously.
 
 ## Phase 4: User Interface (Frontend)
-- [ ] **Web App**: Next.js application to interact with the contracts.
-- [ ] **Wallet Connection**: Integration with Leather/Xverse wallets.
-- [ ] **Dashboard**: User stats, active bets, and history.
+- [x] **Web App**: Next.js application to interact with the contracts.
+- [x] **Wallet Connection**: Integration with Leather/Xverse wallets.
+- [x] **Dashboard**: User stats, active bets, and history.
 
 ## Phase 5: Testing & Security
 - [ ] **Audit Prep**: Comprehensive code analysis and cleanup.
