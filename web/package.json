@@ -12,6 +12,8 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@reown/appkit": "^1.8.15",
+    "@reown/appkit-common": "^1.8.15",
     "@stacks/auth": "^7.3.0",
     "@stacks/connect": "^8.2.3",
     "@stacks/network": "^7.2.0",
