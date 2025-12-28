@@ -933,3 +933,78 @@
 (define-read-only (get-burn-reward-pool)
   (ok (var-get burn-reward-pool))
 )
+;; Analytics and statistics system
+(define-map user-stats principal { 
+  tokens-owned: uint, 
+  tokens-minted: uint, 
+  tokens-burned: uint,
+  total-spent: uint,
+  total-earned: uint 
+})
+(define-data-var total-volume uint u0)
+(define-data-var total-burned uint u0)
+
+;; Update user statistics
+(define-private (update-user-stats (user principal) (action (string-ascii 16)) (amount uint))
+  (let (
+    (current-stats (default-to 
+      { tokens-owned: u0, tokens-minted: u0, tokens-burned: u0, total-spent: u0, total-earned: u0 }
+      (map-get? user-stats user)
+    ))
+  )
+    (if (is-eq action "mint")
+      (map-set user-stats user (merge current-stats { tokens-minted: (+ (get tokens-minted current-stats) u1) }))
+      (if (is-eq action "burn")
+        (map-set user-stats user (merge current-stats { tokens-burned: (+ (get tokens-burned current-stats) u1) }))
+        (if (is-eq action "buy")
+          (map-set user-stats user (merge current-stats { total-spent: (+ (get total-spent current-stats) amount) }))
+          (if (is-eq action "sell")
+            (map-set user-stats user (merge current-stats { total-earned: (+ (get total-earned current-stats) amount) }))
+            true
+          )
+        )
+      )
+    )
+  )
+)
+
+;; Get comprehensive contract statistics
+(define-read-only (get-contract-stats)
+  (ok {
+    total-supply: (var-get token-counter),
+    total-volume: (var-get total-volume),
+    total-burned: (var-get total-burned),
+    collections-created: (var-get collection-counter),
+    burn-reward-pool: (var-get burn-reward-pool)
+  })
+)
+
+;; Get user statistics
+(define-read-only (get-user-stats (user principal))
+  (ok (map-get? user-stats user))
+)
+
+;; Get top holders (simplified version)
+(define-read-only (get-top-holders)
+  (ok (list 
+    { user: CONTRACT-OWNER, balance: u0 } ;; Placeholder - would need proper implementation
+  ))
+)
+
+;; Calculate floor price (simplified)
+(define-read-only (get-floor-price)
+  (ok u1000000) ;; Placeholder - would calculate from active listings
+)
+
+;; Get collection statistics
+(define-read-only (get-collection-stats (collection-id uint))
+  (match (map-get? collections collection-id)
+    collection (ok {
+      name: (get name collection),
+      current-supply: (get current-supply collection),
+      max-supply: (get max-supply collection),
+      completion-rate: (/ (* (get current-supply collection) u100) (get max-supply collection))
+    })
+    (err ERR-NOT-FOUND)
+  )
+)
