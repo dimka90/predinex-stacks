@@ -600,3 +600,80 @@
     (ok true)
   )
 )
+;; NFT fractionalization system
+(define-map fractionalized-nfts uint { 
+  owner: principal, 
+  total-shares: uint, 
+  share-price: uint,
+  vault-address: principal,
+  active: bool 
+})
+(define-map nft-shares { token-id: uint, holder: principal } uint)
+
+;; Fractionalize NFT
+(define-public (fractionalize-nft (token-id uint) (total-shares uint) (share-price uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (> total-shares u0) ERR-INVALID-TOKEN-ID)
+    (asserts! (> share-price u0) ERR-INVALID-TOKEN-ID)
+    
+    ;; Transfer NFT to contract (vault)
+    (try! (nft-transfer? predinex-nft token-id owner (as-contract tx-sender)))
+    (map-set token-owners token-id (as-contract tx-sender))
+    
+    ;; Create fractionalization record
+    (map-set fractionalized-nfts token-id {
+      owner: owner,
+      total-shares: total-shares,
+      share-price: share-price,
+      vault-address: (as-contract tx-sender),
+      active: true
+    })
+    
+    ;; Give all shares to original owner initially
+    (map-set nft-shares { token-id: token-id, holder: owner } total-shares)
+    (ok true)
+  )
+)
+
+;; Buy shares
+(define-public (buy-shares (token-id uint) (shares-amount uint))
+  (let (
+    (fraction-info (unwrap! (map-get? fractionalized-nfts token-id) ERR-NOT-FOUND))
+    (share-price (get share-price fraction-info))
+    (total-cost (* shares-amount share-price))
+    (current-owner-shares (default-to u0 (map-get? nft-shares { token-id: token-id, holder: (get owner fraction-info) })))
+  )
+    (asserts! (get active fraction-info) ERR-UNAUTHORIZED)
+    (asserts! (>= current-owner-shares shares-amount) ERR-INVALID-TOKEN-ID)
+    
+    ;; Transfer payment
+    (try! (stx-transfer? total-cost tx-sender (get owner fraction-info)))
+    
+    ;; Transfer shares
+    (map-set nft-shares { token-id: token-id, holder: (get owner fraction-info) } (- current-owner-shares shares-amount))
+    (map-set nft-shares { token-id: token-id, holder: tx-sender } 
+      (+ shares-amount (default-to u0 (map-get? nft-shares { token-id: token-id, holder: tx-sender }))))
+    
+    (ok true)
+  )
+)
+
+;; Redeem NFT (if holding all shares)
+(define-public (redeem-nft (token-id uint))
+  (let (
+    (fraction-info (unwrap! (map-get? fractionalized-nfts token-id) ERR-NOT-FOUND))
+    (user-shares (default-to u0 (map-get? nft-shares { token-id: token-id, holder: tx-sender })))
+  )
+    (asserts! (get active fraction-info) ERR-UNAUTHORIZED)
+    (asserts! (is-eq user-shares (get total-shares fraction-info)) ERR-UNAUTHORIZED)
+    
+    ;; Transfer NFT back to user
+    (try! (nft-transfer? predinex-nft token-id (as-contract tx-sender) tx-sender))
+    (map-set token-owners token-id tx-sender)
+    
+    ;; Mark as inactive
+    (map-set fractionalized-nfts token-id (merge fraction-info { active: false }))
+    (ok true)
+  )
+)
