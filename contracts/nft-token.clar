@@ -306,3 +306,36 @@
     (ok true)
   )
 )
+;; Rarity and traits system
+(define-map token-traits uint (list 10 { trait-type: (string-ascii 32), value: (string-ascii 64) }))
+(define-map token-rarity uint { rarity-score: uint, rank: uint })
+
+;; Set token traits
+(define-public (set-token-traits (token-id uint) (traits (list 10 { trait-type: (string-ascii 32), value: (string-ascii 64) })))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (token-exists token-id) ERR-NOT-FOUND)
+    (map-set token-traits token-id traits)
+    (ok true)
+  )
+)
+
+;; Calculate and set rarity
+(define-public (set-token-rarity (token-id uint) (rarity-score uint) (rank uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (token-exists token-id) ERR-NOT-FOUND)
+    (map-set token-rarity token-id { rarity-score: rarity-score, rank: rank })
+    (ok true)
+  )
+)
+
+;; Get token traits
+(define-read-only (get-token-traits (token-id uint))
+  (ok (map-get? token-traits token-id))
+)
+
+;; Get token rarity
+(define-read-only (get-token-rarity (token-id uint))
+  (ok (map-get? token-rarity token-id))
+)
