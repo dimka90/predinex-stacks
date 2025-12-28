@@ -803,3 +803,75 @@
     error false
   )
 )
+;; Whitelist and access control
+(define-map whitelist principal bool)
+(define-map minter-roles principal bool)
+(define-data-var whitelist-enabled bool false)
+(define-data-var public-mint-enabled bool true)
+
+;; Add to whitelist
+(define-public (add-to-whitelist (user principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set whitelist user true)
+    (ok true)
+  )
+)
+
+;; Remove from whitelist
+(define-public (remove-from-whitelist (user principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set whitelist user false)
+    (ok true)
+  )
+)
+
+;; Grant minter role
+(define-public (grant-minter-role (user principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set minter-roles user true)
+    (ok true)
+  )
+)
+
+;; Revoke minter role
+(define-public (revoke-minter-role (user principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set minter-roles user false)
+    (ok true)
+  )
+)
+
+;; Toggle whitelist requirement
+(define-public (toggle-whitelist (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set whitelist-enabled enabled)
+    (ok enabled)
+  )
+)
+
+;; Check if user is whitelisted
+(define-read-only (is-whitelisted (user principal))
+  (default-to false (map-get? whitelist user))
+)
+
+;; Check if user has minter role
+(define-read-only (has-minter-role (user principal))
+  (or (is-eq user CONTRACT-OWNER) (default-to false (map-get? minter-roles user)))
+)
+
+;; Whitelist-protected mint
+(define-public (whitelist-mint (recipient principal) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
+  (begin
+    (asserts! (has-minter-role tx-sender) ERR-UNAUTHORIZED)
+    (if (var-get whitelist-enabled)
+      (asserts! (is-whitelisted recipient) ERR-UNAUTHORIZED)
+      true
+    )
+    (mint recipient name description image)
+  )
+)
