@@ -3234,3 +3234,36 @@
     )
   )
 )
+;; Emergency pause system
+(define-data-var contract-paused bool false)
+(define-data-var pause-reason (string-ascii 256) "")
+
+;; Pause contract (owner only)
+(define-public (pause-contract (reason (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (var-set pause-reason reason)
+    (ok true)
+  )
+)
+
+;; Unpause contract (owner only)
+(define-public (unpause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused false)
+    (var-set pause-reason "")
+    (ok true)
+  )
+)
+
+;; Check if contract is paused
+(define-read-only (is-contract-paused)
+  (var-get contract-paused)
+)
+
+;; Get pause reason
+(define-read-only (get-pause-reason)
+  (var-get pause-reason)
+)
