@@ -3184,3 +3184,20 @@
     )
   )
 )
+;; Get comprehensive pool analytics
+(define-read-only (get-pool-analytics (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (let (
+      (total-volume (+ (get total-a pool) (get total-b pool)))
+      (participation-ratio (if (> total-volume u0) (/ (* (get total-a pool) u100) total-volume) u50))
+    )
+      (ok {
+        total-volume: total-volume,
+        participation-ratio: participation-ratio,
+        time-remaining: (if (> (get expiry pool) burn-block-height) (- (get expiry pool) burn-block-height) u0),
+        is-active: (and (not (get settled pool)) (< burn-block-height (get expiry pool)))
+      })
+    )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
