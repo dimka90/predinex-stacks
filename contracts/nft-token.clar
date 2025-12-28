@@ -875,3 +875,61 @@
     (mint recipient name description image)
   )
 )
+;; NFT burning with rewards system
+(define-map burn-rewards uint uint) ;; token-id -> reward amount
+(define-data-var burn-reward-pool uint u0)
+(define-data-var default-burn-reward uint u1000)
+
+;; Set burn reward for specific token
+(define-public (set-burn-reward (token-id uint) (reward-amount uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (token-exists token-id) ERR-NOT-FOUND)
+    (map-set burn-rewards token-id reward-amount)
+    (ok true)
+  )
+)
+
+;; Fund burn reward pool
+(define-public (fund-burn-rewards (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    (var-set burn-reward-pool (+ (var-get burn-reward-pool) amount))
+    (ok true)
+  )
+)
+
+;; Burn NFT with reward
+(define-public (burn-with-reward (token-id uint))
+  (let (
+    (owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND))
+    (reward (default-to (var-get default-burn-reward) (map-get? burn-rewards token-id)))
+  )
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (>= (var-get burn-reward-pool) reward) ERR-INVALID-TOKEN-ID)
+    
+    ;; Burn the NFT
+    (try! (nft-burn? predinex-nft token-id owner))
+    (map-delete token-owners token-id)
+    (map-delete token-approvals token-id)
+    (map-delete token-metadata token-id)
+    
+    ;; Pay reward
+    (try! (as-contract (stx-transfer? reward tx-sender owner)))
+    (var-set burn-reward-pool (- (var-get burn-reward-pool) reward))
+    
+    (emit-transfer (some owner) 'SP000000000000000000002Q6VF78 token-id)
+    (ok reward)
+  )
+)
+
+;; Get burn reward for token
+(define-read-only (get-burn-reward (token-id uint))
+  (ok (default-to (var-get default-burn-reward) (map-get? burn-rewards token-id)))
+)
+
+;; Get burn reward pool balance
+(define-read-only (get-burn-reward-pool)
+  (ok (var-get burn-reward-pool))
+)
