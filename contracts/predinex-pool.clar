@@ -3530,3 +3530,89 @@
     (ok true)
   )
 )
+;; Pool performance metrics
+(define-map pool-metrics
+  { pool-id: uint }
+  {
+    total-participants: uint,
+    avg-bet-size: uint,
+    volatility-score: uint,
+    liquidity-score: uint,
+    final-accuracy: (optional uint)
+  }
+)
+
+;; User leaderboard data
+(define-map user-leaderboard
+  { user: principal }
+  {
+    total-winnings: uint,
+    win-rate: uint,
+    pools-participated: uint,
+    avg-roi: uint,
+    rank: uint
+  }
+)
+
+;; Calculate pool performance metrics
+(define-public (calculate-pool-metrics (pool-id uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (get settled pool) ERR-NOT-SETTLED)
+    
+    (let (
+      (total-volume (+ (get total-a pool) (get total-b pool)))
+      (balance-ratio (if (> total-volume u0) (/ (* (get total-a pool) u100) total-volume) u50))
+      (volatility (if (> balance-ratio u50) (- balance-ratio u50) (- u50 balance-ratio)))
+      (liquidity-score (min (/ total-volume u10000) u100)) ;; Scale to 0-100
+    )
+      (map-set pool-metrics
+        { pool-id: pool-id }
+        {
+          total-participants: u0, ;; Would need to count unique participants
+          avg-bet-size: (if (> total-volume u0) (/ total-volume u2) u0), ;; Simplified
+          volatility-score: volatility,
+          liquidity-score: liquidity-score,
+          final-accuracy: (some u100) ;; Would be calculated based on oracle data
+        }
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Update user leaderboard after winning
+(define-public (update-user-leaderboard (user principal) (winnings uint) (bet-amount uint))
+  (let (
+    (current-stats (default-to 
+      { total-winnings: u0, win-rate: u0, pools-participated: u0, avg-roi: u0, rank: u0 }
+      (map-get? user-leaderboard { user: user })
+    ))
+    (new-winnings (+ (get total-winnings current-stats) winnings))
+    (new-pools (+ (get pools-participated current-stats) u1))
+    (roi (if (> bet-amount u0) (/ (* winnings u100) bet-amount) u0))
+  )
+    (map-set user-leaderboard
+      { user: user }
+      {
+        total-winnings: new-winnings,
+        win-rate: (get win-rate current-stats), ;; Would need win/loss tracking
+        pools-participated: new-pools,
+        avg-roi: roi,
+        rank: u0 ;; Would be calculated periodically
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Get pool metrics
+(define-read-only (get-pool-metrics (pool-id uint))
+  (map-get? pool-metrics { pool-id: pool-id })
+)
+
+;; Get user leaderboard position
+(define-read-only (get-user-leaderboard (user principal))
+  (map-get? user-leaderboard { user: user })
+)
