@@ -3864,3 +3864,128 @@
     )
   )
 )
+;; Cross-pool arbitrage detection system
+(define-map arbitrage-opportunities
+  { pool-a: uint, pool-b: uint }
+  {
+    price-diff: uint,
+    detected-at: uint,
+    profit-potential: uint,
+    is-active: bool
+  }
+)
+
+(define-map arbitrage-alerts
+  { alert-id: uint }
+  {
+    pools: (list 2 uint),
+    arbitrageur: principal,
+    profit-realized: uint,
+    created-at: uint
+  }
+)
+
+(define-data-var arbitrage-alert-counter uint u0)
+(define-data-var min-arbitrage-threshold uint u5) ;; 5% minimum difference
+
+;; Detect arbitrage opportunities between pools
+(define-public (detect-arbitrage (pool-a-id uint) (pool-b-id uint))
+  (let (
+    (pool-a (unwrap! (map-get? pools { pool-id: pool-a-id }) ERR-POOL-NOT-FOUND))
+    (pool-b (unwrap! (map-get? pools { pool-id: pool-b-id }) ERR-POOL-NOT-FOUND))
+  )
+    (asserts! (not (is-eq pool-a-id pool-b-id)) ERR-INVALID-AMOUNT)
+    (asserts! (not (get settled pool-a)) ERR-POOL-SETTLED)
+    (asserts! (not (get settled pool-b)) ERR-POOL-SETTLED)
+    
+    (let (
+      (price-a (calculate-implied-probability pool-a-id))
+      (price-b (calculate-implied-probability pool-b-id))
+      (price-diff (if (> price-a price-b) (- price-a price-b) (- price-b price-a)))
+      (profit-potential (/ (* price-diff u100) (min price-a price-b)))
+    )
+      (if (> price-diff (var-get min-arbitrage-threshold))
+        (begin
+          (map-set arbitrage-opportunities
+            { pool-a: pool-a-id, pool-b: pool-b-id }
+            {
+              price-diff: price-diff,
+              detected-at: burn-block-height,
+              profit-potential: profit-potential,
+              is-active: true
+            }
+          )
+          (ok { detected: true, profit-potential: profit-potential })
+        )
+        (ok { detected: false, profit-potential: u0 })
+      )
+    )
+  )
+)
+
+;; Calculate implied probability for a pool
+(define-private (calculate-implied-probability (pool-id uint))
+  (let ((pool (unwrap-panic (map-get? pools { pool-id: pool-id }))))
+    (let (
+      (total-a (get total-a pool))
+      (total-b (get total-b pool))
+      (total-volume (+ total-a total-b))
+    )
+      (if (> total-volume u0)
+        (/ (* total-a u100) total-volume)
+        u50 ;; Default 50% if no bets
+      )
+    )
+  )
+)
+
+;; Execute arbitrage trade
+(define-public (execute-arbitrage (pool-a-id uint) (pool-b-id uint) (amount uint))
+  (let (
+    (opportunity (unwrap! (map-get? arbitrage-opportunities { pool-a: pool-a-id, pool-b: pool-b-id }) ERR-POOL-NOT-FOUND))
+    (alert-id (var-get arbitrage-alert-counter))
+  )
+    (asserts! (get is-active opportunity) ERR-POOL-SETTLED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    
+    ;; Calculate expected profit
+    (let ((expected-profit (/ (* amount (get profit-potential opportunity)) u100)))
+      ;; Record arbitrage execution
+      (map-set arbitrage-alerts
+        { alert-id: alert-id }
+        {
+          pools: (list pool-a-id pool-b-id),
+          arbitrageur: tx-sender,
+          profit-realized: expected-profit,
+          created-at: burn-block-height
+        }
+      )
+      
+      ;; Mark opportunity as inactive
+      (map-set arbitrage-opportunities
+        { pool-a: pool-a-id, pool-b: pool-b-id }
+        (merge opportunity { is-active: false })
+      )
+      
+      (var-set arbitrage-alert-counter (+ alert-id u1))
+      (ok expected-profit)
+    )
+  )
+)
+
+;; Get arbitrage opportunities
+(define-read-only (get-arbitrage-opportunity (pool-a uint) (pool-b uint))
+  (map-get? arbitrage-opportunities { pool-a: pool-a, pool-b: pool-b })
+)
+
+;; Set minimum arbitrage threshold
+(define-public (set-arbitrage-threshold (threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> threshold u0) ERR-INVALID-AMOUNT)
+    (asserts! (< threshold u50) ERR-INVALID-AMOUNT) ;; Max 50%
+    
+    (var-set min-arbitrage-threshold threshold)
+    (ok threshold)
+  )
+)
