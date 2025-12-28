@@ -1008,3 +1008,65 @@
     (err ERR-NOT-FOUND)
   )
 )
+;; Cross-chain compatibility features
+(define-map bridge-locks uint { 
+  locked: bool, 
+  target-chain: (string-ascii 32), 
+  bridge-address: (string-ascii 64),
+  lock-time: uint 
+})
+(define-map chain-mappings { chain: (string-ascii 32), token-id: uint } (string-ascii 64))
+
+;; Lock NFT for bridging
+(define-public (lock-for-bridge (token-id uint) (target-chain (string-ascii 32)) (bridge-address (string-ascii 64)))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (is-none (map-get? bridge-locks token-id)) ERR-ALREADY-EXISTS)
+    
+    (map-set bridge-locks token-id {
+      locked: true,
+      target-chain: target-chain,
+      bridge-address: bridge-address,
+      lock-time: burn-block-height
+    })
+    (ok true)
+  )
+)
+
+;; Unlock NFT from bridge
+(define-public (unlock-from-bridge (token-id uint))
+  (let (
+    (lock-info (unwrap! (map-get? bridge-locks token-id) ERR-NOT-FOUND))
+    (owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND))
+  )
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (get locked lock-info) ERR-UNAUTHORIZED)
+    
+    (map-delete bridge-locks token-id)
+    (ok true)
+  )
+)
+
+;; Set cross-chain mapping
+(define-public (set-chain-mapping (chain (string-ascii 32)) (token-id uint) (external-id (string-ascii 64)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set chain-mappings { chain: chain, token-id: token-id } external-id)
+    (ok true)
+  )
+)
+
+;; Get bridge status
+(define-read-only (get-bridge-status (token-id uint))
+  (ok (map-get? bridge-locks token-id))
+)
+
+;; Get chain mapping
+(define-read-only (get-chain-mapping (chain (string-ascii 32)) (token-id uint))
+  (ok (map-get? chain-mappings { chain: chain, token-id: token-id }))
+)
+
+;; Verify cross-chain signature (placeholder)
+(define-read-only (verify-bridge-signature (token-id uint) (signature (buff 65)))
+  (ok true) ;; Placeholder - would implement actual signature verification
+)
