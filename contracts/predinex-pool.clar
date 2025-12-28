@@ -3616,3 +3616,109 @@
 (define-read-only (get-user-leaderboard (user principal))
   (map-get? user-leaderboard { user: user })
 )
+;; Advanced oracle consensus system
+(define-map oracle-consensus
+  { pool-id: uint }
+  {
+    submissions: (list 10 uint),
+    consensus-reached: bool,
+    final-outcome: (optional uint),
+    confidence-level: uint,
+    participating-oracles: uint
+  }
+)
+
+;; Oracle voting weights based on reputation
+(define-map oracle-weights
+  { provider-id: uint }
+  {
+    weight: uint,
+    stake: uint,
+    slash-count: uint
+  }
+)
+
+;; Calculate weighted oracle consensus
+(define-public (calculate-oracle-consensus (pool-id uint) (oracle-submissions (list 10 uint)))
+  (let (
+    (total-weight u0)
+    (outcome-weights (list u0 u0)) ;; For binary outcomes
+  )
+    ;; Calculate weighted votes
+    (let ((consensus-result (fold calculate-weighted-vote oracle-submissions { total: u0, outcome-0: u0, outcome-1: u0 })))
+      (let (
+        (total-votes (get total consensus-result))
+        (votes-0 (get outcome-0 consensus-result))
+        (votes-1 (get outcome-1 consensus-result))
+        (winning-outcome (if (> votes-0 votes-1) u0 u1))
+        (confidence (if (> total-votes u0) (/ (* (max votes-0 votes-1) u100) total-votes) u0))
+      )
+        (map-set oracle-consensus
+          { pool-id: pool-id }
+          {
+            submissions: oracle-submissions,
+            consensus-reached: (> confidence u60), ;; 60% confidence threshold
+            final-outcome: (if (> confidence u60) (some winning-outcome) none),
+            confidence-level: confidence,
+            participating-oracles: (len oracle-submissions)
+          }
+        )
+        
+        (ok winning-outcome)
+      )
+    )
+  )
+)
+
+;; Helper function to calculate weighted votes
+(define-private (calculate-weighted-vote (submission-id uint) (acc { total: uint, outcome-0: uint, outcome-1: uint }))
+  (match (map-get? oracle-submissions { submission-id: submission-id })
+    submission (let (
+      (provider-id (get provider-id submission))
+      (weight (get-oracle-weight provider-id))
+      (outcome (mod (get confidence-score submission) u2)) ;; Simplified outcome extraction
+    )
+      (if (is-eq outcome u0)
+        {
+          total: (+ (get total acc) weight),
+          outcome-0: (+ (get outcome-0 acc) weight),
+          outcome-1: (get outcome-1 acc)
+        }
+        {
+          total: (+ (get total acc) weight),
+          outcome-0: (get outcome-0 acc),
+          outcome-1: (+ (get outcome-1 acc) weight)
+        }
+      )
+    )
+    acc
+  )
+)
+
+;; Get oracle weight (default to 1 if not set)
+(define-private (get-oracle-weight (provider-id uint))
+  (match (map-get? oracle-weights { provider-id: provider-id })
+    weights (get weight weights)
+    u1
+  )
+)
+
+;; Set oracle weight (admin only)
+(define-public (set-oracle-weight (provider-id uint) (weight uint) (stake uint))
+  (begin
+    (asserts! (is-admin tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (> weight u0) ERR-INVALID-AMOUNT)
+    (asserts! (<= weight u10) ERR-INVALID-AMOUNT) ;; Max weight of 10
+    
+    (map-set oracle-weights
+      { provider-id: provider-id }
+      {
+        weight: weight,
+        stake: stake,
+        slash-count: u0
+      }
+    )
+    
+    (ok true)
+  )
+)
