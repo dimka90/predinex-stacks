@@ -4129,3 +4129,170 @@
 (define-read-only (get-event (event-id uint))
   (map-get? event-logs { event-id: event-id })
 )
+;; Contract upgrade and version control system
+(define-data-var contract-version (string-ascii 16) "v2.0.0")
+(define-data-var upgrade-authorized bool false)
+(define-data-var next-contract-address (optional principal) none)
+
+;; Version history tracking
+(define-map version-history
+  { version: (string-ascii 16) }
+  {
+    deployed-at: uint,
+    deployed-by: principal,
+    features-added: (string-ascii 512),
+    deprecated-functions: (list 10 (string-ascii 64))
+  }
+)
+
+;; Migration status tracking
+(define-map migration-status
+  { user: principal }
+  {
+    migrated: bool,
+    migration-block: uint,
+    data-transferred: bool
+  }
+)
+
+(define-data-var migration-enabled bool false)
+(define-data-var total-migrated-users uint u0)
+
+;; Record current version deployment
+(define-public (record-version-deployment (version (string-ascii 16)) (features (string-ascii 512)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    (map-set version-history
+      { version: version }
+      {
+        deployed-at: burn-block-height,
+        deployed-by: tx-sender,
+        features-added: features,
+        deprecated-functions: (list)
+      }
+    )
+    
+    (var-set contract-version version)
+    (ok true)
+  )
+)
+
+;; Authorize contract upgrade
+(define-public (authorize-upgrade (new-contract principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set upgrade-authorized true)
+    (var-set next-contract-address (some new-contract))
+    (ok true)
+  )
+)
+
+;; Enable migration to new contract
+(define-public (enable-migration)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (var-get upgrade-authorized) ERR-UNAUTHORIZED)
+    (var-set migration-enabled true)
+    (ok true)
+  )
+)
+
+;; Migrate user data to new contract
+(define-public (migrate-user-data)
+  (let (
+    (user-data (get-user-comprehensive-data tx-sender))
+    (migration-info (default-to { migrated: false, migration-block: u0, data-transferred: false } (map-get? migration-status { user: tx-sender })))
+  )
+    (asserts! (var-get migration-enabled) ERR-UNAUTHORIZED)
+    (asserts! (not (get migrated migration-info)) ERR-ALREADY-CLAIMED)
+    
+    ;; Mark user as migrated
+    (map-set migration-status
+      { user: tx-sender }
+      {
+        migrated: true,
+        migration-block: burn-block-height,
+        data-transferred: true
+      }
+    )
+    
+    ;; Update migration counter
+    (var-set total-migrated-users (+ (var-get total-migrated-users) u1))
+    
+    ;; Log migration event
+    (log-event "USER_MIGRATED" none (some tx-sender) none none "")
+    
+    (ok user-data)
+  )
+)
+
+;; Get comprehensive user data for migration
+(define-private (get-user-comprehensive-data (user principal))
+  {
+    reputation: (map-get? user-reputation { user: user }),
+    leaderboard: (map-get? user-leaderboard { user: user }),
+    incentive-stats: (map-get? user-incentive-stats { user: user }),
+    withdrawal-count: (get-user-withdrawal-count user),
+    migration-eligible: true
+  }
+)
+
+;; Check if user has migrated
+(define-read-only (has-user-migrated (user principal))
+  (match (map-get? migration-status { user: user })
+    status (get migrated status)
+    false
+  )
+)
+
+;; Get contract version info
+(define-read-only (get-contract-info)
+  {
+    version: (var-get contract-version),
+    upgrade-authorized: (var-get upgrade-authorized),
+    migration-enabled: (var-get migration-enabled),
+    next-contract: (var-get next-contract-address),
+    total-migrated: (var-get total-migrated-users)
+  }
+)
+
+;; Get version history
+(define-read-only (get-version-info (version (string-ascii 16)))
+  (map-get? version-history { version: version })
+)
+
+;; Deprecate functions (for upgrade planning)
+(define-public (deprecate-functions (version (string-ascii 16)) (functions (list 10 (string-ascii 64))))
+  (let ((version-info (unwrap! (map-get? version-history { version: version }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    
+    (map-set version-history
+      { version: version }
+      (merge version-info { deprecated-functions: functions })
+    )
+    
+    (ok true)
+  )
+)
+
+;; Emergency contract freeze (stops all operations)
+(define-public (emergency-freeze (reason (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (var-set pause-reason reason)
+    (log-event "EMERGENCY_FREEZE" none (some tx-sender) none none reason)
+    (ok true)
+  )
+)
+
+;; Get migration statistics
+(define-read-only (get-migration-stats)
+  {
+    migration-enabled: (var-get migration-enabled),
+    total-migrated-users: (var-get total-migrated-users),
+    upgrade-authorized: (var-get upgrade-authorized),
+    next-contract: (var-get next-contract-address)
+  }
+)
