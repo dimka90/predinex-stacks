@@ -1,7 +1,8 @@
-export const SUPPORTED_NETWORKS = {
-  MAINNET: 'stacks:mainnet',
-  TESTNET: 'stacks:testnet',
-} as const;
+/**
+ * Reown AppKit Constants
+ */
 
-export const DEFAULT_NETWORK = SUPPORTED_NETWORKS.MAINNET;
-export const WALLET_CONNECT_VERSION = '2.0';
+export const APPKIT_THEME_VARIABLES = {
+  '--w3m-accent': '#000000',
+  '--w3m-border-radius-master': '1px',
+};

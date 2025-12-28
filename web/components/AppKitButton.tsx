@@ -1,26 +1,47 @@
 'use client';
-import { useWalletConnection } from '../lib/hooks/useWalletConnection';
 
-export function AppKitButton() {
-  const { connect, disconnect, isConnected, address } = useWalletConnection();
+import { useAppKit } from '../lib/hooks/useAppKit';
+import { Wallet } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-  if (isConnected && address) {
+interface AppKitButtonProps {
+  className?: string;
+  label?: string;
+}
+
+export default function AppKitButton({ className, label = 'Connect Wallet' }: AppKitButtonProps) {
+  const { open, isConnected, address } = useAppKit();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
     return (
-      <button
-        onClick={disconnect}
-        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+      <button 
+        className={`flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm ${className}`}
+        disabled
       >
-        {address.slice(0, 6)}...{address.slice(-4)}
+        <Wallet className="w-4 h-4" />
+        Loading...
       </button>
     );
   }
 
   return (
-    <button
-      onClick={connect}
-      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-    >
-      Connect Wallet
-    </button>
+    <>
+      {!isConnected ? (
+        <button
+          onClick={() => open()}
+          className={`flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 ${className}`}
+        >
+          <Wallet className="w-4 h-4" />
+          {label}
+        </button>
+      ) : (
+        <w3m-button />
+      )}
+    </>
   );
 }
