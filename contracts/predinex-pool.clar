@@ -3339,3 +3339,55 @@
 (define-read-only (get-user-reputation (user principal))
   (map-get? user-reputation { user: user })
 )
+;; Pool categories and tagging system
+(define-map pool-categories
+  { pool-id: uint }
+  { 
+    category: (string-ascii 64),
+    tags: (list 5 (string-ascii 32)),
+    difficulty-level: uint
+  }
+)
+
+;; Category statistics
+(define-map category-stats
+  { category: (string-ascii 64) }
+  { 
+    pool-count: uint,
+    total-volume: uint,
+    avg-accuracy: uint
+  }
+)
+
+;; Set pool category and tags
+(define-public (set-pool-category (pool-id uint) (category (string-ascii 64)) (tags (list 5 (string-ascii 32))) (difficulty uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    (asserts! (> (len category) u0) ERR-INVALID-TITLE)
+    (asserts! (<= difficulty u10) ERR-INVALID-AMOUNT)
+    
+    (map-set pool-categories
+      { pool-id: pool-id }
+      {
+        category: category,
+        tags: tags,
+        difficulty-level: difficulty
+      }
+    )
+    
+    ;; Update category stats
+    (let ((current-stats (default-to { pool-count: u0, total-volume: u0, avg-accuracy: u0 } (map-get? category-stats { category: category }))))
+      (map-set category-stats
+        { category: category }
+        (merge current-stats { pool-count: (+ (get pool-count current-stats) u1) })
+      )
+    )
+    
+    (ok true)
+  )
+)
+
+;; Get pools by category
+(define-read-only (get-pool-category (pool-id uint))
+  (map-get? pool-categories { pool-id: pool-id })
+)
