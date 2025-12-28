@@ -3267,3 +3267,36 @@
 (define-read-only (get-pause-reason)
   (var-get pause-reason)
 )
+;; Dynamic fee system
+(define-data-var dynamic-fee-enabled bool false)
+(define-data-var base-fee-percent uint FEE-PERCENT)
+(define-data-var volume-threshold uint u1000000) ;; 1 STX threshold
+
+;; Enable dynamic fees
+(define-public (enable-dynamic-fees (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set dynamic-fee-enabled enabled)
+    (ok enabled)
+  )
+)
+
+;; Calculate dynamic fee based on pool volume
+(define-private (calculate-dynamic-fee (pool-volume uint))
+  (if (var-get dynamic-fee-enabled)
+    (if (> pool-volume (var-get volume-threshold))
+      (max (- (var-get base-fee-percent) u1) u1) ;; Reduce fee for high volume
+      (var-get base-fee-percent)
+    )
+    (var-get base-fee-percent)
+  )
+)
+
+;; Set volume threshold for dynamic fees
+(define-public (set-volume-threshold (threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set volume-threshold threshold)
+    (ok threshold)
+  )
+)
