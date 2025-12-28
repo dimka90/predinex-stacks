@@ -339,3 +339,47 @@
 (define-read-only (get-token-rarity (token-id uint))
   (ok (map-get? token-rarity token-id))
 )
+;; NFT staking system
+(define-map staked-nfts uint { staker: principal, staked-at: uint, rewards-earned: uint })
+(define-data-var staking-enabled bool true)
+(define-data-var daily-reward-rate uint u100) ;; 100 micro-STX per day
+
+;; Stake NFT
+(define-public (stake-nft (token-id uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (var-get staking-enabled) ERR-UNAUTHORIZED)
+    (asserts! (is-none (map-get? staked-nfts token-id)) ERR-ALREADY-EXISTS)
+    
+    (map-set staked-nfts token-id { 
+      staker: owner, 
+      staked-at: burn-block-height, 
+      rewards-earned: u0 
+    })
+    (ok true)
+  )
+)
+
+;; Unstake NFT and claim rewards
+(define-public (unstake-nft (token-id uint))
+  (let (
+    (stake-info (unwrap! (map-get? staked-nfts token-id) ERR-NOT-FOUND))
+    (staker (get staker stake-info))
+  )
+    (asserts! (is-eq tx-sender staker) ERR-NOT-OWNER)
+    
+    (let (
+      (blocks-staked (- burn-block-height (get staked-at stake-info)))
+      (rewards (/ (* blocks-staked (var-get daily-reward-rate)) u144)) ;; Assuming 144 blocks per day
+    )
+      (map-delete staked-nfts token-id)
+      (try! (as-contract (stx-transfer? rewards tx-sender staker)))
+      (ok rewards)
+    )
+  )
+)
+
+;; Get staking info
+(define-read-only (get-staking-info (token-id uint))
+  (ok (map-get? staked-nfts token-id))
+)
