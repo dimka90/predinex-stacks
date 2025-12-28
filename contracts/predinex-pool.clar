@@ -2524,10 +2524,11 @@
   )
 )
 
-;; [FIXED] Batch withdrawal - Approve multiple withdrawals at once with proper error handling
+;; [OPTIMIZED] Batch withdrawal - Approve multiple withdrawals at once with gas optimization
 (define-public (batch-approve-withdrawals (users (list 10 principal)) (withdrawal-ids (list 10 uint)))
   (let (
     (count (len users))
+    (total-amount u0)
   )
     ;; Access control
     (asserts! (or (is-admin tx-sender) (is-owner tx-sender)) ERR-UNAUTHORIZED)
@@ -2535,11 +2536,17 @@
     ;; Validate lists have same length
     (asserts! (is-eq count (len withdrawal-ids)) ERR-INVALID-AMOUNT)
     
-    ;; Process each withdrawal with error handling
-    (ok (fold process-single-withdrawal 
-      (zip users withdrawal-ids) 
-      (list true)
-    ))
+    ;; Pre-calculate total amount for gas optimization
+    (let ((batch-total (fold calculate-batch-total (zip users withdrawal-ids) u0)))
+      ;; Check contract has sufficient balance upfront
+      (asserts! (>= (stx-get-balance (as-contract tx-sender)) batch-total) ERR-INSUFFICIENT-CONTRACT-BALANCE)
+      
+      ;; Process each withdrawal with error handling
+      (ok (fold process-single-withdrawal 
+        (zip users withdrawal-ids) 
+        (list true)
+      ))
+    )
   )
 )
 
@@ -3164,4 +3171,16 @@
 ;; Get dispute information
 (define-read-only (get-dispute (pool-id uint) (dispute-id uint))
   (map-get? disputes { pool-id: pool-id, dispute-id: dispute-id })
+)
+;; Helper function to calculate batch total for gas optimization
+(define-private (calculate-batch-total (user-withdrawal-pair (tuple (user principal) (withdrawal-id uint))) (running-total uint))
+  (let (
+    (user (get user user-withdrawal-pair))
+    (withdrawal-id (get withdrawal-id user-withdrawal-pair))
+  )
+    (match (map-get? pending-withdrawals { user: user, withdrawal-id: withdrawal-id })
+      withdrawal (+ running-total (get amount withdrawal))
+      running-total
+    )
+  )
 )
