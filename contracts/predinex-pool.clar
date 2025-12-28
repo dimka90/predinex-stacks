@@ -3722,3 +3722,145 @@
     (ok true)
   )
 )
+;; Liquidity mining rewards system
+(define-map liquidity-mining-pools
+  { pool-id: uint }
+  {
+    reward-rate: uint,
+    total-staked: uint,
+    reward-per-token: uint,
+    last-update-time: uint,
+    mining-duration: uint
+  }
+)
+
+(define-map user-mining-info
+  { pool-id: uint, user: principal }
+  {
+    staked-amount: uint,
+    reward-debt: uint,
+    pending-rewards: uint,
+    last-claim-time: uint
+  }
+)
+
+(define-data-var total-mining-rewards uint u0)
+
+;; Initialize liquidity mining for a pool
+(define-public (init-liquidity-mining (pool-id uint) (reward-rate uint) (duration uint))
+  (let ((pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND)))
+    (asserts! (is-eq tx-sender (get creator pool)) ERR-UNAUTHORIZED)
+    (asserts! (> reward-rate u0) ERR-INVALID-AMOUNT)
+    (asserts! (> duration u0) ERR-INVALID-DURATION)
+    
+    (map-set liquidity-mining-pools
+      { pool-id: pool-id }
+      {
+        reward-rate: reward-rate,
+        total-staked: u0,
+        reward-per-token: u0,
+        last-update-time: burn-block-height,
+        mining-duration: duration
+      }
+    )
+    
+    (ok true)
+  )
+)
+
+;; Stake tokens for liquidity mining
+(define-public (stake-for-mining (pool-id uint) (amount uint))
+  (let (
+    (pool (unwrap! (map-get? pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (mining-pool (unwrap! (map-get? liquidity-mining-pools { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
+    (user-info (default-to 
+      { staked-amount: u0, reward-debt: u0, pending-rewards: u0, last-claim-time: u0 }
+      (map-get? user-mining-info { pool-id: pool-id, user: tx-sender })
+    ))
+  )
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (not (get settled pool)) ERR-POOL-SETTLED)
+    
+    ;; Update reward calculations
+    (let ((updated-mining-pool (update-mining-rewards pool-id)))
+      ;; Transfer stake to contract
+      (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+      
+      ;; Update user staking info
+      (map-set user-mining-info
+        { pool-id: pool-id, user: tx-sender }
+        {
+          staked-amount: (+ (get staked-amount user-info) amount),
+          reward-debt: (/ (* (+ (get staked-amount user-info) amount) (get reward-per-token updated-mining-pool)) u1000000),
+          pending-rewards: (get pending-rewards user-info),
+          last-claim-time: burn-block-height
+        }
+      )
+      
+      ;; Update total staked
+      (map-set liquidity-mining-pools
+        { pool-id: pool-id }
+        (merge updated-mining-pool { total-staked: (+ (get total-staked updated-mining-pool) amount) })
+      )
+      
+      (ok true)
+    )
+  )
+)
+
+;; Update mining rewards calculation
+(define-private (update-mining-rewards (pool-id uint))
+  (let ((mining-pool (unwrap-panic (map-get? liquidity-mining-pools { pool-id: pool-id }))))
+    (let (
+      (time-elapsed (- burn-block-height (get last-update-time mining-pool)))
+      (total-staked (get total-staked mining-pool))
+      (reward-rate (get reward-rate mining-pool))
+    )
+      (if (and (> total-staked u0) (> time-elapsed u0))
+        (let ((new-rewards (/ (* reward-rate time-elapsed) total-staked)))
+          (let ((updated-pool (merge mining-pool {
+            reward-per-token: (+ (get reward-per-token mining-pool) new-rewards),
+            last-update-time: burn-block-height
+          })))
+            (map-set liquidity-mining-pools { pool-id: pool-id } updated-pool)
+            updated-pool
+          )
+        )
+        mining-pool
+      )
+    )
+  )
+)
+
+;; Claim mining rewards
+(define-public (claim-mining-rewards (pool-id uint))
+  (let (
+    (mining-pool (update-mining-rewards pool-id))
+    (user-info (unwrap! (map-get? user-mining-info { pool-id: pool-id, user: tx-sender }) ERR-NO-WINNINGS))
+  )
+    (let (
+      (earned-rewards (- (/ (* (get staked-amount user-info) (get reward-per-token mining-pool)) u1000000) (get reward-debt user-info)))
+      (total-rewards (+ earned-rewards (get pending-rewards user-info)))
+    )
+      (asserts! (> total-rewards u0) ERR-NO-WINNINGS)
+      
+      ;; Transfer rewards
+      (try! (as-contract (stx-transfer? total-rewards tx-sender tx-sender)))
+      
+      ;; Update user info
+      (map-set user-mining-info
+        { pool-id: pool-id, user: tx-sender }
+        (merge user-info {
+          reward-debt: (/ (* (get staked-amount user-info) (get reward-per-token mining-pool)) u1000000),
+          pending-rewards: u0,
+          last-claim-time: burn-block-height
+        })
+      )
+      
+      ;; Update total rewards distributed
+      (var-set total-mining-rewards (+ (var-get total-mining-rewards) total-rewards))
+      
+      (ok total-rewards)
+    )
+  )
+)
