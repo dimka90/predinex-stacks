@@ -3201,3 +3201,36 @@
     (err ERR-POOL-NOT-FOUND)
   )
 )
+;; Rate limiting data structure
+(define-map user-bet-timestamps
+  { user: principal }
+  { last-bet-time: uint, bet-count: uint }
+)
+
+;; Rate limiting constants
+(define-constant MAX-BETS-PER-WINDOW u10)
+(define-constant RATE-LIMIT-WINDOW u144) ;; 24 hours
+
+;; Check rate limiting for user
+(define-private (check-rate-limit (user principal))
+  (let (
+    (user-data (default-to { last-bet-time: u0, bet-count: u0 } (map-get? user-bet-timestamps { user: user })))
+    (time-diff (- burn-block-height (get last-bet-time user-data)))
+  )
+    (if (> time-diff RATE-LIMIT-WINDOW)
+      ;; Reset counter if window expired
+      (begin
+        (map-set user-bet-timestamps { user: user } { last-bet-time: burn-block-height, bet-count: u1 })
+        true
+      )
+      ;; Check if under limit
+      (if (< (get bet-count user-data) MAX-BETS-PER-WINDOW)
+        (begin
+          (map-set user-bet-timestamps { user: user } { last-bet-time: burn-block-height, bet-count: (+ (get bet-count user-data) u1) })
+          true
+        )
+        false
+      )
+    )
+  )
+)
