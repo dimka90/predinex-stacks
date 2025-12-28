@@ -383,3 +383,57 @@
 (define-read-only (get-staking-info (token-id uint))
   (ok (map-get? staked-nfts token-id))
 )
+;; Collection and series management
+(define-map collections uint { name: (string-ascii 64), creator: principal, max-supply: uint, current-supply: uint })
+(define-map token-collections uint uint) ;; token-id -> collection-id
+(define-data-var collection-counter uint u0)
+
+;; Create new collection
+(define-public (create-collection (name (string-ascii 64)) (max-supply uint))
+  (let ((collection-id (var-get collection-counter)))
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> max-supply u0) ERR-INVALID-TOKEN-ID)
+    
+    (map-set collections collection-id {
+      name: name,
+      creator: tx-sender,
+      max-supply: max-supply,
+      current-supply: u0
+    })
+    (var-set collection-counter (+ collection-id u1))
+    (ok collection-id)
+  )
+)
+
+;; Mint to collection
+(define-public (mint-to-collection (collection-id uint) (recipient principal) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
+  (let (
+    (collection (unwrap! (map-get? collections collection-id) ERR-NOT-FOUND))
+    (token-id (var-get token-counter))
+  )
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (< (get current-supply collection) (get max-supply collection)) ERR-INVALID-TOKEN-ID)
+    
+    (try! (nft-mint? predinex-nft token-id recipient))
+    (map-set token-owners token-id recipient)
+    (map-set token-metadata token-id { name: name, description: description, image: image })
+    (map-set token-collections token-id collection-id)
+    
+    ;; Update collection supply
+    (map-set collections collection-id 
+      (merge collection { current-supply: (+ (get current-supply collection) u1) }))
+    
+    (var-set token-counter (+ token-id u1))
+    (ok token-id)
+  )
+)
+
+;; Get collection info
+(define-read-only (get-collection-info (collection-id uint))
+  (ok (map-get? collections collection-id))
+)
+
+;; Get token collection
+(define-read-only (get-token-collection (token-id uint))
+  (ok (map-get? token-collections token-id))
+)
