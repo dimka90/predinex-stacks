@@ -250,3 +250,30 @@
     approved: approved 
   })
 )
+;; Royalty system
+(define-map token-royalties uint { creator: principal, percentage: uint })
+(define-data-var default-royalty-percentage uint u250) ;; 2.5%
+
+;; Set royalty for token
+(define-public (set-token-royalty (token-id uint) (creator principal) (percentage uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (<= percentage u1000) ERR-INVALID-TOKEN-ID) ;; Max 10%
+    (map-set token-royalties token-id { creator: creator, percentage: percentage })
+    (ok true)
+  )
+)
+
+;; Get royalty info
+(define-read-only (get-royalty-info (token-id uint) (sale-price uint))
+  (match (map-get? token-royalties token-id)
+    royalty (ok { 
+      creator: (get creator royalty), 
+      amount: (/ (* sale-price (get percentage royalty)) u10000) 
+    })
+    (ok { 
+      creator: CONTRACT-OWNER, 
+      amount: (/ (* sale-price (var-get default-royalty-percentage)) u10000) 
+    })
+  )
+)
