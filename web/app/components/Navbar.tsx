@@ -1,13 +1,12 @@
 'use client';
 
 import Link from "next/link";
-import { LogOut, Wallet } from "lucide-react";
-import { useWalletConnect } from "@/context/WalletConnectContext";
-import { WalletConnectButton } from "./WalletConnectButton";
-import { NetworkSwitcher } from "./NetworkSwitcher";
+import { LogOut } from "lucide-react";
+import AppKitButton from "../../components/AppKitButton";
+import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { session } = useWalletConnect();
+    const { userData, signOut } = useStacks();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -29,17 +28,27 @@ export default function Navbar() {
                         <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                             Create
                         </Link>
-                        {session?.isConnected && (
+                        {userData && (
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 Dashboard
                             </Link>
                         )}
                     </div>
 
-                    {/* Wallet Connection and Network Switcher */}
+                    {/* User Info & Connect Button */}
                     <div className="flex items-center gap-4">
-                        {session?.isConnected && <NetworkSwitcher />}
-                        <WalletConnectButton />
+                        {/* We use the AppKit button as the primary connect method now */}
+                        <AppKitButton />
+
+                        {userData && (
+                            <button
+                                onClick={signOut}
+                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                                aria-label="Sign out"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
