@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * StacksProvider - React Context Provider for Stacks wallet authentication
+ * StacksProvider - React Context Provider for Stacks wallet authentication (Legacy Stacks wallet authentication Direct)
  * 
  * This component manages the authentication state for the entire application,
  * providing wallet connection, user session management, and authentication
