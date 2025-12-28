@@ -677,3 +677,83 @@
     (ok true)
   )
 )
+;; Dynamic metadata and evolution system
+(define-map token-evolution uint { 
+  level: uint, 
+  experience: uint, 
+  last-interaction: uint,
+  evolution-stage: (string-ascii 32) 
+})
+(define-map evolution-requirements uint { exp-required: uint, new-stage: (string-ascii 32) })
+
+;; Initialize evolution system
+(define-public (init-evolution (token-id uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    
+    (map-set token-evolution token-id {
+      level: u1,
+      experience: u0,
+      last-interaction: burn-block-height,
+      evolution-stage: "basic"
+    })
+    (ok true)
+  )
+)
+
+;; Add experience to NFT
+(define-public (add-experience (token-id uint) (exp-amount uint))
+  (let (
+    (owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND))
+    (evolution (unwrap! (map-get? token-evolution token-id) ERR-NOT-FOUND))
+  )
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    
+    (let (
+      (new-exp (+ (get experience evolution) exp-amount))
+      (new-level (+ (get level evolution) (/ new-exp u1000))) ;; Level up every 1000 exp
+    )
+      (map-set token-evolution token-id (merge evolution {
+        experience: new-exp,
+        level: new-level,
+        last-interaction: burn-block-height
+      }))
+      
+      ;; Check for evolution
+      (try! (check-evolution token-id new-exp))
+      (ok new-level)
+    )
+  )
+)
+
+;; Check and trigger evolution
+(define-private (check-evolution (token-id uint) (current-exp uint))
+  (let ((evolution (unwrap! (map-get? token-evolution token-id) ERR-NOT-FOUND)))
+    (match (map-get? evolution-requirements (get level evolution))
+      req (if (>= current-exp (get exp-required req))
+        (begin
+          (map-set token-evolution token-id (merge evolution {
+            evolution-stage: (get new-stage req)
+          }))
+          (ok true)
+        )
+        (ok false)
+      )
+      (ok false)
+    )
+  )
+)
+
+;; Set evolution requirements (owner only)
+(define-public (set-evolution-requirement (level uint) (exp-required uint) (new-stage (string-ascii 32)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set evolution-requirements level { exp-required: exp-required, new-stage: new-stage })
+    (ok true)
+  )
+)
+
+;; Get evolution info
+(define-read-only (get-evolution-info (token-id uint))
+  (ok (map-get? token-evolution token-id))
+)
