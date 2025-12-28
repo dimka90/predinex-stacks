@@ -63,7 +63,19 @@ describe('stacks-api', () => {
         type: 0, // ResponseOk
         value: { type: 4, value: mockPoolData }, // OptionalSome
       } as any);
-      vi.mocked(cvToValue).mockReturnValue(mockPoolData);
+      // cvToValue with readable=true returns plain object
+      vi.mocked(cvToValue).mockReturnValue({
+        title: 'Test Pool',
+        description: 'Test Description',
+        creator: 'ST123',
+        'outcome-a-name': 'Outcome A',
+        'outcome-b-name': 'Outcome B',
+        'total-a': 1000000n,
+        'total-b': 2000000n,
+        settled: false,
+        'winning-outcome': null,
+        expiry: 1000n,
+      });
 
       const pool = await getPool(0);
       expect(pool).toBeTruthy();
@@ -145,6 +157,9 @@ describe('stacks-api', () => {
         'total-bet': { type: 1, value: 1500000n },
       };
 
+      // Use a valid Stacks address format
+      const validAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
+
       vi.mocked(fetchCallReadOnlyFunction).mockResolvedValue({
         type: 0,
         value: { type: 4, value: mockBetData },
@@ -155,7 +170,7 @@ describe('stacks-api', () => {
         'total-bet': 1500000,
       });
 
-      const bet = await getUserBet(0, 'ST123');
+      const bet = await getUserBet(0, validAddress);
       expect(bet).toBeTruthy();
       expect(bet?.amountA).toBe(1000000);
       expect(bet?.amountB).toBe(500000);
@@ -163,20 +178,22 @@ describe('stacks-api', () => {
     });
 
     it('returns null when user has no bet', async () => {
+      const validAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
       vi.mocked(fetchCallReadOnlyFunction).mockResolvedValue({
         type: 0,
         value: { type: 5, value: null }, // OptionalNone
       } as any);
       vi.mocked(cvToValue).mockReturnValue(null);
 
-      const bet = await getUserBet(0, 'ST123');
+      const bet = await getUserBet(0, validAddress);
       expect(bet).toBeNull();
     });
 
     it('returns null on error', async () => {
+      const validAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
       vi.mocked(fetchCallReadOnlyFunction).mockRejectedValue(new Error('Network error'));
 
-      const bet = await getUserBet(0, 'ST123');
+      const bet = await getUserBet(0, validAddress);
       expect(bet).toBeNull();
     });
   });

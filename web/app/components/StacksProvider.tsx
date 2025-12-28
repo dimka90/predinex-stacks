@@ -73,25 +73,35 @@ export function StacksProvider({ children }: { children: ReactNode }) {
                     icon: window.location.origin + '/favicon.ico',
                 },
                 redirectTo: '/',
-                onFinish: (authData) => {
+                userSession,
+                onFinish: async (authData) => {
                     // Handle successful authentication
                     console.log('Authentication finished:', authData);
-                    console.log('User data will be loaded on page reload');
-                    // Reload to trigger the useEffect that checks for signed in user
-                    window.location.reload();
+                    try {
+                        const userData = await userSession.handlePendingSignIn();
+                        setUserData(userData);
+                        // Optional: Show success notification
+                        console.log('Wallet connected successfully');
+                    } catch (error) {
+                        console.error('Error handling sign in:', error);
+                        // Fallback to reload if handlePendingSignIn fails
+                        window.location.reload();
+                    }
                 },
                 onCancel: () => {
                     // Handle user cancellation gracefully
                     console.log('User cancelled wallet connection');
-                    console.log('Authentication state remains unchanged');
                 },
             });
         } catch (error) {
             // Handle connection errors
             console.error('Wallet connection error:', error);
-            console.error('Please ensure you have a Stacks wallet extension installed (Leather or Xverse)');
+            // Check if wallet extension is available
+            if (typeof window !== 'undefined' && !window.StacksProvider) {
+                alert('Please install Leather or Xverse wallet extension to connect.');
+            }
         }
-    }, []);
+    }, [userSession]);
 
     if (isLoading) {
         return (
