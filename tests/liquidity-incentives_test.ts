@@ -298,3 +298,25 @@ Clarinet.test({
         assertEquals(streak['threshold'], types.uint(5));
     },
 });
+Clarinet.test({
+    name: "Test incentive forecasting functionality",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address)
+        ]);
+        
+        // Test forecasting
+        let forecastCall = chain.callReadOnlyFn('liquidity-incentives', 'forecast-incentive-demand', [
+            types.uint(1),
+            types.uint(1000000000) // 1000 STX projected volume
+        ], deployer.address);
+        
+        let forecast = forecastCall.result.expectOk().expectTuple();
+        assertEquals(forecast['projected-volume'], types.uint(1000000000));
+        assertEquals(forecast['estimated-users'], types.uint(1000)); // 1000 STX / 1 STX min bet
+    },
+});
