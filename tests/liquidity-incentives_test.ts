@@ -339,3 +339,22 @@ Clarinet.test({
         assertEquals(result[2], types.uint(3));
     },
 });
+Clarinet.test({
+    name: "Test system health and status monitoring",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        // Test contract status
+        let statusCall = chain.callReadOnlyFn('liquidity-incentives', 'get-contract-status', [], deployer.address);
+        let status = statusCall.result.expectOk().expectTuple();
+        assertEquals(status['is-operational'], types.bool(true));
+        assertEquals(status['is-paused'], types.bool(false));
+        assertEquals(status['emergency-mode'], types.bool(false));
+        
+        // Test system report
+        let reportCall = chain.callReadOnlyFn('liquidity-incentives', 'get-system-incentive-report', [], deployer.address);
+        let report = reportCall.result.expectOk().expectTuple();
+        assertEquals(report['total-distributed'], types.uint(0));
+        assertEquals(report['active-pools'], types.uint(0));
+    },
+});
