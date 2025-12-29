@@ -125,6 +125,8 @@
 (define-public (initialize-pool-incentives (pool-id uint))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (not (var-get contract-paused)) ERR-INVALID-POOL-STATE)
+    (asserts! (> pool-id u0) ERR-INVALID-AMOUNT)
     
     (map-insert incentive-configs
       { pool-id: pool-id }
