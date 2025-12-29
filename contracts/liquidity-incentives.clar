@@ -116,6 +116,10 @@
 (define-data-var total-incentives-claimed uint u0)
 (define-data-var active-pools-with-incentives uint u0)
 (define-data-var contract-balance uint u0)
+(define-data-var total-unique-users uint u0)
+(define-data-var highest-single-bonus uint u0)
+(define-data-var contract-paused bool false)
+(define-data-var emergency-mode bool false)
 
 ;; Initialize incentive configuration for a pool
 (define-public (initialize-pool-incentives (pool-id uint))
