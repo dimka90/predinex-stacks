@@ -52,7 +52,10 @@
     status: (string-ascii 16),
     earned-at: uint,
     claimed-at: (optional uint),
-    claim-deadline: uint
+    claim-deadline: uint,
+    bonus-multiplier: uint,
+    streak-count: uint,
+    is-premium: bool
   }
 )
 
