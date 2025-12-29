@@ -1010,6 +1010,83 @@
     contract-balance: (var-get contract-balance),
     active-pools: (var-get active-pools-with-incentives),
     system-efficiency: (get-incentive-efficiency),
-    contract-health: (get-contract-health)
+    contract-health: (get-contract-health),
+    unique-users: (var-get total-unique-users),
+    highest-bonus: (var-get highest-single-bonus),
+    is-paused: (var-get contract-paused),
+    emergency-mode: (var-get emergency-mode)
+  }
+)
+
+;; [ENHANCEMENT] Get advanced user analytics
+(define-read-only (get-user-analytics (user principal) (pool-id uint))
+  (let (
+    (bet-tracking (map-get? pool-bet-tracking { pool-id: pool-id, user: user }))
+    (loyalty-history (map-get? user-loyalty-history { user: user }))
+  )
+    {
+      bet-metrics: bet-tracking,
+      loyalty-data: loyalty-history,
+      incentive-summary: (get-user-incentive-summary pool-id user),
+      roi: (match bet-tracking
+        tracking (match loyalty-history
+          history (calculate-incentive-roi (get total-bet-amount tracking) (get total-incentives-earned history))
+          u0
+        )
+        u0
+      )
+    }
+  )
+)
+
+;; [ENHANCEMENT] Get pool performance metrics
+(define-read-only (get-pool-performance-metrics (pool-id uint))
+  (let (
+    (stats (map-get? pool-incentive-stats { pool-id: pool-id }))
+    (config (map-get? incentive-configs { pool-id: pool-id }))
+  )
+    {
+      incentive-stats: stats,
+      configuration: config,
+      breakdown: (get-pool-incentive-breakdown pool-id),
+      utilization: (get-pool-incentive-utilization pool-id),
+      participation: (get-pool-participation-rate pool-id)
+    }
+  )
+)
+
+;; [ENHANCEMENT] Calculate streak bonus eligibility
+(define-read-only (calculate-streak-bonus-eligibility (pool-id uint) (user principal))
+  (match (map-get? pool-bet-tracking { pool-id: pool-id, user: user })
+    tracking (let (
+      (consecutive-bets (get consecutive-bets tracking))
+      (is-eligible (>= consecutive-bets STREAK-BONUS-THRESHOLD))
+      (bonus-multiplier (if is-eligible (min (/ consecutive-bets u2) BONUS-MULTIPLIER-CAP) u1))
+    )
+      {
+        is-eligible: is-eligible,
+        consecutive-bets: consecutive-bets,
+        bonus-multiplier: bonus-multiplier,
+        threshold: STREAK-BONUS-THRESHOLD
+      }
+    )
+    {
+      is-eligible: false,
+      consecutive-bets: u0,
+      bonus-multiplier: u1,
+      threshold: STREAK-BONUS-THRESHOLD
+    }
+  )
+)
+
+;; [ENHANCEMENT] Get contract status and health check
+(define-read-only (get-contract-status)
+  {
+    is-operational: (and (not (var-get contract-paused)) (not (var-get emergency-mode))),
+    is-paused: (var-get contract-paused),
+    emergency-mode: (var-get emergency-mode),
+    balance-sufficient: (> (var-get contract-balance) u0),
+    active-pools: (var-get active-pools-with-incentives),
+    total-users: (var-get total-unique-users)
   }
 )
