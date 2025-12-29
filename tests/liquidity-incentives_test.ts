@@ -16,3 +16,25 @@ Clarinet.test({
         assertEquals(block.receipts[0].result.expectOk(), types.uint(1));
     },
 });
+Clarinet.test({
+    name: "Test early bird bonus calculation",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(1000000) // 1 STX
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 2);
+        assertEquals(block.receipts[0].result.expectOk(), types.uint(1));
+        block.receipts[1].result.expectOk();
+    },
+});
