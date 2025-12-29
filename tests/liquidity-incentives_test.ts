@@ -274,3 +274,27 @@ Clarinet.test({
         assertEquals(analytics['roi'], types.uint(0)); // No loyalty history yet
     },
 });
+Clarinet.test({
+    name: "Test streak bonus eligibility calculation",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address)
+        ]);
+        
+        // Test streak bonus eligibility
+        let streakCall = chain.callReadOnlyFn('liquidity-incentives', 'calculate-streak-bonus-eligibility', [
+            types.uint(1),
+            types.principal(user1.address)
+        ], deployer.address);
+        
+        let streak = streakCall.result.expectOk().expectTuple();
+        assertEquals(streak['is-eligible'], types.bool(false));
+        assertEquals(streak['consecutive-bets'], types.uint(0));
+        assertEquals(streak['threshold'], types.uint(5));
+    },
+});
