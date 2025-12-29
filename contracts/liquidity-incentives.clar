@@ -81,7 +81,11 @@
     total-referral-bonuses: uint,
     total-loyalty-bonuses: uint,
     total-bettors-rewarded: uint,
-    early-bird-count: uint
+    early-bird-count: uint,
+    streak-bonuses-awarded: uint,
+    premium-bonuses-awarded: uint,
+    average-bonus-amount: uint,
+    peak-activity-block: uint
   }
 )
 
