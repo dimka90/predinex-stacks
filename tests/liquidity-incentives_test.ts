@@ -320,3 +320,22 @@ Clarinet.test({
         assertEquals(forecast['estimated-users'], types.uint(1000)); // 1000 STX / 1 STX min bet
     },
 });
+Clarinet.test({
+    name: "Test bulk pool initialization",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'bulk-initialize-pools', [
+                types.list([types.uint(1), types.uint(2), types.uint(3)])
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 1);
+        let result = block.receipts[0].result.expectOk().expectList();
+        assertEquals(result.length, 3);
+        assertEquals(result[0], types.uint(1));
+        assertEquals(result[1], types.uint(2));
+        assertEquals(result[2], types.uint(3));
+    },
+});
