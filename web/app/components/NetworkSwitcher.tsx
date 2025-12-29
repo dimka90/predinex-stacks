@@ -1,27 +1,33 @@
 'use client';
 
-import { useWalletConnect } from '@/context/WalletConnectContext';
+import { useAppKitNetwork, useAppKitAccount } from '@reown/appkit/react';
 import { Globe, Check, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { NetworkType } from '@/lib/wallet-service';
+import { stacksNetworks } from '@/lib/appkit-config';
 
 export function NetworkSwitcher() {
-  const { session, switchNetwork } = useWalletConnect();
+  const { switchNetwork, caipNetwork } = useAppKitNetwork();
+  const { isConnected } = useAppKitAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!session?.isConnected) {
+  if (!isConnected) {
     return null;
   }
 
+  const currentNetwork = caipNetwork?.name?.toLowerCase().includes('testnet') ? 'testnet' : 'mainnet';
+
   const handleNetworkSwitch = async (network: NetworkType) => {
-    if (network === session.network) return;
+    if (network === currentNetwork) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      await switchNetwork(network);
+      const targetNetwork = network === 'mainnet' ? stacksNetworks.mainnet : stacksNetworks.testnet;
+      // @ts-ignore - AppKit types handling
+      await switchNetwork(targetNetwork); 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network switch failed';
       setError(message);
@@ -38,28 +44,28 @@ export function NetworkSwitcher() {
           onClick={() => handleNetworkSwitch('mainnet')}
           disabled={isLoading}
           className={`px-3 py-1 text-xs rounded transition-colors ${
-            session.network === 'mainnet'
+            currentNetwork === 'mainnet'
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           <div className="flex items-center gap-1">
             Mainnet
-            {session.network === 'mainnet' && <Check className="w-3 h-3" />}
+            {currentNetwork === 'mainnet' && <Check className="w-3 h-3" />}
           </div>
         </button>
         <button
           onClick={() => handleNetworkSwitch('testnet')}
           disabled={isLoading}
           className={`px-3 py-1 text-xs rounded transition-colors ${
-            session.network === 'testnet'
+            currentNetwork === 'testnet'
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           <div className="flex items-center gap-1">
             Testnet
-            {session.network === 'testnet' && <Check className="w-3 h-3" />}
+            {currentNetwork === 'testnet' && <Check className="w-3 h-3" />}
           </div>
         </button>
       </div>

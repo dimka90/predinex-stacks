@@ -1,17 +1,34 @@
 /**
  * Hook for WalletConnect integration
- * Challenge #3: Build on Stacks with WalletConnect
+ * Adapted to use Reown AppKit directly
  */
 
 'use client';
 
-import { useContext } from 'react';
-import { WalletConnectContext, WalletContextType } from '../context/WalletConnectContext';
+import { useAppKitAccount } from '@reown/appkit/react';
+import { useMemo } from 'react';
+
+export interface WalletContextType {
+  session: {
+    address: string;
+    isConnected: boolean;
+    balance?: number;
+  } | null;
+}
 
 export function useWalletConnect(): WalletContextType {
-  const context = useContext(WalletConnectContext);
-  if (!context) {
-    throw new Error('useWalletConnect must be used within WalletConnectProvider');
-  }
-  return context;
+  const { address, isConnected } = useAppKitAccount();
+  
+  const session = useMemo(() => {
+    if (isConnected && address) {
+      return { 
+        address,
+        isConnected: true,
+        balance: 0 
+      };
+    }
+    return null;
+  }, [address, isConnected]);
+
+  return { session };
 }
