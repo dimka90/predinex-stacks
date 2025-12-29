@@ -187,3 +187,31 @@ Clarinet.test({
         assertEquals(block2.receipts[0].result.expectOk(), types.uint(50000000));
     },
 });
+Clarinet.test({
+    name: "Test read-only functions for pool stats",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address)
+        ]);
+        
+        // Test pool config retrieval
+        let configCall = chain.callReadOnlyFn('liquidity-incentives', 'get-pool-incentive-config', [
+            types.uint(1)
+        ], deployer.address);
+        
+        let config = configCall.result.expectSome().expectTuple();
+        assertEquals(config['early-bird-enabled'], types.bool(true));
+        assertEquals(config['volume-bonus-enabled'], types.bool(true));
+        
+        // Test pool stats
+        let statsCall = chain.callReadOnlyFn('liquidity-incentives', 'get-pool-incentive-stats', [
+            types.uint(1)
+        ], deployer.address);
+        
+        statsCall.result.expectNone(); // Should be none initially
+    },
+});
