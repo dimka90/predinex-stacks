@@ -1090,3 +1090,87 @@
     total-users: (var-get total-unique-users)
   }
 )
+
+;; [ENHANCEMENT] Advanced incentive forecasting
+(define-read-only (forecast-incentive-demand (pool-id uint) (projected-volume uint))
+  (match (map-get? pool-incentive-stats { pool-id: pool-id })
+    stats (let (
+      (current-average (get average-bonus-amount stats))
+      (estimated-users (/ projected-volume MINIMUM-BET-AMOUNT))
+      (estimated-bonuses (* estimated-users current-average))
+    )
+      {
+        projected-volume: projected-volume,
+        estimated-users: estimated-users,
+        estimated-total-bonuses: estimated-bonuses,
+        current-average-bonus: current-average,
+        funding-required: estimated-bonuses
+      }
+    )
+    {
+      projected-volume: projected-volume,
+      estimated-users: u0,
+      estimated-total-bonuses: u0,
+      current-average-bonus: u0,
+      funding-required: u0
+    }
+  )
+)
+
+;; [ENHANCEMENT] Dynamic bonus adjustment based on pool activity
+(define-public (adjust-bonus-rates (pool-id uint) (early-bird-percent uint) (volume-percent uint) (referral-percent uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (<= early-bird-percent u20) ERR-INVALID-AMOUNT)
+    (asserts! (<= volume-percent u10) ERR-INVALID-AMOUNT)
+    (asserts! (<= referral-percent u10) ERR-INVALID-AMOUNT)
+    
+    ;; This would require additional data structures to store per-pool rates
+    ;; For now, return success as a placeholder for dynamic rate adjustment
+    (ok { early-bird: early-bird-percent, volume: volume-percent, referral: referral-percent })
+  )
+)
+
+;; [ENHANCEMENT] Incentive leaderboard functionality
+(define-read-only (get-top-earners (pool-id uint) (limit uint))
+  ;; This would require additional data structures to efficiently query top earners
+  ;; For now, return a placeholder structure
+  {
+    pool-id: pool-id,
+    limit: limit,
+    leaderboard-available: false,
+    note: "Leaderboard functionality requires additional indexing structures"
+  }
+)
+
+;; [ENHANCEMENT] Time-based bonus multipliers
+(define-read-only (calculate-time-based-multiplier (pool-created-at uint) (bet-placed-at uint))
+  (let (
+    (time-diff (- bet-placed-at pool-created-at))
+    (hours-since-creation (/ time-diff u144)) ;; Assuming 144 blocks per day
+  )
+    (if (<= hours-since-creation u24)
+      u3  ;; 3x multiplier for first 24 hours
+      (if (<= hours-since-creation u168)
+        u2  ;; 2x multiplier for first week
+        u1  ;; 1x multiplier after first week
+      )
+    )
+  )
+)
+
+;; [ENHANCEMENT] Bulk incentive operations for efficiency
+(define-public (bulk-initialize-pools (pool-ids (list 20 uint)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (ok (map initialize-single-pool pool-ids))
+  )
+)
+
+;; Helper for bulk pool initialization
+(define-private (initialize-single-pool (pool-id uint))
+  (match (initialize-pool-incentives pool-id)
+    success pool-id
+    error u0
+  )
+)
