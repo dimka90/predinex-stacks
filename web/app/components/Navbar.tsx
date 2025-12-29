@@ -1,11 +1,12 @@
 'use client';
 
 import Link from "next/link";
-import { LogOut, Wallet } from "lucide-react";
+import { LogOut } from "lucide-react";
+import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 
 export default function Navbar() {
-    const { userData, signOut, authenticate } = useStacks();
+    const { userData, signOut } = useStacks();
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -19,34 +20,36 @@ export default function Navbar() {
                         <span className="font-bold text-xl tracking-tight">Predinex</span>
                     </Link>
 
-                    {/* User Info */}
-                    {userData ? (
-                        <div className="flex items-center gap-4">
+                    {/* Navigation Links */}
+                    <div className="hidden md:flex items-center gap-6">
+                        <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            Markets
+                        </Link>
+                        <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            Create
+                        </Link>
+                        {userData && (
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 Dashboard
                             </Link>
-                            <span className="text-sm font-mono text-muted-foreground hidden sm:block">
-                                {userData.profile.stxAddress.mainnet.slice(0, 5)}...{userData.profile.stxAddress.mainnet.slice(-5)}
-                            </span>
+                        )}
+                    </div>
+
+                    {/* User Info & Connect Button */}
+                    <div className="flex items-center gap-4">
+                        {/* We use the AppKit button as the primary connect method now */}
+                        <AppKitButton />
+
+                        {userData && (
                             <button
                                 onClick={signOut}
                                 className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                                aria-label="Sign out of your wallet"
+                                aria-label="Sign out"
                             >
                                 <LogOut className="w-4 h-4" />
-                                Sign Out
                             </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={authenticate}
-                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:scale-105 transform transition-transform"
-                            aria-label="Connect your Stacks wallet"
-                        >
-                            <Wallet className="w-4 h-4" />
-                            Connect Wallet
-                        </button>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         </nav>
