@@ -53,3 +53,29 @@ Clarinet.test({
         block.receipts[0].result.expectErr(types.uint(401)); // ERR-UNAUTHORIZED
     },
 });
+Clarinet.test({
+    name: "Test volume bonus award functionality",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(500000000) // 500 STX
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'award-volume-bonus', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(1000000000) // 1000 STX pool volume
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 3);
+        block.receipts[2].result.expectOk();
+    },
+});
