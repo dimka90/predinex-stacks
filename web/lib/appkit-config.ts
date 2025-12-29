@@ -3,7 +3,10 @@
  * Network and wallet connection settings
  */
 
-import { mainnet as stacksMainnet, testnet as stacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
+
+const stacksMainnet = STACKS_MAINNET;
+const stacksTestnet = STACKS_TESTNET;
 
 export const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'cbb72cc85764d1cd3b664790089a8fab';
 
