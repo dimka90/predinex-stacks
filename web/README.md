@@ -42,3 +42,7 @@ This project now uses Reown AppKit for wallet connections.
 - **Configuration**: `web/lib/appkit-config.ts`
 - **Usage**: Use the `<AppKitButton />` component or the `useAppKit()` hook.
 
+
+### Migration to Reown AppKit
+- Replaced native Connect with AppKit hooks
+- Centralized network config in lib/appkit-config.ts
