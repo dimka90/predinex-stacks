@@ -40,7 +40,7 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={authenticate}
-                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:scale-105 transform transition-transform"
                             aria-label="Connect your Stacks wallet"
                         >
                             <Wallet className="w-4 h-4" />
