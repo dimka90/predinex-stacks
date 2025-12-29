@@ -26,6 +26,10 @@
 (define-constant LOYALTY-BONUS-PERCENT u5) ;; 0.5% per previous bet, max 5%
 (define-constant MAX-BONUS-PER-BET u100000000) ;; Max 100 STX bonus
 (define-constant CLAIM-WINDOW-BLOCKS u2016) ;; 2 weeks to claim incentives
+(define-constant MINIMUM-BET-AMOUNT u1000000) ;; 1 STX minimum bet for incentives
+(define-constant MAX-CLAIMS-PER-USER u50) ;; Maximum claims per user per pool
+(define-constant BONUS-MULTIPLIER-CAP u10) ;; Maximum bonus multiplier
+(define-constant STREAK-BONUS-THRESHOLD u5) ;; Consecutive bets for streak bonus
 
 ;; Data structures
 (define-map incentive-configs
