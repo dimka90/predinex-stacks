@@ -65,7 +65,11 @@
     bet-count: uint,
     total-bet-amount: uint,
     first-bet-at: uint,
-    last-bet-at: uint
+    last-bet-at: uint,
+    consecutive-bets: uint,
+    highest-bet: uint,
+    average-bet: uint,
+    claims-count: uint
   }
 )
 
