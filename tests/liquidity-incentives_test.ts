@@ -358,3 +358,31 @@ Clarinet.test({
         assertEquals(report['active-pools'], types.uint(0));
     },
 });
+Clarinet.test({
+    name: "Test audit trail functionality",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(2000000) // 2 STX
+            ], deployer.address)
+        ]);
+        
+        // Test audit trail
+        let auditCall = chain.callReadOnlyFn('liquidity-incentives', 'get-audit-trail', [
+            types.uint(1),
+            types.principal(user1.address)
+        ], deployer.address);
+        
+        let audit = auditCall.result.expectOk().expectTuple();
+        assertEquals(audit['user'], types.principal(user1.address));
+        assertEquals(audit['pool-id'], types.uint(1));
+    },
+});
