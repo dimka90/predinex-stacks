@@ -386,3 +386,19 @@ Clarinet.test({
         assertEquals(audit['pool-id'], types.uint(1));
     },
 });
+Clarinet.test({
+    name: "Test vesting schedule calculations",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        // Test vesting schedule
+        let vestingCall = chain.callReadOnlyFn('liquidity-incentives', 'calculate-vesting-schedule', [
+            types.uint(100), // earned at block 100
+            types.uint(1000000) // 1 STX amount
+        ], deployer.address);
+        
+        let vesting = vestingCall.result.expectOk().expectTuple();
+        assertEquals(vesting['total-amount'], types.uint(1000000));
+        // Vested amount depends on current block height vs earned-at block
+    },
+});
