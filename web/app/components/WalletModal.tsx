@@ -5,8 +5,9 @@
  * Supports multiple wallet options: Leather, Xverse, and WalletConnect
  */
 
-import { X, Wallet, Smartphone } from 'lucide-react';
-import { ReactNode } from 'react';
+import { X, Wallet, Smartphone, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { isWalletAvailable, WalletType } from '../lib/wallet-connector';
 
 interface WalletModalProps {
     isOpen: boolean;
@@ -15,6 +16,22 @@ interface WalletModalProps {
 }
 
 export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletModalProps) {
+    const [walletAvailability, setWalletAvailability] = useState<Record<WalletType, boolean>>({
+        leather: false,
+        xverse: false,
+        walletconnect: true,
+    });
+
+    useEffect(() => {
+        if (isOpen) {
+            setWalletAvailability({
+                leather: isWalletAvailable('leather'),
+                xverse: isWalletAvailable('xverse'),
+                walletconnect: isWalletAvailable('walletconnect'),
+            });
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const wallets = [
@@ -62,13 +79,19 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
                                     onSelectWallet(wallet.id);
                                     onClose();
                                 }}
-                                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
+                                disabled={!walletAvailability[wallet.id] && wallet.id !== 'walletconnect'}
+                                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative"
                             >
                                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                                     <Icon className="w-6 h-6 text-primary" />
                                 </div>
                                 <div className="flex-1 text-left">
-                                    <div className="font-semibold">{wallet.name}</div>
+                                    <div className="font-semibold flex items-center gap-2">
+                                        {wallet.name}
+                                        {walletAvailability[wallet.id] && wallet.id !== 'walletconnect' && (
+                                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                        )}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">{wallet.description}</div>
                                 </div>
                             </button>
