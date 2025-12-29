@@ -72,14 +72,13 @@ async function connectExtensionWallet(
 
 /**
  * Connect via WalletConnect (mobile wallets)
+ * Uses Stacks Connect with WalletConnect protocol support
  */
 async function connectWalletConnect(
     userSession: UserSession,
     onFinish?: (authData: any) => void,
     onCancel?: () => void
 ): Promise<void> {
-    // WalletConnect integration will be implemented here
-    // For now, fallback to standard connect flow
     await showConnect({
         appDetails: {
             name: 'Predinex',
@@ -87,6 +86,8 @@ async function connectWalletConnect(
         },
         redirectTo: '/',
         userSession,
+        // Enable WalletConnect for mobile wallet support
+        connectVersion: '2',
         onFinish: async (authData) => {
             console.log('WalletConnect authentication finished:', authData);
             if (onFinish) {
