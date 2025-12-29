@@ -151,30 +151,38 @@
   (let (
     (config (unwrap! (map-get? incentive-configs { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
     (bet-tracking (default-to 
-      { bet-count: u0, total-bet-amount: u0, first-bet-at: burn-block-height, last-bet-at: burn-block-height }
+      { bet-count: u0, total-bet-amount: u0, first-bet-at: burn-block-height, last-bet-at: burn-block-height, consecutive-bets: u0, highest-bet: u0, average-bet: u0, claims-count: u0 }
       (map-get? pool-bet-tracking { pool-id: pool-id, user: user })
     ))
     (current-bet-count (get bet-count bet-tracking))
     (new-bet-count (+ current-bet-count u1))
+    (new-total-amount (+ (get total-bet-amount bet-tracking) bet-amount))
+    (new-average (if (> new-bet-count u0) (/ new-total-amount new-bet-count) u0))
+    (new-highest (if (> bet-amount (get highest-bet bet-tracking)) bet-amount (get highest-bet bet-tracking)))
   )
     ;; Validate inputs
-    (asserts! (get early-bird-enabled config) ERR-INVALID-CONFIG)
-    (asserts! (> bet-amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (get early-bird-enabled config) ERR-INCENTIVE-DISABLED)
+    (asserts! (>= bet-amount MINIMUM-BET-AMOUNT) ERR-MINIMUM-BET-NOT-MET)
+    (asserts! (not (var-get contract-paused)) ERR-INVALID-POOL-STATE)
     
-    ;; Update bet tracking
+    ;; Update bet tracking with enhanced metrics
     (map-set pool-bet-tracking
       { pool-id: pool-id, user: user }
       {
         bet-count: new-bet-count,
-        total-bet-amount: (+ (get total-bet-amount bet-tracking) bet-amount),
+        total-bet-amount: new-total-amount,
         first-bet-at: (get first-bet-at bet-tracking),
-        last-bet-at: burn-block-height
+        last-bet-at: burn-block-height,
+        consecutive-bets: (+ (get consecutive-bets bet-tracking) u1),
+        highest-bet: new-highest,
+        average-bet: new-average,
+        claims-count: (get claims-count bet-tracking)
       }
     )
     
     ;; Calculate early bird bonus if eligible
     (if (and (get early-bird-enabled config) (<= new-bet-count EARLY-BIRD-THRESHOLD))
-      (let ((early-bird-bonus (calculate-early-bird-bonus bet-amount)))
+      (let ((early-bird-bonus (calculate-enhanced-early-bird-bonus bet-amount new-bet-count)))
         (if (> early-bird-bonus u0)
           (begin
             (map-insert user-incentives
@@ -184,10 +192,13 @@
                 status: "pending",
                 earned-at: burn-block-height,
                 claimed-at: none,
-                claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS)
+                claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
+                bonus-multiplier: (calculate-bonus-multiplier new-bet-count),
+                streak-count: (get consecutive-bets bet-tracking),
+                is-premium: (>= bet-amount (* MINIMUM-BET-AMOUNT u10))
               }
             )
-            (update-pool-stats pool-id "early-bird" early-bird-bonus)
+            (update-enhanced-pool-stats pool-id "early-bird" early-bird-bonus)
             (ok early-bird-bonus)
           )
           (ok u0)
