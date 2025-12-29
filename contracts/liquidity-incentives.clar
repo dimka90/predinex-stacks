@@ -12,6 +12,10 @@
 (define-constant ERR-INSUFFICIENT-BALANCE (err u424))
 (define-constant ERR-INVALID-CONFIG (err u422))
 (define-constant ERR-CLAIM-WINDOW-CLOSED (err u413))
+(define-constant ERR-INVALID-POOL-STATE (err u414))
+(define-constant ERR-INCENTIVE-DISABLED (err u415))
+(define-constant ERR-MINIMUM-BET-NOT-MET (err u416))
+(define-constant ERR-MAXIMUM-CLAIMS-EXCEEDED (err u417))
 
 ;; Incentive configuration constants
 (define-constant EARLY-BIRD-BONUS-PERCENT u5) ;; 5% bonus for first bettors
