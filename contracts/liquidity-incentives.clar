@@ -478,7 +478,7 @@
 (define-private (update-pool-stats (pool-id uint) (bonus-type (string-ascii 32)) (bonus-amount uint))
   (let (
     (stats (default-to 
-      { total-early-bird-bonuses: u0, total-volume-bonuses: u0, total-referral-bonuses: u0, total-loyalty-bonuses: u0, total-bettors-rewarded: u0, early-bird-count: u0 }
+      { total-early-bird-bonuses: u0, total-volume-bonuses: u0, total-referral-bonuses: u0, total-loyalty-bonuses: u0, total-bettors-rewarded: u0, early-bird-count: u0, streak-bonuses-awarded: u0, premium-bonuses-awarded: u0, average-bonus-amount: u0, peak-activity-block: u0 }
       (map-get? pool-incentive-stats { pool-id: pool-id })
     ))
   )
@@ -487,28 +487,101 @@
         { pool-id: pool-id }
         (merge stats {
           total-early-bird-bonuses: (+ (get total-early-bird-bonuses stats) bonus-amount),
-          early-bird-count: (+ (get early-bird-count stats) u1)
+          early-bird-count: (+ (get early-bird-count stats) u1),
+          peak-activity-block: burn-block-height
         })
       )
       (if (is-eq bonus-type "volume")
         (map-set pool-incentive-stats
           { pool-id: pool-id }
           (merge stats {
-            total-volume-bonuses: (+ (get total-volume-bonuses stats) bonus-amount)
+            total-volume-bonuses: (+ (get total-volume-bonuses stats) bonus-amount),
+            peak-activity-block: burn-block-height
           })
         )
         (if (is-eq bonus-type "referral")
           (map-set pool-incentive-stats
             { pool-id: pool-id }
             (merge stats {
-              total-referral-bonuses: (+ (get total-referral-bonuses stats) bonus-amount)
+              total-referral-bonuses: (+ (get total-referral-bonuses stats) bonus-amount),
+              peak-activity-block: burn-block-height
             })
           )
           (map-set pool-incentive-stats
             { pool-id: pool-id }
             (merge stats {
-              total-loyalty-bonuses: (+ (get total-loyalty-bonuses stats) bonus-amount)
+              total-loyalty-bonuses: (+ (get total-loyalty-bonuses stats) bonus-amount),
+              peak-activity-block: burn-block-height
             })
+          )
+        )
+      )
+    )
+  )
+)
+
+;; Enhanced update pool statistics with additional metrics
+(define-private (update-enhanced-pool-stats (pool-id uint) (bonus-type (string-ascii 32)) (bonus-amount uint))
+  (let (
+    (stats (default-to 
+      { total-early-bird-bonuses: u0, total-volume-bonuses: u0, total-referral-bonuses: u0, total-loyalty-bonuses: u0, total-bettors-rewarded: u0, early-bird-count: u0, streak-bonuses-awarded: u0, premium-bonuses-awarded: u0, average-bonus-amount: u0, peak-activity-block: u0 }
+      (map-get? pool-incentive-stats { pool-id: pool-id })
+    ))
+    (total-bonuses (+ (+ (+ (get total-early-bird-bonuses stats) (get total-volume-bonuses stats)) (get total-referral-bonuses stats)) (get total-loyalty-bonuses stats)))
+    (total-count (+ (+ (+ (get early-bird-count stats) u1) (get streak-bonuses-awarded stats)) (get premium-bonuses-awarded stats)))
+    (new-average (if (> total-count u0) (/ (+ total-bonuses bonus-amount) total-count) u0))
+  )
+    ;; Update highest single bonus if applicable
+    (if (> bonus-amount (var-get highest-single-bonus))
+      (var-set highest-single-bonus bonus-amount)
+      true
+    )
+    
+    (if (is-eq bonus-type "early-bird")
+      (map-set pool-incentive-stats
+        { pool-id: pool-id }
+        (merge stats {
+          total-early-bird-bonuses: (+ (get total-early-bird-bonuses stats) bonus-amount),
+          early-bird-count: (+ (get early-bird-count stats) u1),
+          average-bonus-amount: new-average,
+          peak-activity-block: burn-block-height
+        })
+      )
+      (if (is-eq bonus-type "volume")
+        (map-set pool-incentive-stats
+          { pool-id: pool-id }
+          (merge stats {
+            total-volume-bonuses: (+ (get total-volume-bonuses stats) bonus-amount),
+            average-bonus-amount: new-average,
+            peak-activity-block: burn-block-height
+          })
+        )
+        (if (is-eq bonus-type "referral")
+          (map-set pool-incentive-stats
+            { pool-id: pool-id }
+            (merge stats {
+              total-referral-bonuses: (+ (get total-referral-bonuses stats) bonus-amount),
+              average-bonus-amount: new-average,
+              peak-activity-block: burn-block-height
+            })
+          )
+          (if (is-eq bonus-type "streak")
+            (map-set pool-incentive-stats
+              { pool-id: pool-id }
+              (merge stats {
+                streak-bonuses-awarded: (+ (get streak-bonuses-awarded stats) u1),
+                average-bonus-amount: new-average,
+                peak-activity-block: burn-block-height
+              })
+            )
+            (map-set pool-incentive-stats
+              { pool-id: pool-id }
+              (merge stats {
+                total-loyalty-bonuses: (+ (get total-loyalty-bonuses stats) bonus-amount),
+                average-bonus-amount: new-average,
+                peak-activity-block: burn-block-height
+              })
+            )
           )
         )
       )
