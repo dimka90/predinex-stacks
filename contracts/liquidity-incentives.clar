@@ -94,7 +94,10 @@
   {
     referral-amount: uint,
     bonus-earned: uint,
-    claimed: bool
+    claimed: bool,
+    referral-tier: uint,
+    bonus-multiplier: uint,
+    created-at: uint
   }
 )
 
