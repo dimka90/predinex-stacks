@@ -416,6 +416,31 @@
   )
 )
 
+;; Calculate enhanced early bird bonus with position-based multiplier
+(define-private (calculate-enhanced-early-bird-bonus (bet-amount uint) (position uint))
+  (let (
+    (base-bonus (/ (* bet-amount EARLY-BIRD-BONUS-PERCENT) u100))
+    (position-multiplier (if (<= position u3) u3 (if (<= position u5) u2 u1)))
+    (enhanced-bonus (/ (* base-bonus position-multiplier) u1))
+  )
+    (if (> enhanced-bonus MAX-BONUS-PER-BET)
+      MAX-BONUS-PER-BET
+      enhanced-bonus
+    )
+  )
+)
+
+;; Calculate bonus multiplier based on bet count
+(define-private (calculate-bonus-multiplier (bet-count uint))
+  (if (<= bet-count u3)
+    u3
+    (if (<= bet-count u7)
+      u2
+      u1
+    )
+  )
+)
+
 ;; Calculate volume bonus
 (define-private (calculate-volume-bonus (user-bet-amount uint))
   (let ((bonus (/ (* user-bet-amount VOLUME-BONUS-PERCENT) u100)))
