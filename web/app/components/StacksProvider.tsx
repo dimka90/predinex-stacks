@@ -9,8 +9,9 @@
  */
 
 import { AppConfig, UserSession } from '@stacks/auth';
-import { showConnect } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { connectWallet, WalletType } from '../lib/wallet-connector';
+import WalletModal from './WalletModal';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -30,6 +31,8 @@ interface StacksContextValue {
     signOut: () => void;
     /** Function to initiate wallet connection flow */
     authenticate: () => void;
+    /** Function to open wallet selection modal */
+    openWalletModal: () => void;
     /** Loading state during authentication initialization */
     isLoading: boolean;
 }
@@ -39,6 +42,7 @@ const StacksContext = createContext<StacksContextValue>({} as any);
 export function StacksProvider({ children }: { children: ReactNode }) {
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     useEffect(() => {
         const initializeAuth = async () => {
