@@ -5,6 +5,7 @@
 
 import { showConnect } from '@stacks/connect';
 import { UserSession } from '@stacks/auth';
+import { handleWalletError, WalletError } from './wallet-errors';
 
 export type WalletType = 'leather' | 'xverse' | 'walletconnect';
 
@@ -35,7 +36,8 @@ export async function connectWallet(options: WalletConnectionOptions): Promise<v
         }
     } catch (error) {
         console.error(`Error connecting to ${walletType}:`, error);
-        throw error;
+        const walletError = handleWalletError(error, walletType);
+        throw walletError;
     }
 }
 
