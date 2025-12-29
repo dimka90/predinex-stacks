@@ -163,3 +163,27 @@ Clarinet.test({
         block.receipts[1].result.expectErr(types.uint(416)); // ERR-MINIMUM-BET-NOT-MET
     },
 });
+Clarinet.test({
+    name: "Test incentive fund deposit and withdrawal",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'deposit-incentive-funds', [
+                types.uint(100000000) // 100 STX
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 1);
+        assertEquals(block.receipts[0].result.expectOk(), types.uint(100000000));
+        
+        // Test withdrawal
+        let block2 = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'withdraw-unclaimed-incentives', [
+                types.uint(50000000) // 50 STX
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block2.receipts[0].result.expectOk(), types.uint(50000000));
+    },
+});
