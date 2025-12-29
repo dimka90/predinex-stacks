@@ -38,3 +38,18 @@ Clarinet.test({
         block.receipts[1].result.expectOk();
     },
 });
+Clarinet.test({
+    name: "Test unauthorized access prevention",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], user1.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 1);
+        block.receipts[0].result.expectErr(types.uint(401)); // ERR-UNAUTHORIZED
+    },
+});
