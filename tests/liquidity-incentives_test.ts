@@ -142,3 +142,24 @@ Clarinet.test({
         assertEquals(status['emergency-mode'], types.bool(true));
     },
 });
+Clarinet.test({
+    name: "Test minimum bet amount validation",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(500000) // 0.5 STX - below minimum
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 2);
+        block.receipts[1].result.expectErr(types.uint(416)); // ERR-MINIMUM-BET-NOT-MET
+    },
+});
