@@ -124,3 +124,21 @@ Clarinet.test({
         block2.receipts[0].result.expectErr(types.uint(414)); // ERR-INVALID-POOL-STATE
     },
 });
+Clarinet.test({
+    name: "Test emergency mode activation",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'enable-emergency-mode', [], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 1);
+        assertEquals(block.receipts[0].result.expectOk(), types.bool(true));
+        
+        // Check contract status
+        let statusCall = chain.callReadOnlyFn('liquidity-incentives', 'get-contract-status', [], deployer.address);
+        let status = statusCall.result.expectOk().expectTuple();
+        assertEquals(status['emergency-mode'], types.bool(true));
+    },
+});
