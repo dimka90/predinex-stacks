@@ -79,3 +79,26 @@ Clarinet.test({
         block.receipts[2].result.expectOk();
     },
 });
+Clarinet.test({
+    name: "Test referral bonus system",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const referrer = accounts.get('wallet_1')!;
+        const referred = accounts.get('wallet_2')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'award-referral-bonus', [
+                types.principal(referrer.address),
+                types.principal(referred.address),
+                types.uint(1),
+                types.uint(10000000) // 10 STX referred bet
+            ], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 2);
+        block.receipts[1].result.expectOk();
+    },
+});
