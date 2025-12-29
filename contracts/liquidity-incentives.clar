@@ -404,6 +404,67 @@
   )
 )
 
+;; Emergency pause contract (owner only)
+(define-public (pause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (ok true)
+  )
+)
+
+;; Resume contract operations (owner only)
+(define-public (resume-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused false)
+    (ok true)
+  )
+)
+
+;; Enable emergency mode (owner only)
+(define-public (enable-emergency-mode)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set emergency-mode true)
+    (var-set contract-paused true)
+    (ok true)
+  )
+)
+
+;; Disable emergency mode (owner only)
+(define-public (disable-emergency-mode)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set emergency-mode false)
+    (var-set contract-paused false)
+    (ok true)
+  )
+)
+
+;; Batch claim multiple incentives for efficiency
+(define-public (batch-claim-incentives (pool-id uint) (incentive-types (list 10 (string-ascii 32))))
+  (let (
+    (total-claimed (fold batch-claim-helper incentive-types { pool-id: pool-id, user: tx-sender, total: u0 }))
+  )
+    (ok (get total total-claimed))
+  )
+)
+
+;; Helper function for batch claiming
+(define-private (batch-claim-helper (incentive-type (string-ascii 32)) (context { pool-id: uint, user: principal, total: uint }))
+  (let (
+    (pool-id (get pool-id context))
+    (user (get user context))
+    (current-total (get total context))
+  )
+    (match (claim-incentive pool-id incentive-type)
+      success (merge context { total: (+ current-total success) })
+      error context
+    )
+  )
+)
+
 ;; Helper functions
 
 ;; Calculate early bird bonus
