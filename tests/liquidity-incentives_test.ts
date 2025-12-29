@@ -215,3 +215,35 @@ Clarinet.test({
         statsCall.result.expectNone(); // Should be none initially
     },
 });
+Clarinet.test({
+    name: "Test batch claim incentives functionality",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'deposit-incentive-funds', [
+                types.uint(100000000) // 100 STX
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(10000000) // 10 STX
+            ], deployer.address)
+        ]);
+        
+        // Test batch claim
+        let claimBlock = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'batch-claim-incentives', [
+                types.uint(1),
+                types.list([types.ascii("early-bird")])
+            ], user1.address)
+        ]);
+        
+        assertEquals(claimBlock.receipts.length, 1);
+        claimBlock.receipts[0].result.expectOk();
+    },
+});
