@@ -1174,3 +1174,74 @@
     error u0
   )
 )
+;; [ENHANCEMENT] Advanced claim validation with anti-gaming measures
+(define-private (validate-claim-legitimacy (pool-id uint) (user principal) (incentive-type (string-ascii 32)))
+  (let (
+    (bet-tracking (map-get? pool-bet-tracking { pool-id: pool-id, user: user }))
+    (claims-count (match bet-tracking tracking (get claims-count tracking) u0))
+  )
+    (and
+      (< claims-count MAX-CLAIMS-PER-USER)
+      (> claims-count u0)  ;; Must have placed at least one bet
+      (not (var-get emergency-mode))
+    )
+  )
+)
+
+;; [ENHANCEMENT] Incentive vesting schedule
+(define-read-only (calculate-vesting-schedule (earned-at uint) (amount uint))
+  (let (
+    (blocks-since-earned (- burn-block-height earned-at))
+    (vesting-period u1008) ;; 1 week vesting period
+    (vested-percentage (if (>= blocks-since-earned vesting-period) u100 (/ (* blocks-since-earned u100) vesting-period)))
+    (vested-amount (/ (* amount vested-percentage) u100))
+  )
+    {
+      total-amount: amount,
+      vested-amount: vested-amount,
+      vesting-percentage: vested-percentage,
+      fully-vested: (>= blocks-since-earned vesting-period)
+    }
+  )
+)
+
+;; [ENHANCEMENT] Gas optimization for batch operations
+(define-private (optimize-batch-processing (operations-count uint))
+  (let (
+    (gas-per-operation u1000)
+    (total-gas-estimate (* operations-count gas-per-operation))
+    (max-gas-per-batch u50000)
+    (recommended-batch-size (/ max-gas-per-batch gas-per-operation))
+  )
+    {
+      operations-count: operations-count,
+      estimated-gas: total-gas-estimate,
+      recommended-batch-size: recommended-batch-size,
+      requires-batching: (> operations-count recommended-batch-size)
+    }
+  )
+)
+
+;; [ENHANCEMENT] Comprehensive audit trail
+(define-read-only (get-audit-trail (pool-id uint) (user principal))
+  (let (
+    (early-bird (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "early-bird" }))
+    (volume (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" }))
+    (referral (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "referral" }))
+    (loyalty (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "loyalty" }))
+    (bet-tracking (map-get? pool-bet-tracking { pool-id: pool-id, user: user }))
+  )
+    {
+      user: user,
+      pool-id: pool-id,
+      incentives: {
+        early-bird: early-bird,
+        volume: volume,
+        referral: referral,
+        loyalty: loyalty
+      },
+      betting-history: bet-tracking,
+      audit-timestamp: burn-block-height
+    }
+  )
+)
