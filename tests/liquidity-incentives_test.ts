@@ -247,3 +247,30 @@ Clarinet.test({
         claimBlock.receipts[0].result.expectOk();
     },
 });
+Clarinet.test({
+    name: "Test user analytics and performance tracking",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const user1 = accounts.get('wallet_1')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(1)
+            ], deployer.address),
+            Tx.contractCall('liquidity-incentives', 'record-bet-and-calculate-early-bird', [
+                types.uint(1),
+                types.principal(user1.address),
+                types.uint(5000000) // 5 STX
+            ], deployer.address)
+        ]);
+        
+        // Test user analytics
+        let analyticsCall = chain.callReadOnlyFn('liquidity-incentives', 'get-user-analytics', [
+            types.principal(user1.address),
+            types.uint(1)
+        ], deployer.address);
+        
+        let analytics = analyticsCall.result.expectOk().expectTuple();
+        assertEquals(analytics['roi'], types.uint(0)); // No loyalty history yet
+    },
+});
