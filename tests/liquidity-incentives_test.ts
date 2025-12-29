@@ -102,3 +102,25 @@ Clarinet.test({
         block.receipts[1].result.expectOk();
     },
 });
+Clarinet.test({
+    name: "Test contract pause functionality",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        
+        let block = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'pause-contract', [], deployer.address)
+        ]);
+        
+        assertEquals(block.receipts.length, 1);
+        assertEquals(block.receipts[0].result.expectOk(), types.bool(true));
+        
+        // Test that operations fail when paused
+        let block2 = chain.mineBlock([
+            Tx.contractCall('liquidity-incentives', 'initialize-pool-incentives', [
+                types.uint(2)
+            ], deployer.address)
+        ]);
+        
+        block2.receipts[0].result.expectErr(types.uint(414)); // ERR-INVALID-POOL-STATE
+    },
+});
