@@ -2030,3 +2030,90 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
     });
   });
+  describe("Metadata Freezing", () => {
+    beforeEach(() => {
+      // Mint a token for metadata tests
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Metadata NFT"),
+          Cl.stringAscii("NFT for metadata testing"),
+          Cl.stringAscii("metadata.png")
+        ],
+        deployer
+      );
+    });
+
+    it("should update metadata when not frozen", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "update-token-metadata",
+        [
+          Cl.uint(0),
+          Cl.stringAscii("Updated NFT"),
+          Cl.stringAscii("Updated description"),
+          Cl.stringAscii("updated.png")
+        ],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check updated metadata
+      const metadataResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-metadata",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(metadataResult.result).toBeOk(Cl.some(Cl.tuple({
+        name: Cl.stringAscii("Updated NFT"),
+        description: Cl.stringAscii("Updated description"),
+        image: Cl.stringAscii("updated.png")
+      })));
+    });
+
+    it("should freeze metadata successfully", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "freeze-metadata",
+        [Cl.uint(0)],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check if metadata is frozen
+      const frozenResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-metadata-frozen",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(frozenResult.result).toBeOk(Cl.bool(true));
+    });
+
+    it("should fail to update frozen metadata", () => {
+      // First freeze the metadata
+      simnet.callPublicFn(
+        "nft-token",
+        "freeze-metadata",
+        [Cl.uint(0)],
+        alice
+      );
+
+      // Try to update frozen metadata
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "update-token-metadata",
+        [
+          Cl.uint(0),
+          Cl.stringAscii("Should Fail"),
+          Cl.stringAscii("This should not work"),
+          Cl.stringAscii("fail.png")
+        ],
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+  });
