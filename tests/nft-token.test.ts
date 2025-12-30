@@ -9,6 +9,7 @@ const deployer = accounts.get("deployer")!;
 const alice = accounts.get("wallet_1")!;
 const bob = accounts.get("wallet_2")!;
 const charlie = accounts.get("wallet_3")!;
+const dave = accounts.get("wallet_4")!;
 
 describe("NFT Token Contract", () => {
   describe("Token Metadata", () => {
