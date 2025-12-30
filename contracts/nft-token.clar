@@ -275,3 +275,13 @@
     (ok token-id)
   )
 )
+;; Set royalty for token
+(define-public (set-token-royalty (token-id uint) (recipient principal) (percentage uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (<= percentage u1000) ERR-INVALID-TOKEN-ID) ;; Max 10% royalty
+    (asserts! (token-exists token-id) ERR-NOT-FOUND)
+    (map-set token-royalties token-id { recipient: recipient, percentage: percentage })
+    (ok true)
+  )
+)
