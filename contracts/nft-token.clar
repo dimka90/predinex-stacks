@@ -382,3 +382,25 @@
     (ok true)
   )
 )
+;; Emergency pause functionality
+(define-data-var contract-paused bool false)
+
+(define-public (pause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused true)
+    (ok true)
+  )
+)
+
+(define-public (unpause-contract)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set contract-paused false)
+    (ok true)
+  )
+)
+
+(define-read-only (is-paused)
+  (ok (var-get contract-paused))
+)
