@@ -2343,3 +2343,58 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
     });
   });
+  describe("Balance Withdrawal", () => {
+    it("should get contract balance", () => {
+      const result = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-contract-balance",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.uint(0)); // Initially 0
+    });
+
+    it("should withdraw balance successfully", () => {
+      // First do a paid mint to add balance to contract
+      simnet.callPublicFn(
+        "nft-token",
+        "paid-mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Paid NFT"),
+          Cl.stringAscii("Paid mint for balance test"),
+          Cl.stringAscii("paid.png")
+        ],
+        alice
+      );
+
+      // Now withdraw the balance
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "withdraw-balance",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.uint(1000000)); // Should return withdrawn amount
+    });
+
+    it("should fail withdrawal from non-owner", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "withdraw-balance",
+        [],
+        alice // Non-owner
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+
+    it("should fail withdrawal when balance is zero", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "withdraw-balance",
+        [],
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND (no balance)
+    });
+  });
