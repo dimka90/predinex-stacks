@@ -258,3 +258,20 @@
     approved: approved 
   })
 )
+
+;; Paid mint function
+(define-public (paid-mint (recipient principal) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
+  (let ((token-id (var-get token-counter))
+        (price (var-get mint-price)))
+    (asserts! (< token-id (var-get max-supply)) ERR-MINT-LIMIT-EXCEEDED)
+    (asserts! (not (is-eq recipient 'SP000000000000000000002Q6VF78)) ERR-INVALID-RECIPIENT)
+    
+    (try! (stx-transfer? price tx-sender CONTRACT-OWNER))
+    (try! (nft-mint? predinex-nft token-id recipient))
+    (map-set token-owners token-id recipient)
+    (map-set token-metadata token-id { name: name, description: description, image: image })
+    (var-set token-counter (+ token-id u1))
+    (emit-transfer none recipient token-id)
+    (ok token-id)
+  )
+)
