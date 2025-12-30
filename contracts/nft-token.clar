@@ -37,7 +37,9 @@
 ;; Mint new NFT
 (define-public (mint (recipient principal) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
   (let ((token-id (var-get token-counter)))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (default-to false (map-get? whitelisted-minters tx-sender))) ERR-UNAUTHORIZED)
+    (asserts! (< token-id (var-get max-supply)) ERR-MINT-LIMIT-EXCEEDED)
+    (asserts! (not (is-eq recipient 'SP000000000000000000002Q6VF78)) ERR-INVALID-RECIPIENT)
     
     (try! (nft-mint? predinex-nft token-id recipient))
     (map-set token-owners token-id recipient)
