@@ -9,6 +9,8 @@
 (define-constant ERR-INVALID-TOKEN-ID (err u400))
 (define-constant ERR-NOT-OWNER (err u403))
 (define-constant ERR-TRANSFER-FAILED (err u500))
+(define-constant ERR-INVALID-RECIPIENT (err u402))
+(define-constant ERR-MINT-LIMIT-EXCEEDED (err u406))
 
 ;; NFT metadata
 (define-constant TOKEN-NAME "PredinexNFT")
