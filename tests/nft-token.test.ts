@@ -2590,3 +2590,141 @@ describe("NFT Token Contract", () => {
       expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(bob)));
     });
   });
+  describe("Edge Cases for New Features", () => {
+    it("should handle maximum royalty percentage", () => {
+      // Mint token first
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Max Royalty NFT"),
+          Cl.stringAscii("Testing max royalty"),
+          Cl.stringAscii("maxroyalty.png")
+        ],
+        deployer
+      );
+
+      // Set maximum allowed royalty (10%)
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-token-royalty",
+        [Cl.uint(0), Cl.principal(alice), Cl.uint(1000)], // 10% royalty
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Verify royalty was set
+      const royaltyResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-royalty",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(royaltyResult.result).toBeOk(Cl.some(Cl.tuple({
+        recipient: Cl.principal(alice),
+        percentage: Cl.uint(1000)
+      })));
+    });
+
+    it("should handle zero royalty percentage", () => {
+      // Mint token first
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Zero Royalty NFT"),
+          Cl.stringAscii("Testing zero royalty"),
+          Cl.stringAscii("zeroroyalty.png")
+        ],
+        deployer
+      );
+
+      // Set zero royalty
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-token-royalty",
+        [Cl.uint(0), Cl.principal(alice), Cl.uint(0)], // 0% royalty
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+    });
+
+    it("should handle empty batch transfer", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-transfer",
+        [
+          Cl.list([]),
+          Cl.list([])
+        ],
+        alice
+      );
+      expect(result.result).toBeOk();
+    });
+
+    it("should handle metadata operations on non-existent tokens", () => {
+      // Try to freeze metadata on non-existent token
+      const freezeResult = simnet.callPublicFn(
+        "nft-token",
+        "freeze-metadata",
+        [Cl.uint(999)],
+        alice
+      );
+      expect(freezeResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+
+      // Try to update metadata on non-existent token
+      const updateResult = simnet.callPublicFn(
+        "nft-token",
+        "update-token-metadata",
+        [
+          Cl.uint(999),
+          Cl.stringAscii("Should Fail"),
+          Cl.stringAscii("Non-existent token"),
+          Cl.stringAscii("fail.png")
+        ],
+        alice
+      );
+      expect(updateResult.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND
+    });
+
+    it("should handle pause state persistence", () => {
+      // Pause contract
+      simnet.callPublicFn("nft-token", "pause-contract", [], deployer);
+
+      // Mint a token while paused (should work - pause only affects transfers)
+      const mintResult = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Paused Mint NFT"),
+          Cl.stringAscii("Minted while paused"),
+          Cl.stringAscii("paused.png")
+        ],
+        deployer
+      );
+      expect(mintResult.result).toBeOk(Cl.uint(0));
+
+      // Try transfer while paused (should fail)
+      const transferResult = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(transferResult.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+
+      // Unpause and try transfer again (should work)
+      simnet.callPublicFn("nft-token", "unpause-contract", [], deployer);
+      
+      const transferResult2 = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(transferResult2.result).toBeOk(Cl.bool(true));
+    });
+  });
