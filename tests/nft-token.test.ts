@@ -2117,3 +2117,83 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
     });
   });
+  describe("Contract Pause Functionality", () => {
+    it("should pause contract successfully", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "pause-contract",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check if contract is paused
+      const pausedResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-paused",
+        [],
+        deployer
+      );
+      expect(pausedResult.result).toBeOk(Cl.bool(true));
+    });
+
+    it("should unpause contract successfully", () => {
+      // First pause
+      simnet.callPublicFn(
+        "nft-token",
+        "pause-contract",
+        [],
+        deployer
+      );
+
+      // Then unpause
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "unpause-contract",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check if contract is unpaused
+      const pausedResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-paused",
+        [],
+        deployer
+      );
+      expect(pausedResult.result).toBeOk(Cl.bool(false));
+    });
+
+    it("should prevent transfers when paused", () => {
+      // Mint a token first
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Pause Test NFT"),
+          Cl.stringAscii("Testing pause functionality"),
+          Cl.stringAscii("pause.png")
+        ],
+        deployer
+      );
+
+      // Pause the contract
+      simnet.callPublicFn(
+        "nft-token",
+        "pause-contract",
+        [],
+        deployer
+      );
+
+      // Try to transfer (should fail)
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "transfer",
+        [Cl.uint(0), Cl.principal(alice), Cl.principal(bob)],
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+  });
