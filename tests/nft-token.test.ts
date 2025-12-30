@@ -2741,3 +2741,24 @@ describe("NFT Token Contract", () => {
       }
     });
   });
+  describe("Gas Optimization Tests", () => {
+    it("should test batch operations efficiency", () => {
+      const recipients = [alice, bob, charlie];
+      const names = ["Gas1", "Gas2", "Gas3"];
+      const descriptions = ["Desc1", "Desc2", "Desc3"];
+      const images = ["img1.png", "img2.png", "img3.png"];
+      
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk();
+    });
+  });
