@@ -53,6 +53,7 @@
 ;; Transfer NFT
 (define-public (transfer (token-id uint) (sender principal) (recipient principal))
   (begin
+    (asserts! (not (var-get contract-paused)) ERR-UNAUTHORIZED)
     (asserts! (is-eq tx-sender sender) ERR-UNAUTHORIZED)
     (asserts! (is-eq (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) sender) ERR-NOT-OWNER)
     
