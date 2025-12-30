@@ -2398,3 +2398,70 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(404)); // ERR-NOT-FOUND (no balance)
     });
   });
+  describe("Advanced Security Tests", () => {
+    it("should prevent unauthorized access to all admin functions", () => {
+      const unauthorizedUsers = [alice, bob, charlie];
+      
+      for (const user of unauthorizedUsers) {
+        // Test pause
+        let result = simnet.callPublicFn("nft-token", "pause-contract", [], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test unpause
+        result = simnet.callPublicFn("nft-token", "unpause-contract", [], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test set mint price
+        result = simnet.callPublicFn("nft-token", "set-mint-price", [Cl.uint(500000)], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test set max supply
+        result = simnet.callPublicFn("nft-token", "set-max-supply", [Cl.uint(5000)], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test add to whitelist
+        result = simnet.callPublicFn("nft-token", "add-to-whitelist", [Cl.principal(user)], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test remove from whitelist
+        result = simnet.callPublicFn("nft-token", "remove-from-whitelist", [Cl.principal(user)], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+
+        // Test withdraw balance
+        result = simnet.callPublicFn("nft-token", "withdraw-balance", [], user);
+        expect(result.result).toBeErr(Cl.uint(401));
+      }
+    });
+
+    it("should handle invalid recipient addresses", () => {
+      const zeroAddress = 'SP000000000000000000002Q6VF78';
+      
+      // Test regular mint with zero address
+      const mintResult = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(zeroAddress),
+          Cl.stringAscii("Invalid NFT"),
+          Cl.stringAscii("Should fail"),
+          Cl.stringAscii("invalid.png")
+        ],
+        deployer
+      );
+      expect(mintResult.result).toBeErr(Cl.uint(402)); // ERR-INVALID-RECIPIENT
+
+      // Test paid mint with zero address
+      const paidMintResult = simnet.callPublicFn(
+        "nft-token",
+        "paid-mint",
+        [
+          Cl.principal(zeroAddress),
+          Cl.stringAscii("Invalid Paid NFT"),
+          Cl.stringAscii("Should fail"),
+          Cl.stringAscii("invalid-paid.png")
+        ],
+        alice
+      );
+      expect(paidMintResult.result).toBeErr(Cl.uint(402)); // ERR-INVALID-RECIPIENT
+    });
+  });
