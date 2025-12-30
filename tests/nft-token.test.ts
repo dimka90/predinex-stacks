@@ -2762,3 +2762,25 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeOk();
     });
   });
+  describe("Stress Tests", () => {
+    it("should handle maximum batch size", () => {
+      const maxSize = 10;
+      const recipients = Array(maxSize).fill(alice);
+      const names = Array(maxSize).fill(0).map((_, i) => `Stress${i}`);
+      const descriptions = Array(maxSize).fill(0).map((_, i) => `StressDesc${i}`);
+      const images = Array(maxSize).fill(0).map((_, i) => `stress${i}.png`);
+      
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-mint",
+        [
+          Cl.list(recipients.map(r => Cl.principal(r))),
+          Cl.list(names.map(n => Cl.stringAscii(n))),
+          Cl.list(descriptions.map(d => Cl.stringAscii(d))),
+          Cl.list(images.map(i => Cl.stringAscii(i)))
+        ],
+        deployer
+      );
+      expect(result.result).toBeOk();
+    });
+  });
