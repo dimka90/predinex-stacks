@@ -2728,3 +2728,16 @@ describe("NFT Token Contract", () => {
       expect(transferResult2.result).toBeOk(Cl.bool(true));
     });
   });
+  describe("Performance Tests", () => {
+    it("should handle rapid minting", () => {
+      for (let i = 0; i < 5; i++) {
+        const result = simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [Cl.principal(alice), Cl.stringAscii(`Rapid ${i}`), Cl.stringAscii(`Desc ${i}`), Cl.stringAscii(`img${i}.png`)],
+          deployer
+        );
+        expect(result.result).toBeOk(Cl.uint(i));
+      }
+    });
+  });
