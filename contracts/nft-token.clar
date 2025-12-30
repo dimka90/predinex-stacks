@@ -28,6 +28,8 @@
 (define-map token-approvals uint principal)
 (define-map operator-approvals { owner: principal, operator: principal } bool)
 (define-map token-metadata uint { name: (string-ascii 64), description: (string-ascii 256), image: (string-ascii 256) })
+(define-map token-royalties uint { recipient: principal, percentage: uint })
+(define-map whitelisted-minters principal bool)
 
 ;; NFT trait implementation
 (define-non-fungible-token predinex-nft uint)
