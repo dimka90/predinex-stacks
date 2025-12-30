@@ -285,3 +285,20 @@
     (ok true)
   )
 )
+;; Add to whitelist
+(define-public (add-to-whitelist (minter principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-set whitelisted-minters minter true)
+    (ok true)
+  )
+)
+
+;; Remove from whitelist
+(define-public (remove-from-whitelist (minter principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (map-delete whitelisted-minters minter)
+    (ok true)
+  )
+)
