@@ -9,6 +9,8 @@
 (define-constant ERR-INVALID-TOKEN-ID (err u400))
 (define-constant ERR-NOT-OWNER (err u403))
 (define-constant ERR-TRANSFER-FAILED (err u500))
+(define-constant ERR-INVALID-RECIPIENT (err u402))
+(define-constant ERR-MINT-LIMIT-EXCEEDED (err u406))
 
 ;; NFT metadata
 (define-constant TOKEN-NAME "PredinexNFT")
@@ -18,12 +20,16 @@
 ;; Data variables
 (define-data-var token-counter uint u0)
 (define-data-var contract-uri (string-ascii 256) "https://predinex.com/contract")
+(define-data-var max-supply uint u10000)
+(define-data-var mint-price uint u1000000)
 
 ;; Data maps
 (define-map token-owners uint principal)
 (define-map token-approvals uint principal)
 (define-map operator-approvals { owner: principal, operator: principal } bool)
 (define-map token-metadata uint { name: (string-ascii 64), description: (string-ascii 256), image: (string-ascii 256) })
+(define-map token-royalties uint { recipient: principal, percentage: uint })
+(define-map whitelisted-minters principal bool)
 
 ;; NFT trait implementation
 (define-non-fungible-token predinex-nft uint)
@@ -31,7 +37,9 @@
 ;; Mint new NFT
 (define-public (mint (recipient principal) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
   (let ((token-id (var-get token-counter)))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (default-to false (map-get? whitelisted-minters tx-sender))) ERR-UNAUTHORIZED)
+    (asserts! (< token-id (var-get max-supply)) ERR-MINT-LIMIT-EXCEEDED)
+    (asserts! (not (is-eq recipient 'SP000000000000000000002Q6VF78)) ERR-INVALID-RECIPIENT)
     
     (try! (nft-mint? predinex-nft token-id recipient))
     (map-set token-owners token-id recipient)
@@ -45,6 +53,7 @@
 ;; Transfer NFT
 (define-public (transfer (token-id uint) (sender principal) (recipient principal))
   (begin
+    (asserts! (not (var-get contract-paused)) ERR-UNAUTHORIZED)
     (asserts! (is-eq tx-sender sender) ERR-UNAUTHORIZED)
     (asserts! (is-eq (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND) sender) ERR-NOT-OWNER)
     
