@@ -2258,3 +2258,88 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
     });
   });
+  describe("Price and Supply Management", () => {
+    it("should get initial mint price", () => {
+      const result = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-mint-price",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.uint(1000000));
+    });
+
+    it("should get initial max supply", () => {
+      const result = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-max-supply",
+        [],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.uint(10000));
+    });
+
+    it("should update mint price successfully", () => {
+      const newPrice = 2000000;
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-mint-price",
+        [Cl.uint(newPrice)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check updated price
+      const priceResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-mint-price",
+        [],
+        deployer
+      );
+      expect(priceResult.result).toBeOk(Cl.uint(newPrice));
+    });
+
+    it("should update max supply successfully", () => {
+      const newMaxSupply = 5000;
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-max-supply",
+        [Cl.uint(newMaxSupply)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check updated max supply
+      const supplyResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-max-supply",
+        [],
+        deployer
+      );
+      expect(supplyResult.result).toBeOk(Cl.uint(newMaxSupply));
+    });
+
+    it("should fail to set max supply below current counter", () => {
+      // Mint a token first
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Supply Test NFT"),
+          Cl.stringAscii("Testing supply limits"),
+          Cl.stringAscii("supply.png")
+        ],
+        deployer
+      );
+
+      // Try to set max supply to 0 (below current counter of 1)
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-max-supply",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
+    });
+  });
