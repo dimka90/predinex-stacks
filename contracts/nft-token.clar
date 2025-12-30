@@ -340,3 +340,27 @@
     (ok true)
   )
 )
+;; Get mint price
+(define-read-only (get-mint-price)
+  (ok (var-get mint-price))
+)
+
+;; Get max supply
+(define-read-only (get-max-supply)
+  (ok (var-get max-supply))
+)
+
+;; Check if minter is whitelisted
+(define-read-only (is-whitelisted (minter principal))
+  (ok (default-to false (map-get? whitelisted-minters minter)))
+)
+
+;; Get token royalty info
+(define-read-only (get-token-royalty (token-id uint))
+  (ok (map-get? token-royalties token-id))
+)
+
+;; Check if metadata is frozen
+(define-read-only (is-metadata-frozen (token-id uint))
+  (ok (default-to false (map-get? frozen-metadata token-id)))
+)
