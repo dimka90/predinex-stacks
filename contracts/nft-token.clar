@@ -302,3 +302,21 @@
     (ok true)
   )
 )
+;; Update mint price
+(define-public (set-mint-price (new-price uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set mint-price new-price)
+    (ok true)
+  )
+)
+
+;; Update max supply
+(define-public (set-max-supply (new-max uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (>= new-max (var-get token-counter)) ERR-INVALID-TOKEN-ID)
+    (var-set max-supply new-max)
+    (ok true)
+  )
+)
