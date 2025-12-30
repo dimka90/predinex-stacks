@@ -16,7 +16,7 @@ This document outlines the planned features and improvements for the Predinex Pr
 
 ## Phase 4: User Interface (Frontend)
 - [x] **Web App**: Next.js application to interact with the contracts.
-- [x] **Wallet Connection**: Integration with Leather/Xverse wallets.
+- [x] **Wallet Connection**: Integration with Leather/Xverse wallets and WalletConnect/Reown AptKit for mobile support.
 - [x] **Dashboard**: User stats, active bets, and history.
 
 ## Phase 5: Testing & Security
