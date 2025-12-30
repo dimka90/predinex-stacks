@@ -1972,3 +1972,61 @@ describe("NFT Token Contract", () => {
       expect(whitelistResult.result).toBeOk(Cl.bool(false));
     });
   });
+  describe("Royalty Management", () => {
+    beforeEach(() => {
+      // Mint a token for royalty tests
+      simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Royalty NFT"),
+          Cl.stringAscii("NFT with royalties"),
+          Cl.stringAscii("royalty.png")
+        ],
+        deployer
+      );
+    });
+
+    it("should set token royalty successfully", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-token-royalty",
+        [Cl.uint(0), Cl.principal(alice), Cl.uint(500)], // 5% royalty
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check royalty info
+      const royaltyResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-token-royalty",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(royaltyResult.result).toBeOk(Cl.some(Cl.tuple({
+        recipient: Cl.principal(alice),
+        percentage: Cl.uint(500)
+      })));
+    });
+
+    it("should fail to set royalty above maximum", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-token-royalty",
+        [Cl.uint(0), Cl.principal(alice), Cl.uint(1500)], // 15% royalty (too high)
+        deployer
+      );
+      expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
+    });
+
+    it("should fail to set royalty from non-owner", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "set-token-royalty",
+        [Cl.uint(0), Cl.principal(alice), Cl.uint(500)],
+        alice // Non-contract-owner
+      );
+      expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
+    });
+  });
