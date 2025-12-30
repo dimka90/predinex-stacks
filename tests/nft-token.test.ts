@@ -1837,3 +1837,67 @@ describe("NFT Token Contract", () => {
       expect(existsResult.result).toBeBool(false);
     });
   });
+
+  describe("Paid Mint Functionality", () => {
+    it("should paid mint NFT successfully", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "paid-mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("Paid NFT"),
+          Cl.stringAscii("A paid NFT for the collection"),
+          Cl.stringAscii("https://example.com/paid1.png")
+        ],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.uint(0));
+
+      // Check owner
+      const ownerResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "get-owner",
+        [Cl.uint(0)],
+        deployer
+      );
+      expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(alice)));
+    });
+
+    it("should fail paid mint when exceeding max supply", () => {
+      // Set max supply to 1
+      simnet.callPublicFn(
+        "nft-token",
+        "set-max-supply",
+        [Cl.uint(1)],
+        deployer
+      );
+
+      // First mint should succeed
+      const result1 = simnet.callPublicFn(
+        "nft-token",
+        "paid-mint",
+        [
+          Cl.principal(alice),
+          Cl.stringAscii("First NFT"),
+          Cl.stringAscii("First paid NFT"),
+          Cl.stringAscii("first.png")
+        ],
+        alice
+      );
+      expect(result1.result).toBeOk(Cl.uint(0));
+
+      // Second mint should fail
+      const result2 = simnet.callPublicFn(
+        "nft-token",
+        "paid-mint",
+        [
+          Cl.principal(bob),
+          Cl.stringAscii("Second NFT"),
+          Cl.stringAscii("Second paid NFT"),
+          Cl.stringAscii("second.png")
+        ],
+        bob
+      );
+      expect(result2.result).toBeErr(Cl.uint(406)); // ERR-MINT-LIMIT-EXCEEDED
+    });
+  });
