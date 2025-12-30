@@ -2197,3 +2197,64 @@ describe("NFT Token Contract", () => {
       expect(result.result).toBeErr(Cl.uint(401)); // ERR-UNAUTHORIZED
     });
   });
+  describe("Batch Transfer Functionality", () => {
+    beforeEach(() => {
+      // Mint multiple tokens to Alice for batch transfer tests
+      for (let i = 0; i < 3; i++) {
+        simnet.callPublicFn(
+          "nft-token",
+          "mint",
+          [
+            Cl.principal(alice),
+            Cl.stringAscii(`Batch NFT ${i}`),
+            Cl.stringAscii(`Batch description ${i}`),
+            Cl.stringAscii(`batch${i}.png`)
+          ],
+          deployer
+        );
+      }
+    });
+
+    it("should batch transfer multiple NFTs successfully", () => {
+      const tokenIds = [0, 1, 2];
+      const recipients = [bob, charlie, bob];
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-transfer",
+        [
+          Cl.list(tokenIds.map(id => Cl.uint(id))),
+          Cl.list(recipients.map(r => Cl.principal(r)))
+        ],
+        alice
+      );
+      expect(result.result).toBeOk();
+
+      // Check each token has correct new owner
+      for (let i = 0; i < tokenIds.length; i++) {
+        const ownerResult = simnet.callReadOnlyFn(
+          "nft-token",
+          "get-owner",
+          [Cl.uint(tokenIds[i])],
+          deployer
+        );
+        expect(ownerResult.result).toBeOk(Cl.some(Cl.principal(recipients[i])));
+      }
+    });
+
+    it("should fail batch transfer with mismatched array lengths", () => {
+      const tokenIds = [0, 1];
+      const recipients = [bob]; // Different length
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "batch-transfer",
+        [
+          Cl.list(tokenIds.map(id => Cl.uint(id))),
+          Cl.list(recipients.map(r => Cl.principal(r)))
+        ],
+        alice
+      );
+      expect(result.result).toBeErr(Cl.uint(400)); // ERR-INVALID-TOKEN-ID
+    });
+  });
