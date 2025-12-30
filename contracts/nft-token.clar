@@ -320,3 +320,23 @@
     (ok true)
   )
 )
+;; Freeze token metadata
+(define-map frozen-metadata uint bool)
+
+(define-public (freeze-metadata (token-id uint))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (map-set frozen-metadata token-id true)
+    (ok true)
+  )
+)
+
+;; Update token metadata (if not frozen)
+(define-public (update-token-metadata (token-id uint) (name (string-ascii 64)) (description (string-ascii 256)) (image (string-ascii 256)))
+  (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
+    (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
+    (asserts! (not (default-to false (map-get? frozen-metadata token-id))) ERR-UNAUTHORIZED)
+    (map-set token-metadata token-id { name: name, description: description, image: image })
+    (ok true)
+  )
+)
