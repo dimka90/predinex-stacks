@@ -1901,3 +1901,74 @@ describe("NFT Token Contract", () => {
       expect(result2.result).toBeErr(Cl.uint(406)); // ERR-MINT-LIMIT-EXCEEDED
     });
   });
+  describe("Whitelist Management", () => {
+    it("should add minter to whitelist successfully", () => {
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "add-to-whitelist",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check if alice is whitelisted
+      const whitelistResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-whitelisted",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(whitelistResult.result).toBeOk(Cl.bool(true));
+    });
+
+    it("should allow whitelisted minter to mint", () => {
+      // Add alice to whitelist
+      simnet.callPublicFn(
+        "nft-token",
+        "add-to-whitelist",
+        [Cl.principal(alice)],
+        deployer
+      );
+
+      // Alice should be able to mint
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "mint",
+        [
+          Cl.principal(bob),
+          Cl.stringAscii("Whitelisted NFT"),
+          Cl.stringAscii("Minted by whitelisted user"),
+          Cl.stringAscii("whitelist.png")
+        ],
+        alice
+      );
+      expect(result.result).toBeOk(Cl.uint(0));
+    });
+
+    it("should remove minter from whitelist successfully", () => {
+      // Add then remove alice
+      simnet.callPublicFn(
+        "nft-token",
+        "add-to-whitelist",
+        [Cl.principal(alice)],
+        deployer
+      );
+
+      const result = simnet.callPublicFn(
+        "nft-token",
+        "remove-from-whitelist",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(result.result).toBeOk(Cl.bool(true));
+
+      // Check alice is no longer whitelisted
+      const whitelistResult = simnet.callReadOnlyFn(
+        "nft-token",
+        "is-whitelisted",
+        [Cl.principal(alice)],
+        deployer
+      );
+      expect(whitelistResult.result).toBeOk(Cl.bool(false));
+    });
+  });
