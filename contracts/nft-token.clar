@@ -405,3 +405,17 @@
 (define-read-only (is-paused)
   (ok (var-get contract-paused))
 )
+;; Withdraw contract balance
+(define-public (withdraw-balance)
+  (let ((balance (stx-get-balance (as-contract tx-sender))))
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> balance u0) ERR-NOT-FOUND)
+    (try! (as-contract (stx-transfer? balance tx-sender CONTRACT-OWNER)))
+    (ok balance)
+  )
+)
+
+;; Get contract balance
+(define-read-only (get-contract-balance)
+  (ok (stx-get-balance (as-contract tx-sender)))
+)
