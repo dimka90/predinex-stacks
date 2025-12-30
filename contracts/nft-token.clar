@@ -20,6 +20,8 @@
 ;; Data variables
 (define-data-var token-counter uint u0)
 (define-data-var contract-uri (string-ascii 256) "https://predinex.com/contract")
+(define-data-var max-supply uint u10000)
+(define-data-var mint-price uint u1000000)
 
 ;; Data maps
 (define-map token-owners uint principal)
