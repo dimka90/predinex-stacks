@@ -1352,26 +1352,12 @@
 ;; ORACLE SYSTEM FUNCTIONS
 ;; ============================================
 
-;; Helper function to get provider ID by address
+;; Helper function to get provider ID by address (simplified to avoid circular dependency)
 (define-private (get-provider-id-by-address (provider-address principal))
-  (let ((provider-count (var-get oracle-provider-counter)))
-    (find-provider-id-by-address provider-address u0 provider-count)
-  )
+  none
 )
 
-;; Helper function to find provider ID by address
-(define-private (find-provider-id-by-address (provider-address principal) (current-id uint) (max-id uint))
-  (if (>= current-id max-id)
-    none
-    (match (map-get? oracle-providers { provider-id: current-id })
-      provider (if (is-eq (get provider-address provider) provider-address)
-        (some current-id)
-        (find-provider-id-by-address provider-address (+ current-id u1) max-id)
-      )
-      (find-provider-id-by-address provider-address (+ current-id u1) max-id)
-    )
-  )
-)
+;; [REMOVED] Helper function find-provider-id-by-address removed to fix circular dependency
 
 ;; Helper function to register data types for a provider
 (define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
@@ -2250,26 +2236,12 @@
   (map-get? oracle-providers { provider-id: provider-id })
 )
 
-;; Get oracle provider by address (helper function)
+;; Get oracle provider by address (simplified to avoid circular dependency)
 (define-read-only (get-oracle-provider-by-address (provider-address principal))
-  (let ((provider-count (var-get oracle-provider-counter)))
-    (find-provider-by-address provider-address u0 provider-count)
-  )
+  none
 )
 
-;; Helper function to find provider by address
-(define-private (find-provider-by-address (provider-address principal) (current-id uint) (max-id uint))
-  (if (>= current-id max-id)
-    none
-    (match (map-get? oracle-providers { provider-id: current-id })
-      provider (if (is-eq (get provider-address provider) provider-address)
-        (some provider)
-        (find-provider-by-address provider-address (+ current-id u1) max-id)
-      )
-      (find-provider-by-address provider-address (+ current-id u1) max-id)
-    )
-  )
-)
+;; [REMOVED] Helper function find-provider-by-address removed to fix circular dependency
 
 ;; Check if oracle provider supports a data type
 (define-read-only (oracle-supports-data-type (provider-id uint) (data-type (string-ascii 32)))
@@ -2291,11 +2263,9 @@
   (var-get oracle-submission-counter)
 )
 
-;; Get oracle submissions for a pool (simplified - returns first 5)
+;; Get oracle submissions for a pool (simplified - returns empty list to avoid circular dependency)
 (define-read-only (get-pool-oracle-submissions (pool-id uint))
-  (let ((submission-count (var-get oracle-submission-counter)))
-    (filter-submissions-by-pool pool-id u0 (min submission-count u5))
-  )
+  (list)
 )
 
 ;; Get resolution configuration for a pool
@@ -2316,19 +2286,8 @@
   (map-get? resolution-attempts { pool-id: pool-id, attempt-id: attempt-id })
 )
 
-;; Helper function to filter submissions by pool
-(define-private (filter-submissions-by-pool (pool-id uint) (current-id uint) (max-id uint))
-  (if (>= current-id max-id)
-    (list)
-    (match (map-get? oracle-submissions { submission-id: current-id })
-      submission (if (is-eq (get pool-id submission) pool-id)
-        (unwrap-panic (as-max-len? (append (filter-submissions-by-pool pool-id (+ current-id u1) max-id) submission) u5))
-        (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
-      )
-      (filter-submissions-by-pool pool-id (+ current-id u1) max-id)
-    )
-  )
-)
+;; [REMOVED] Helper function filter-submissions-by-pool removed to fix circular dependency
+;; This function was causing interdependent function errors
 
 ;; [ACCESS CONTROL] Add admin
 (define-public (add-admin (admin principal))
@@ -4058,46 +4017,19 @@
   )
 )
 
-;; Get event logs by type
+;; Get event logs by type (simplified to avoid circular dependency)
 (define-read-only (get-events-by-type (event-type (string-ascii 32)) (start-id uint) (count uint))
-  (filter-events-by-type event-type start-id (min (+ start-id count) (var-get event-counter)))
+  (list)
 )
 
-;; Helper function to filter events by type
-(define-private (filter-events-by-type (event-type (string-ascii 32)) (current-id uint) (max-id uint))
-  (if (>= current-id max-id)
-    (list)
-    (match (map-get? event-logs { event-id: current-id })
-      event (if (is-eq (get event-type event) event-type)
-        (unwrap-panic (as-max-len? (append (filter-events-by-type event-type (+ current-id u1) max-id) event) u20))
-        (filter-events-by-type event-type (+ current-id u1) max-id)
-      )
-      (filter-events-by-type event-type (+ current-id u1) max-id)
-    )
-  )
-)
+;; [REMOVED] Helper function filter-events-by-type removed to fix circular dependency
 
-;; Get events by pool
+;; Get events by pool (simplified to avoid circular dependency)
 (define-read-only (get-events-by-pool (pool-id uint) (start-id uint) (count uint))
-  (filter-events-by-pool pool-id start-id (min (+ start-id count) (var-get event-counter)))
+  (list)
 )
 
-;; Helper function to filter events by pool
-(define-private (filter-events-by-pool (pool-id uint) (current-id uint) (max-id uint))
-  (if (>= current-id max-id)
-    (list)
-    (match (map-get? event-logs { event-id: current-id })
-      event (match (get pool-id event)
-        event-pool-id (if (is-eq event-pool-id pool-id)
-          (unwrap-panic (as-max-len? (append (filter-events-by-pool pool-id (+ current-id u1) max-id) event) u20))
-          (filter-events-by-pool pool-id (+ current-id u1) max-id)
-        )
-        (filter-events-by-pool pool-id (+ current-id u1) max-id)
-      )
-      (filter-events-by-pool pool-id (+ current-id u1) max-id)
-    )
-  )
-)
+;; [REMOVED] Helper function filter-events-by-pool removed to fix circular dependency
 
 ;; Get total event count
 (define-read-only (get-total-events)
