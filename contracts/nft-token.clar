@@ -259,8 +259,7 @@
     approved: approved 
   })
 )
-;; Royalty system
-(define-map token-royalties uint { creator: principal, percentage: uint })
+;; [REMOVED] Duplicate token-royalties map removed - already defined at line 31
 (define-data-var default-royalty-percentage uint u250) ;; 2.5%
 
 ;; Set royalty for token
@@ -268,7 +267,7 @@
   (let ((owner (unwrap! (nft-get-owner? predinex-nft token-id) ERR-NOT-FOUND)))
     (asserts! (is-eq tx-sender owner) ERR-NOT-OWNER)
     (asserts! (<= percentage u1000) ERR-INVALID-TOKEN-ID) ;; Max 10%
-    (map-set token-royalties token-id { creator: creator, percentage: percentage })
+    (map-set token-royalties token-id { recipient: creator, percentage: percentage })
     (ok true)
   )
 )
@@ -277,7 +276,7 @@
 (define-read-only (get-royalty-info (token-id uint) (sale-price uint))
   (match (map-get? token-royalties token-id)
     royalty (ok { 
-      creator: (get creator royalty), 
+      creator: (get recipient royalty), 
       amount: (/ (* sale-price (get percentage royalty)) u10000) 
     })
     (ok { 
@@ -398,15 +397,15 @@
 (define-data-var collection-counter uint u0)
 
 ;; Create new collection
-(define-public (create-collection (name (string-ascii 64)) (max-supply uint))
+(define-public (create-collection (name (string-ascii 64)) (collection-max-supply uint))
   (let ((collection-id (var-get collection-counter)))
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
-    (asserts! (> max-supply u0) ERR-INVALID-TOKEN-ID)
+    (asserts! (> collection-max-supply u0) ERR-INVALID-TOKEN-ID)
     
     (map-set collections collection-id {
       name: name,
       creator: tx-sender,
-      max-supply: max-supply,
+      max-supply: collection-max-supply,
       current-supply: u0
     })
     (var-set collection-counter (+ collection-id u1))
