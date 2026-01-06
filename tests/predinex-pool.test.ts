@@ -56,7 +56,7 @@ describe("predinex-pool contract", () => {
       deployer
     );
 
-    expect(result).toBeOk(Cl.bool(true));
+    expect(result).toBeOk(Cl.tuple({ "early-bettor": Cl.bool(true), "market-maker": Cl.bool(false) }));
   });
 
   it("Ensure that settle-pool works", () => {
