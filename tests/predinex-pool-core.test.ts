@@ -1,393 +1,314 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.0/index.ts';
+import { describe, it, expect } from 'vitest';
+import { Cl } from '@stacks/transactions';
+
+const accounts = simnet.getAccounts();
+const deployer = accounts.get('deployer')!;
+const wallet1 = accounts.get('wallet_1')!;
 
 describe('Predinex Pool - Core Functionality Tests', () => {
-  let chain: Chain;
-  let accounts: Map<string, Account>;
 
-  beforeEach(async () => {
-    chain = await Clarinet.setupChain();
-    accounts = chain.getAccounts();
-  });
+    describe('Pool Creation', () => {
+        it('should create a new prediction pool with valid parameters', () => {
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Will Bitcoin reach $100k?'),
+                    Cl.stringAscii('Prediction market for Bitcoin price milestone'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
 
-  describe('Pool Creation', () => {
-    it('should create a new prediction pool with valid parameters', () => {
-      const deployer = accounts.get('deployer')!;
-      
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Will Bitcoin reach $100k?'),
-            types.ascii('Prediction market for Bitcoin price milestone'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
+            expect(result).toBeOk(Cl.uint(0));
+        });
 
-      expect(block.receipts.length).toBe(1);
-      expect(block.receipts[0].result).toMatch(/ok/);
+        it('should reject pool creation with empty title', () => {
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii(''),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
+
+            expect(result).toBeErr(Cl.uint(420));
+        });
+
+        it('should reject pool creation with invalid duration', () => {
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(0)
+                ],
+                deployer
+            );
+
+            expect(result).toBeErr(Cl.uint(420));
+        });
     });
 
-    it('should reject pool creation with empty title', () => {
-      const deployer = accounts.get('deployer')!;
-      
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii(''),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
+    describe('Betting Functionality', () => {
+        it('should allow users to place bets on a pool', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
 
-      expect(block.receipts[0].result).toMatch(/err/);
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0),
+                    Cl.uint(50000000)
+                ],
+                wallet1
+            );
+
+            expect(result).toBeOk(Cl.tuple({ "early-bettor": Cl.bool(true), "market-maker": Cl.bool(false) }));
+        });
+
+        it('should reject bets below minimum amount', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
+
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0),
+                    Cl.uint(1000)
+                ],
+                wallet1
+            );
+
+            expect(result).toBeErr(Cl.uint(422));
+        });
+
+        it('should reject bets on invalid outcomes', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
+
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(5),
+                    Cl.uint(50000000)
+                ],
+                wallet1
+            );
+
+            expect(result).toBeErr(Cl.uint(422));
+        });
     });
 
-    it('should reject pool creation with invalid duration', () => {
-      const deployer = accounts.get('deployer')!;
-      
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(0)
-          ],
-          deployer.address
-        )
-      ]);
+    describe('Pool Settlement', () => {
+        it('should allow pool creator to settle pool with winning outcome', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
 
-      expect(block.receipts[0].result).toMatch(/err/);
-    });
-  });
+            simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0),
+                    Cl.uint(50000000)
+                ],
+                wallet1
+            );
 
-  describe('Betting Functionality', () => {
-    it('should allow users to place bets on a pool', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'settle-pool',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0)
+                ],
+                deployer
+            );
 
-      // Create pool
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
+            expect(result).toBeOk(Cl.bool(true));
+        });
 
-      // Place bet
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(0),
-            types.uint(50000000)
-          ],
-          wallet1.address
-        )
-      ]);
+        it('should reject settlement by non-creator', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
 
-      expect(block.receipts[0].result).toMatch(/ok/);
-    });
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'settle-pool',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0)
+                ],
+                wallet1
+            );
 
-    it('should reject bets below minimum amount', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(0),
-            types.uint(1000)
-          ],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/err/);
+            expect(result).toBeErr(Cl.uint(401));
+        });
     });
 
-    it('should reject bets on invalid outcomes', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
+    describe('Winnings Claim', () => {
+        it('should allow winners to claim their winnings', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
+            simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0),
+                    Cl.uint(50000000)
+                ],
+                wallet1
+            );
 
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(5),
-            types.uint(50000000)
-          ],
-          wallet1.address
-        )
-      ]);
+            simnet.callPublicFn(
+                'predinex-pool',
+                'settle-pool',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0)
+                ],
+                deployer
+            );
 
-      expect(block.receipts[0].result).toMatch(/err/);
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'claim-winnings',
+                [Cl.uint(0)],
+                wallet1
+            );
+
+            expect(result).toBeOk(Cl.uint(49000000));
+        });
+
+        it('should reject duplicate claims', () => {
+            simnet.callPublicFn(
+                'predinex-pool',
+                'create-pool',
+                [
+                    Cl.stringAscii('Test Pool'),
+                    Cl.stringAscii('Description'),
+                    Cl.stringAscii('Yes'),
+                    Cl.stringAscii('No'),
+                    Cl.uint(1000)
+                ],
+                deployer
+            );
+
+            simnet.callPublicFn(
+                'predinex-pool',
+                'place-bet',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0),
+                    Cl.uint(50000000)
+                ],
+                wallet1
+            );
+
+            simnet.callPublicFn(
+                'predinex-pool',
+                'settle-pool',
+                [
+                    Cl.uint(0),
+                    Cl.uint(0)
+                ],
+                deployer
+            );
+
+            simnet.callPublicFn(
+                'predinex-pool',
+                'claim-winnings',
+                [Cl.uint(0)],
+                wallet1
+            );
+
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'claim-winnings',
+                [Cl.uint(0)],
+                wallet1
+            );
+
+            expect(result).toBeErr(Cl.uint(410));
+        });
     });
-  });
-
-  describe('Pool Settlement', () => {
-    it('should allow pool creator to settle pool with winning outcome', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(0),
-            types.uint(50000000)
-          ],
-          wallet1.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'settle-pool',
-          [
-            types.uint(0),
-            types.uint(0)
-          ],
-          deployer.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
-    });
-
-    it('should reject settlement by non-creator', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'settle-pool',
-          [
-            types.uint(0),
-            types.uint(0)
-          ],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/err/);
-    });
-  });
-
-  describe('Winnings Claim', () => {
-    it('should allow winners to claim their winnings', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(0),
-            types.uint(50000000)
-          ],
-          wallet1.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'settle-pool',
-          [
-            types.uint(0),
-            types.uint(0)
-          ],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'claim-winnings',
-          [types.uint(0)],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
-    });
-
-    it('should reject duplicate claims', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'create-pool',
-          [
-            types.ascii('Test Pool'),
-            types.ascii('Description'),
-            types.ascii('Yes'),
-            types.ascii('No'),
-            types.uint(1000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'place-bet',
-          [
-            types.uint(0),
-            types.uint(0),
-            types.uint(50000000)
-          ],
-          wallet1.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'settle-pool',
-          [
-            types.uint(0),
-            types.uint(0)
-          ],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'claim-winnings',
-          [types.uint(0)],
-          wallet1.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'predinex-pool',
-          'claim-winnings',
-          [types.uint(0)],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/err/);
-    });
-  });
 });
