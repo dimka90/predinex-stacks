@@ -1,327 +1,211 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.0/index.ts';
+import { describe, it, expect } from 'vitest';
+import { Cl } from '@stacks/transactions';
+
+const accounts = simnet.getAccounts();
+const deployer = accounts.get('deployer')!;
+const wallet1 = accounts.get('wallet_1')!;
+const wallet2 = accounts.get('wallet_2')!;
 
 describe('Liquidity Incentives - Core Functionality Tests', () => {
-  let chain: Chain;
-  let accounts: Map<string, Account>;
 
-  beforeEach(async () => {
-    chain = await Clarinet.setupChain();
-    accounts = chain.getAccounts();
-  });
+    describe('Pool Incentive Initialization', () => {
+        it('should initialize incentives for a new pool', () => {
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-  describe('Pool Incentive Initialization', () => {
-    it('should initialize incentives for a new pool', () => {
-      const deployer = accounts.get('deployer')!;
+            expect(result).toBeOk(Cl.bool(true));
+        });
 
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+        it('should track pool incentive configuration', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-      expect(block.receipts[0].result).toMatch(/ok/);
+            const config = simnet.callReadOnlyFn(
+                'liquidity-incentives',
+                'get-pool-incentive-config',
+                [Cl.uint(0)],
+                deployer
+            );
+
+            expect(config.result).toBeSome(Cl.tuple({}));
+        });
     });
 
-    it('should track pool incentive configuration', () => {
-      const deployer = accounts.get('deployer')!;
+    describe('Early Bird Bonus', () => {
+        it('should award early bird bonus to first bettors', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'record-bet-and-calculate-early-bird',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                deployer
+            );
 
-      const config = chain.callReadOnlyFn(
-        'liquidity-incentives',
-        'get-pool-incentive-config',
-        [types.uint(0)],
-        deployer.address
-      );
+            expect(result).toBeOk(Cl.bool(true));
+        });
 
-      expect(config.result).toMatch(/ok/);
-    });
-  });
+        it('should check early bird eligibility correctly', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-  describe('Early Bird Bonus', () => {
-    it('should award early bird bonus to first bettors', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'record-bet-and-calculate-early-bird',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+            const eligible = simnet.callReadOnlyFn(
+                'liquidity-incentives',
+                'is-early-bird-eligible',
+                [Cl.uint(0), Cl.principal(wallet1)],
+                deployer
+            );
 
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'record-bet-and-calculate-early-bird',
-          [types.uint(0), types.principal(wallet1.address), types.uint(50000000)],
-          deployer.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
+            expect(eligible.result).toBeBool(true);
+        });
     });
 
-    it('should check early bird eligibility correctly', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
+    describe('Volume Bonus', () => {
+        it('should award volume bonus when threshold is reached', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'record-bet-and-calculate-early-bird',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(1000000000)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'record-bet-and-calculate-early-bird',
-          [types.uint(0), types.principal(wallet1.address), types.uint(50000000)],
-          deployer.address
-        )
-      ]);
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'award-volume-bonus',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(1000000000)],
+                deployer
+            );
 
-      const eligible = chain.callReadOnlyFn(
-        'liquidity-incentives',
-        'is-early-bird-eligible',
-        [types.uint(0), types.principal(wallet1.address)],
-        deployer.address
-      );
-
-      expect(eligible.result).toMatch(/true/);
-    });
-  });
-
-  describe('Volume Bonus', () => {
-    it('should award volume bonus when threshold is reached', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'record-bet-and-calculate-early-bird',
-          [types.uint(0), types.principal(wallet1.address), types.uint(1000000000)],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'award-volume-bonus',
-          [types.uint(0), types.principal(wallet1.address), types.uint(1000000000)],
-          deployer.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
+            expect(result).toBeOk(Cl.bool(true));
+        });
     });
 
-    it('should check volume bonus eligibility', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
+    describe('Referral Bonus', () => {
+        it('should award referral bonus for referred users', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'award-referral-bonus',
+                [
+                    Cl.principal(wallet1),
+                    Cl.principal(wallet2),
+                    Cl.uint(0),
+                    Cl.uint(50000000)
+                ],
+                deployer
+            );
 
-      const eligible = chain.callReadOnlyFn(
-        'liquidity-incentives',
-        'is-volume-bonus-eligible',
-        [types.uint(0), types.principal(wallet1.address), types.uint(1000000000)],
-        deployer.address
-      );
-
-      expect(eligible.result).toMatch(/true/);
-    });
-  });
-
-  describe('Referral Bonus', () => {
-    it('should award referral bonus for referred users', () => {
-      const deployer = accounts.get('deployer')!;
-      const referrer = accounts.get('wallet_1')!;
-      const referred = accounts.get('wallet_2')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'award-referral-bonus',
-          [
-            types.principal(referrer.address),
-            types.principal(referred.address),
-            types.uint(0),
-            types.uint(50000000)
-          ],
-          deployer.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
+            expect(result).toBeOk(Cl.bool(true));
+        });
     });
 
-    it('should validate referral eligibility', () => {
-      const deployer = accounts.get('deployer')!;
-      const referrer = accounts.get('wallet_1')!;
-      const referred = accounts.get('wallet_2')!;
+    describe('Incentive Claims', () => {
+        it('should allow users to claim pending incentives', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
 
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'deposit-incentive-funds',
+                [Cl.uint(1000000000)],
+                deployer
+            );
 
-      const eligible = chain.callReadOnlyFn(
-        'liquidity-incentives',
-        'can-award-referral-bonus',
-        [
-          types.principal(referrer.address),
-          types.principal(referred.address),
-          types.uint(0)
-        ],
-        deployer.address
-      );
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'record-bet-and-calculate-early-bird',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                deployer
+            );
 
-      expect(eligible.result).toMatch(/true/);
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'claim-incentive',
+                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                wallet1
+            );
+
+            expect(result).toBeOk(Cl.uint(5000000));
+        });
+
+        it('should prevent duplicate claims', () => {
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'initialize-pool-incentives',
+                [Cl.uint(0)],
+                deployer
+            );
+
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'deposit-incentive-funds',
+                [Cl.uint(1000000000)],
+                deployer
+            );
+
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'record-bet-and-calculate-early-bird',
+                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                deployer
+            );
+
+            simnet.callPublicFn(
+                'liquidity-incentives',
+                'claim-incentive',
+                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                wallet1
+            );
+
+            const { result } = simnet.callPublicFn(
+                'liquidity-incentives',
+                'claim-incentive',
+                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                wallet1
+            );
+
+            expect(result).toBeErr(Cl.uint(452));
+        });
     });
-  });
-
-  describe('Incentive Claims', () => {
-    it('should allow users to claim pending incentives', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'deposit-incentive-funds',
-          [types.uint(1000000000)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'record-bet-and-calculate-early-bird',
-          [types.uint(0), types.principal(wallet1.address), types.uint(50000000)],
-          deployer.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'claim-incentive',
-          [types.uint(0), types.ascii('early-bird')],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/ok/);
-    });
-
-    it('should prevent duplicate claims', () => {
-      const deployer = accounts.get('deployer')!;
-      const wallet1 = accounts.get('wallet_1')!;
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'initialize-pool-incentives',
-          [types.uint(0)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'deposit-incentive-funds',
-          [types.uint(1000000000)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'record-bet-and-calculate-early-bird',
-          [types.uint(0), types.principal(wallet1.address), types.uint(50000000)],
-          deployer.address
-        )
-      ]);
-
-      chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'claim-incentive',
-          [types.uint(0), types.ascii('early-bird')],
-          wallet1.address
-        )
-      ]);
-
-      const block = chain.mineBlock([
-        Tx.contractCall(
-          'liquidity-incentives',
-          'claim-incentive',
-          [types.uint(0), types.ascii('early-bird')],
-          wallet1.address
-        )
-      ]);
-
-      expect(block.receipts[0].result).toMatch(/err/);
-    });
-  });
 });
