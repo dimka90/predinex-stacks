@@ -120,11 +120,12 @@
 (define-data-var highest-single-bonus uint u0)
 (define-data-var contract-paused bool false)
 (define-data-var emergency-mode bool false)
+(define-data-var authorized-contract principal tx-sender)
 
 ;; Initialize incentive configuration for a pool
 (define-public (initialize-pool-incentives (pool-id uint))
   (begin
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-eq contract-caller (var-get authorized-contract))) ERR-UNAUTHORIZED)
     (asserts! (not (var-get contract-paused)) ERR-INVALID-POOL-STATE)
     (asserts! (> pool-id u0) ERR-INVALID-AMOUNT)
     
@@ -161,6 +162,7 @@
     (new-highest (if (> bet-amount (get highest-bet bet-tracking)) bet-amount (get highest-bet bet-tracking)))
   )
     ;; Validate inputs
+    (asserts! (is-eq contract-caller (var-get authorized-contract)) ERR-UNAUTHORIZED)
     (asserts! (get early-bird-enabled config) ERR-INCENTIVE-DISABLED)
     (asserts! (>= bet-amount MINIMUM-BET-AMOUNT) ERR-MINIMUM-BET-NOT-MET)
     (asserts! (not (var-get contract-paused)) ERR-INVALID-POOL-STATE)
@@ -232,7 +234,10 @@
               status: "pending",
               earned-at: burn-block-height,
               claimed-at: none,
-              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS)
+              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
+              bonus-multiplier: u1,
+              streak-count: u0,
+              is-premium: false
             }
           )
           (update-pool-stats pool-id "volume" volume-bonus)
@@ -263,7 +268,10 @@
             {
               referral-amount: referred-bet-amount,
               bonus-earned: referral-bonus,
-              claimed: false
+              claimed: false,
+              referral-tier: u1,
+              bonus-multiplier: u1,
+              created-at: burn-block-height
             }
           )
           
@@ -275,7 +283,10 @@
               status: "pending",
               earned-at: burn-block-height,
               claimed-at: none,
-              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS)
+              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
+              bonus-multiplier: u1,
+              streak-count: u0,
+              is-premium: false
             }
           )
           
@@ -315,7 +326,10 @@
               status: "pending",
               earned-at: burn-block-height,
               claimed-at: none,
-              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS)
+              claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
+              bonus-multiplier: u1,
+              streak-count: u0,
+              is-premium: false
             }
           )
           
@@ -442,6 +456,14 @@
   )
 )
 
+(define-public (set-authorized-contract (contract principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (var-set authorized-contract contract)
+    (ok true)
+  )
+)
+
 ;; Batch claim multiple incentives for efficiency
 (define-public (batch-claim-incentives (pool-id uint) (incentive-types (list 10 (string-ascii 32))))
   (let (
@@ -466,6 +488,10 @@
 )
 
 ;; Helper functions
+
+(define-private (min (a uint) (b uint))
+  (if (<= a b) a b)
+)
 
 ;; Calculate early bird bonus
 (define-private (calculate-early-bird-bonus (bet-amount uint))
@@ -700,22 +726,22 @@
 ;; Calculate total pending incentives for a user across all types
 (define-read-only (get-user-total-pending-incentives (pool-id uint) (user principal))
   (let (
-    (early-bird (default-to u0 (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "early-bird" })
+    (early-bird (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "early-bird" })
       incentive (if (is-eq (get status incentive) "pending") (get amount incentive) u0)
       u0
-    )))
-    (volume (default-to u0 (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" })
+    ))
+    (volume (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "volume" })
       incentive (if (is-eq (get status incentive) "pending") (get amount incentive) u0)
       u0
-    )))
-    (referral (default-to u0 (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "referral" })
+    ))
+    (referral (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "referral" })
       incentive (if (is-eq (get status incentive) "pending") (get amount incentive) u0)
       u0
-    )))
-    (loyalty (default-to u0 (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "loyalty" })
+    ))
+    (loyalty (match (map-get? user-incentives { pool-id: pool-id, user: user, incentive-type: "loyalty" })
       incentive (if (is-eq (get status incentive) "pending") (get amount incentive) u0)
       u0
-    )))
+    ))
   )
     (+ early-bird volume referral loyalty)
   )
