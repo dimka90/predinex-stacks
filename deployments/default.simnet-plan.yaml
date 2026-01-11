@@ -64,18 +64,23 @@ plan:
     - id: 0
       transactions:
         - emulated-contract-publish:
-            contract-name: erc20-token
+            contract-name: liquidity-incentives
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/erc20-token.clar
+            path: contracts/liquidity-incentives.clar
             clarity-version: 2
         - emulated-contract-publish:
-            contract-name: nft-token
+            contract-name: predinex-oracle-registry
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/nft-token.clar
+            path: contracts/predinex-oracle-registry.clar
             clarity-version: 2
         - emulated-contract-publish:
             contract-name: predinex-pool
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/predinex-pool.clar
+            clarity-version: 2
+        - emulated-contract-publish:
+            contract-name: predinex-resolution-engine
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/predinex-resolution-engine.clar
             clarity-version: 2
       epoch: "3.3"
