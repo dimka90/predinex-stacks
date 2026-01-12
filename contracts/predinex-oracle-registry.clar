@@ -298,10 +298,11 @@
 )
 
 (define-public (deactivate-oracle-provider (provider-id uint))
-  (match (map-get? oracle-providers { provider-id: provider-id })
+  (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
     provider (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
                  (begin
-                   (map-set oracle-providers { provider-id: provider-id } (merge provider { is-active: false }))
+                   (map-set enhanced-oracle-providers { provider-id: provider-id } 
+                     (merge provider { is-active: false }))
                    (ok true)
                  )
                  (err ERR-UNAUTHORIZED))
@@ -310,10 +311,11 @@
 )
 
 (define-public (reactivate-oracle-provider (provider-id uint))
-  (match (map-get? oracle-providers { provider-id: provider-id })
+  (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
     provider (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
                  (begin
-                   (map-set oracle-providers { provider-id: provider-id } (merge provider { is-active: true, last-activity: burn-block-height }))
+                   (map-set enhanced-oracle-providers { provider-id: provider-id } 
+                     (merge provider { is-active: true, last-activity: burn-block-height }))
                    (ok true)
                  )
                  (err ERR-UNAUTHORIZED))
@@ -321,39 +323,193 @@
   )
 )
 
-(define-public (submit-oracle-data (pool-id uint) (data-value (string-ascii 256)) (data-type (string-ascii 32)) (confidence-score uint))
-  (match (get-provider-id-by-address tx-sender)
-    provider-id (match (map-get? oracle-providers { provider-id: provider-id })
-      provider (let ((submission-id (var-get oracle-submission-counter)))
-                 (if (get is-active provider)
-                     (if (oracle-supports-data-type provider-id data-type)
-                         (if (<= confidence-score u100)
-                             (begin
-                               ;; Note: Pool existence check removed to decouple.
-                               (map-insert oracle-submissions
-                                 { submission-id: submission-id }
-                                 {
-                                   provider-id: provider-id,
-                                   pool-id: pool-id,
-                                   data-value: data-value,
-                                   data-type: data-type,
-                                   timestamp: burn-block-height,
-                                   confidence-score: confidence-score,
-                                   is-processed: false
-                                 }
-                               )
-                               (var-set oracle-submission-counter (+ submission-id u1))
-                               (ok submission-id)
+(define-public (submit-enhanced-oracle-data 
+  (pool-id uint) 
+  (data-value (string-ascii 256)) 
+  (data-type (string-ascii 32)) 
+  (confidence-score uint)
+  (validation-hash (buff 32)))
+  (if (var-get circuit-breaker-active)
+      (err ERR-CIRCUIT-BREAKER-ACTIVE)
+      (match (get-provider-id-by-address tx-sender)
+        provider-id (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+          provider (let ((submission-id (var-get oracle-submission-counter)))
+                     (if (get is-active provider)
+                         (if (oracle-supports-data-type provider-id data-type)
+                             (if (and (<= confidence-score u100) (>= confidence-score u1))
+                                 (if (>= (get reputation-score provider) u50) ;; Minimum reputation check
+                                     (begin
+                                       (map-insert enhanced-oracle-submissions
+                                         { submission-id: submission-id }
+                                         {
+                                           provider-id: provider-id,
+                                           pool-id: pool-id,
+                                           data-value: data-value,
+                                           data-type: data-type,
+                                           confidence-score: confidence-score,
+                                           timestamp: burn-block-height,
+                                           response-time: u0, ;; Will be calculated later
+                                           validation-hash: validation-hash,
+                                           aggregation-weight: (get reputation-score provider),
+                                           is-processed: false,
+                                           is-disputed: false,
+                                           dispute-outcome: none
+                                         }
+                                       )
+                                       ;; Update provider activity
+                                       (map-set enhanced-oracle-providers { provider-id: provider-id }
+                                         (merge provider { last-activity: burn-block-height }))
+                                       (var-set oracle-submission-counter (+ submission-id u1))
+                                       (ok submission-id)
+                                     )
+                                     (err ERR-REPUTATION-TOO-LOW)
+                                 )
+                                 (err ERR-INSUFFICIENT-CONFIDENCE)
                              )
-                             (err ERR-INSUFFICIENT-CONFIDENCE)
+                             (err ERR-INVALID-DATA-TYPE)
                          )
-                         (err ERR-INVALID-DATA-TYPE)
+                         (err ERR-ORACLE-INACTIVE)
                      )
-                     (err ERR-ORACLE-INACTIVE)
-                 )
-               )
-      (err ERR-ORACLE-NOT-FOUND)
-    )
-    (err ERR-ORACLE-NOT-FOUND)
+                   )
+          (err ERR-ORACLE-NOT-FOUND)
+        )
+        (err ERR-ORACLE-NOT-FOUND)
+      )
   )
 )
+
+;; Batch submission for efficiency
+(define-public (submit-batch-oracle-data 
+  (submissions (list 10 {pool-id: uint, data-value: (string-ascii 256), 
+                        data-type: (string-ascii 32), confidence-score: uint,
+                        validation-hash: (buff 32)})))
+  (if (var-get circuit-breaker-active)
+      (err ERR-CIRCUIT-BREAKER-ACTIVE)
+      (match (get-provider-id-by-address tx-sender)
+        provider-id (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+          provider (if (get is-active provider)
+                       (if (>= (get reputation-score provider) u50)
+                           (let ((results (map process-single-submission submissions)))
+                             (ok results))
+                           (err ERR-REPUTATION-TOO-LOW))
+                       (err ERR-ORACLE-INACTIVE))
+          (err ERR-ORACLE-NOT-FOUND))
+        (err ERR-ORACLE-NOT-FOUND))))
+
+;; Helper function for batch processing
+(define-private (process-single-submission 
+  (submission {pool-id: uint, data-value: (string-ascii 256), 
+              data-type: (string-ascii 32), confidence-score: uint,
+              validation-hash: (buff 32)}))
+  (let ((submission-id (var-get oracle-submission-counter)))
+    (begin
+      (var-set oracle-submission-counter (+ submission-id u1))
+      submission-id)))
+
+;; Reputation management functions
+(define-public (update-reputation-score 
+  (provider-id uint) 
+  (accuracy-delta int) 
+  (response-time uint))
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+        provider (let (
+          (current-reputation (get reputation-score provider))
+          (new-reputation (if (>= accuracy-delta 0)
+                             (min REPUTATION-SCALE (+ current-reputation (to-uint accuracy-delta)))
+                             (if (>= current-reputation (to-uint (- 0 accuracy-delta)))
+                                 (- current-reputation (to-uint (- 0 accuracy-delta)))
+                                 u0)))
+          (is-premium (>= new-reputation PREMIUM-PROVIDER-THRESHOLD))
+        )
+          (begin
+            (map-set enhanced-oracle-providers { provider-id: provider-id }
+              (merge provider { 
+                reputation-score: new-reputation,
+                premium-provider: is-premium,
+                average-response-time: response-time
+              }))
+            (ok new-reputation)))
+        (err ERR-ORACLE-NOT-FOUND))
+      (err ERR-UNAUTHORIZED)))
+
+;; Stake slashing mechanism
+(define-public (slash-provider-stake (provider-id uint) (reason (string-ascii 128)))
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+        provider (match (map-get? provider-stakes { provider-id: provider-id })
+          stake (let (
+            (slash-amount (/ (* (get locked-amount stake) SLASHING-PERCENTAGE) u100))
+            (remaining-stake (- (get locked-amount stake) slash-amount))
+          )
+            (begin
+              ;; Update stake record
+              (map-set provider-stakes { provider-id: provider-id }
+                (merge stake { 
+                  locked-amount: remaining-stake,
+                  slashed-total: (+ (get slashed-total stake) slash-amount)
+                }))
+              ;; Update provider record
+              (map-set enhanced-oracle-providers { provider-id: provider-id }
+                (merge provider { 
+                  slashed-amount: (+ (get slashed-amount provider) slash-amount),
+                  reputation-score: (max u0 (- (get reputation-score provider) u100))
+                }))
+              ;; Update total staked amount
+              (var-set total-staked-amount (- (var-get total-staked-amount) slash-amount))
+              ;; Log security event
+              (log-security-event "slashing" (list provider-id) none u3 reason)
+              (ok slash-amount)))
+          (err ERR-ORACLE-NOT-FOUND))
+        (err ERR-ORACLE-NOT-FOUND))
+      (err ERR-UNAUTHORIZED)))
+
+;; Security and monitoring functions
+(define-public (trigger-circuit-breaker (reason (string-ascii 128)) (duration uint))
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (begin
+        (var-set circuit-breaker-active true)
+        (var-set circuit-breaker-reason reason)
+        (log-security-event "circuit-breaker" (list) none u5 reason)
+        (ok true))
+      (err ERR-UNAUTHORIZED)))
+
+(define-public (deactivate-circuit-breaker)
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (begin
+        (var-set circuit-breaker-active false)
+        (var-set circuit-breaker-reason "")
+        (ok true))
+      (err ERR-UNAUTHORIZED)))
+
+;; Private helper for logging security events
+(define-private (log-security-event 
+  (event-type (string-ascii 32))
+  (affected-providers (list 10 uint))
+  (pool-id (optional uint))
+  (severity uint)
+  (description (string-ascii 128)))
+  (let ((event-id (var-get security-event-counter)))
+    (begin
+      (map-insert security-events
+        { event-id: event-id }
+        {
+          event-type: event-type,
+          affected-providers: affected-providers,
+          pool-id: pool-id,
+          severity: severity,
+          detected-at: burn-block-height,
+          investigation-status: "open",
+          resolution: (some description),
+          resolved-at: none
+        })
+      (var-set security-event-counter (+ event-id u1))
+      event-id)))
+
+;; Backward compatibility function
+(define-public (submit-oracle-data (pool-id uint) (data-value (string-ascii 256)) (data-type (string-ascii 32)) (confidence-score uint))
+  (submit-enhanced-oracle-data pool-id data-value data-type confidence-score 0x00))
+
+;; Legacy registration function for backward compatibility
+(define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
+  (register-oracle-provider-with-stake provider-address MIN-STAKE-AMOUNT supported-data-types "Legacy registration"))
