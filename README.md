@@ -129,9 +129,39 @@ You can also interact with the contract using the provided interaction script:
 npm run interact
 ```
 
-### 🆕 Automated Resolution System
+## 🆕 Enhanced Oracle System Features
 
-The new automated resolution system allows markets to be settled without manual intervention:
+The oracle system now includes advanced security, performance, and reliability features:
+
+### 🔒 Stake-Based Security
+- **Minimum Stake Requirement**: 1000 STX tokens required for oracle registration
+- **Automatic Slashing**: 10% stake penalty for malicious behavior
+- **Reputation Scoring**: 0-1000 scale based on accuracy and performance
+- **Premium Provider Status**: 2x fee multiplier for 95%+ accuracy providers
+
+### 📊 Advanced Data Aggregation
+- **Weighted Consensus**: Reputation-based data aggregation
+- **Outlier Detection**: Automatic filtering of suspicious submissions
+- **Confidence Thresholds**: Minimum 60% confidence for automated resolution
+- **Variance Analysis**: Dispute triggering for >20% data variance
+
+### 🛡️ Security Monitoring
+- **Collusion Detection**: Identifies coordinated manipulation attempts
+- **Circuit Breaker**: Emergency halt during detected attacks
+- **Attack Pattern Recognition**: ML-based suspicious behavior detection
+- **Permanent Ban System**: Complete stake confiscation for confirmed malicious actors
+
+### ⚡ Performance Optimizations
+- **Batch Submissions**: Process up to 20 submissions in single transaction
+- **Caching System**: Reduces redundant processing for frequent submissions
+- **Gas Optimization**: Efficient storage patterns minimize transaction costs
+- **Immediate Confirmations**: Real-time submission receipts
+
+### 🔧 Enhanced Resolution Engine
+- **Custom Oracle Requirements**: 1-10 oracle minimum per market
+- **Reputation Thresholds**: Configurable minimum reputation (0-1000)
+- **Regex Validation**: Custom data validation rules
+- **Deadline Enforcement**: Automatic fallback for missed deadlines
 
 #### Oracle Provider Setup
 ```bash
@@ -175,20 +205,21 @@ For detailed documentation on the automated resolution system, see [AUTOMATED_RE
 | `get-pool` | Read-Only | Retrieves details of a specific pool. |
 | `get-user-bet` | Read-Only | Retrieves a user's betting position for a pool. |
 
-### 🆕 Automated Resolution Functions
+### 🆕 Enhanced Oracle Functions
 
 | Function | Type | Description |
 | :--- | :--- | :--- |
-| `register-oracle-provider` | Public | Registers a new oracle provider (Admin only). |
-| `submit-oracle-data` | Public | Submits data for market resolution (Oracle only). |
-| `configure-pool-resolution` | Public | Configures automated resolution for a pool. |
-| `attempt-automated-resolution` | Public | Attempts to resolve a pool using oracle data. |
-| `create-dispute` | Public | Creates a dispute for an automated resolution. |
-| `vote-on-dispute` | Public | Votes on a disputed resolution. |
-| `resolve-dispute` | Public | Resolves a dispute after voting period. |
-| `trigger-fallback-resolution` | Public | Triggers manual resolution fallback. |
-| `collect-resolution-fee` | Public | Collects fees for automated resolution. |
-| `claim-oracle-fee` | Public | Allows oracles to claim their fees. |
+| `register-oracle-provider-with-stake` | Public | Registers oracle with minimum 1000 STX stake requirement |
+| `submit-enhanced-oracle-data` | Public | Submits data with validation hash and reputation checks |
+| `submit-batch-oracle-data` | Public | Processes multiple submissions efficiently |
+| `aggregate-oracle-data` | Public | Calculates weighted consensus from multiple sources |
+| `update-reputation-score` | Public | Updates provider reputation based on performance |
+| `slash-provider-stake` | Public | Penalizes malicious providers (Admin only) |
+| `trigger-circuit-breaker` | Public | Activates emergency protection mode |
+| `detect-collusion` | Public | Identifies coordinated manipulation attempts |
+| `configure-advanced-resolution` | Public | Sets custom oracle requirements per market |
+| `attempt-enhanced-resolution` | Public | Resolves markets with consensus validation |
+| `permanently-ban-provider` | Public | Bans malicious providers and confiscates stakes |
 
 ## 🤝 Contributing
 
