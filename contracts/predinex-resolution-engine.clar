@@ -429,3 +429,67 @@
 (define-read-only (get-dispute-details (dispute-id uint))
   (map-get? pool-disputes { dispute-id: dispute-id })
 )
+
+;; Enhanced resolution configuration
+(define-public (configure-advanced-resolution 
+  (pool-id uint) 
+  (min-oracle-count uint) 
+  (min-reputation-threshold uint) 
+  (validation-rules (string-ascii 512)) 
+  (submission-deadline uint))
+  (if (and 
+       (>= min-oracle-count MIN-ORACLE-COUNT)
+       (<= min-oracle-count MAX-ORACLE-COUNT)
+       (>= min-reputation-threshold MIN-REPUTATION-THRESHOLD)
+       (<= min-reputation-threshold MAX-REPUTATION-THRESHOLD)
+       (> submission-deadline burn-block-height))
+      (begin
+        (map-insert advanced-resolution-configs
+          { pool-id: pool-id }
+          {
+            min-oracle-count: min-oracle-count,
+            min-reputation-threshold: min-reputation-threshold,
+            max-response-time: u100,
+            validation-rules: validation-rules,
+            submission-deadline: submission-deadline,
+            consensus-threshold: u80,
+            dispute-window: DEFAULT-DISPUTE-WINDOW,
+            fallback-enabled: true,
+            custom-aggregation: "weighted",
+            created-by: tx-sender,
+            created-at: burn-block-height,
+            last-updated: burn-block-height
+          })
+        (ok true))
+      (err ERR-INVALID-RESOLUTION-CRITERIA)))
+
+;; Enhanced resolution attempt
+(define-public (attempt-enhanced-resolution 
+  (pool-id uint) 
+  (require-consensus bool) 
+  (min-confidence-threshold uint))
+  (match (map-get? advanced-resolution-configs { pool-id: pool-id })
+    config (if (> burn-block-height (get submission-deadline config))
+               (let ((aggregation-result (unwrap-panic (contract-call? .predinex-oracle-registry aggregate-oracle-data pool-id (list u1 u2 u3) "weighted"))))
+                 (if (and require-consensus (not (get consensus-reached aggregation-result)))
+                     (err ERR-CONSENSUS-NOT-REACHED)
+                     (if (>= (get confidence aggregation-result) min-confidence-threshold)
+                         (ok (get result aggregation-result))
+                         (err ERR-CONFIDENCE-TOO-LOW))))
+               (err ERR-DEADLINE-MISSED))
+    (err ERR-RESOLUTION-CONFIG-NOT-FOUND)))
+
+;; Security monitoring
+(define-map security-monitoring
+  { pool-id: uint }
+  {
+    suspicious-activity: bool,
+    last-check: uint,
+    threat-level: uint
+  })
+
+(define-public (trigger-security-alert (pool-id uint) (threat-level uint))
+  (begin
+    (map-set security-monitoring { pool-id: pool-id }
+      { suspicious-activity: true, last-check: burn-block-height, threat-level: threat-level })
+    (ok true)))
