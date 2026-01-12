@@ -138,7 +138,7 @@
   bool
 )
 
-;; Read-only helpers
+;; Enhanced Read-only helpers
 (define-read-only (is-admin (user principal))
   (default-to false (map-get? admins { admin: user }))
 )
@@ -147,16 +147,69 @@
   (map-get? oracle-address-to-id { provider-address: provider-address })
 )
 
+(define-read-only (get-enhanced-provider-details (provider-id uint))
+  (map-get? enhanced-oracle-providers { provider-id: provider-id })
+)
+
 (define-read-only (get-provider-details (provider-id uint))
-  (map-get? oracle-providers { provider-id: provider-id })
+  ;; Backward compatibility function
+  (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+    provider (some {
+      provider-address: (get provider-address provider),
+      reliability-score: (get reputation-score provider),
+      total-resolutions: (get total-resolutions provider),
+      successful-resolutions: (get successful-resolutions provider),
+      average-response-time: (get average-response-time provider),
+      is-active: (get is-active provider),
+      registered-at: (get registered-at provider),
+      last-activity: (get last-activity provider)
+    })
+    none
+  )
 )
 
 (define-read-only (oracle-supports-data-type (provider-id uint) (data-type (string-ascii 32)))
   (default-to false (map-get? oracle-data-types { provider-id: provider-id, data-type: data-type }))
 )
 
+(define-read-only (get-enhanced-submission (submission-id uint))
+  (map-get? enhanced-oracle-submissions { submission-id: submission-id })
+)
+
 (define-read-only (get-submission (submission-id uint))
-  (map-get? oracle-submissions { submission-id: submission-id })
+  ;; Backward compatibility function
+  (match (map-get? enhanced-oracle-submissions { submission-id: submission-id })
+    submission (some {
+      provider-id: (get provider-id submission),
+      pool-id: (get pool-id submission),
+      data-value: (get data-value submission),
+      data-type: (get data-type submission),
+      timestamp: (get timestamp submission),
+      confidence-score: (get confidence-score submission),
+      is-processed: (get is-processed submission)
+    })
+    none
+  )
+)
+
+(define-read-only (get-provider-stake (provider-id uint))
+  (map-get? provider-stakes { provider-id: provider-id })
+)
+
+(define-read-only (get-reputation-history (provider-id uint) (period uint))
+  (map-get? reputation-history { provider-id: provider-id, period: period })
+)
+
+(define-read-only (get-security-event (event-id uint))
+  (map-get? security-events { event-id: event-id })
+)
+
+(define-read-only (is-circuit-breaker-active)
+  (var-get circuit-breaker-active)
+)
+
+(define-read-only (get-total-staked-amount)
+  (var-get total-staked-amount)
 )
 
 ;; Private helper
@@ -181,30 +234,61 @@
   )
 )
 
-;; Public Functions
+;; Enhanced Public Functions
 
-(define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
+(define-public (register-oracle-provider-with-stake 
+  (provider-address principal) 
+  (stake-amount uint) 
+  (supported-data-types (list 10 (string-ascii 32)))
+  (metadata (string-ascii 512)))
   (let ((provider-id (var-get oracle-provider-counter)))
     (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
         (if (is-none (get-provider-id-by-address provider-address))
-            (begin
-              (map-insert oracle-providers
-                { provider-id: provider-id }
-                {
-                  provider-address: provider-address,
-                  reliability-score: u100,
-                  total-resolutions: u0,
-                  successful-resolutions: u0,
-                  average-response-time: u0,
-                  is-active: true,
-                  registered-at: burn-block-height,
-                  last-activity: burn-block-height
-                }
-              )
-              (map-insert oracle-address-to-id { provider-address: provider-address } provider-id)
-              (fold register-data-type-for-provider supported-data-types provider-id)
-              (var-set oracle-provider-counter (+ provider-id u1))
-              (ok provider-id)
+            (if (>= stake-amount MIN-STAKE-AMOUNT)
+                (if (> (len metadata) u0)
+                    (match (stx-transfer? stake-amount tx-sender (as-contract tx-sender))
+                      success (begin
+                        (map-insert enhanced-oracle-providers
+                          { provider-id: provider-id }
+                          {
+                            provider-address: provider-address,
+                            reputation-score: u100,
+                            total-resolutions: u0,
+                            successful-resolutions: u0,
+                            failed-resolutions: u0,
+                            average-response-time: u0,
+                            stake-amount: stake-amount,
+                            stake-locked-at: burn-block-height,
+                            premium-provider: false,
+                            suspension-count: u0,
+                            last-activity: burn-block-height,
+                            total-earnings: u0,
+                            slashed-amount: u0,
+                            metadata: metadata,
+                            is-active: true,
+                            registered-at: burn-block-height
+                          }
+                        )
+                        (map-insert oracle-address-to-id { provider-address: provider-address } provider-id)
+                        (map-insert provider-stakes
+                          { provider-id: provider-id }
+                          {
+                            locked-amount: stake-amount,
+                            locked-at: burn-block-height,
+                            unlock-height: none,
+                            slashed-total: u0
+                          }
+                        )
+                        (fold register-data-type-for-provider supported-data-types provider-id)
+                        (var-set oracle-provider-counter (+ provider-id u1))
+                        (var-set total-staked-amount (+ (var-get total-staked-amount) stake-amount))
+                        (ok provider-id)
+                      )
+                      error (err error)
+                    )
+                    (err ERR-INVALID-METADATA)
+                )
+                (err ERR-INSUFFICIENT-STAKE)
             )
             (err ERR-ORACLE-ALREADY-EXISTS)
         )
