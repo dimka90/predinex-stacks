@@ -34,18 +34,26 @@
 (define-constant SUSPENSION-THRESHOLD u3) ;; 3 consecutive failures
 (define-constant SLASHING-PERCENTAGE u10) ;; 10% of stake
 
-;; Data Structures
-(define-map oracle-providers
+;; Enhanced Data Structures
+(define-map enhanced-oracle-providers
   { provider-id: uint }
   {
     provider-address: principal,
-    reliability-score: uint,
+    reputation-score: uint,           ;; 0-1000 scale
     total-resolutions: uint,
     successful-resolutions: uint,
-    average-response-time: uint,
+    failed-resolutions: uint,
+    average-response-time: uint,      ;; in blocks
+    stake-amount: uint,               ;; STX tokens locked
+    stake-locked-at: uint,
+    premium-provider: bool,           ;; 95%+ accuracy status
+    suspension-count: uint,
+    last-activity: uint,
+    total-earnings: uint,
+    slashed-amount: uint,
+    metadata: (string-ascii 512),
     is-active: bool,
-    registered-at: uint,
-    last-activity: uint
+    registered-at: uint
   }
 )
 
@@ -59,22 +67,71 @@
   bool
 )
 
-(define-map oracle-submissions
+(define-map enhanced-oracle-submissions
   { submission-id: uint }
   {
     provider-id: uint,
     pool-id: uint,
     data-value: (string-ascii 256),
     data-type: (string-ascii 32),
+    confidence-score: uint,           ;; 0-100 percentage
     timestamp: uint,
-    confidence-score: uint,
-    is-processed: bool
+    response-time: uint,              ;; time from request to submission
+    validation-hash: (buff 32),       ;; for data integrity
+    aggregation-weight: uint,         ;; calculated based on reputation
+    is-processed: bool,
+    is-disputed: bool,
+    dispute-outcome: (optional bool)
+  }
+)
+
+(define-map reputation-history
+  { provider-id: uint, period: uint }
+  {
+    accuracy-rate: uint,              ;; percentage over period
+    response-time-avg: uint,
+    submissions-count: uint,
+    disputes-faced: uint,
+    disputes-won: uint,
+    stake-changes: int,               ;; net stake change in period
+    earnings: uint,
+    period-start: uint,
+    period-end: uint
+  }
+)
+
+(define-map security-events
+  { event-id: uint }
+  {
+    event-type: (string-ascii 32),    ;; "collusion", "manipulation", etc.
+    affected-providers: (list 10 uint),
+    pool-id: (optional uint),
+    severity: uint,                   ;; 1-5 scale
+    detected-at: uint,
+    investigation-status: (string-ascii 16),
+    resolution: (optional (string-ascii 256)),
+    resolved-at: (optional uint)
+  }
+)
+
+(define-map provider-stakes
+  { provider-id: uint }
+  {
+    locked-amount: uint,
+    locked-at: uint,
+    unlock-height: (optional uint),
+    slashed-total: uint
   }
 )
 
 ;; State Variables
 (define-data-var oracle-provider-counter uint u0)
 (define-data-var oracle-submission-counter uint u0)
+(define-data-var security-event-counter uint u0)
+(define-data-var reputation-period-counter uint u0)
+(define-data-var circuit-breaker-active bool false)
+(define-data-var circuit-breaker-reason (string-ascii 128) "")
+(define-data-var total-staked-amount uint u0)
 
 (define-map admins
   { admin: principal }
