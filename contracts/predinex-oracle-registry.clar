@@ -513,3 +513,162 @@
 ;; Legacy registration function for backward compatibility
 (define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
   (register-oracle-provider-with-stake provider-address MIN-STAKE-AMOUNT supported-data-types "Legacy registration"))
+
+;; ============================================
+;; DATA AGGREGATION AND CONSENSUS ENGINE
+;; ============================================
+
+;; Data aggregation structures
+(define-map aggregation-results
+  { pool-id: uint, aggregation-id: uint }
+  {
+    submission-ids: (list 10 uint),
+    aggregation-method: (string-ascii 32),
+    weighted-result: uint,
+    confidence-level: uint,
+    variance: uint,
+    consensus-reached: bool,
+    created-at: uint
+  }
+)
+
+(define-data-var aggregation-counter uint u0)
+
+;; Aggregate multiple oracle submissions using weighted consensus
+(define-public (aggregate-oracle-data 
+  (pool-id uint) 
+  (submission-ids (list 10 uint)) 
+  (aggregation-method (string-ascii 32)))
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (let (
+        (aggregation-id (var-get aggregation-counter))
+        (submissions-data (map get-submission-for-aggregation submission-ids))
+        (consensus-result (calculate-weighted-consensus submissions-data))
+      )
+        (begin
+          (map-insert aggregation-results
+            { pool-id: pool-id, aggregation-id: aggregation-id }
+            {
+              submission-ids: submission-ids,
+              aggregation-method: aggregation-method,
+              weighted-result: (get result consensus-result),
+              confidence-level: (get confidence consensus-result),
+              variance: (get variance consensus-result),
+              consensus-reached: (get consensus-reached consensus-result),
+              created-at: burn-block-height
+            })
+          (var-set aggregation-counter (+ aggregation-id u1))
+          (ok consensus-result)))
+      (err ERR-UNAUTHORIZED)))
+
+;; Helper function to get submission data for aggregation
+(define-private (get-submission-for-aggregation (submission-id uint))
+  (match (map-get? enhanced-oracle-submissions { submission-id: submission-id })
+    submission (match (map-get? enhanced-oracle-providers { provider-id: (get provider-id submission) })
+      provider {
+        provider-id: (get provider-id submission),
+        data-value: (unwrap-panic (string-to-uint? (get data-value submission))),
+        confidence: (get confidence-score submission),
+        reputation: (get reputation-score provider)
+      }
+      { provider-id: u0, data-value: u0, confidence: u0, reputation: u0 })
+    { provider-id: u0, data-value: u0, confidence: u0, reputation: u0 }))
+
+;; Calculate weighted consensus from submissions
+(define-private (calculate-weighted-consensus 
+  (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})))
+  (let (
+    (valid-submissions (filter is-valid-submission submissions))
+    (total-weight (fold + (map get-submission-weight valid-submissions) u0))
+    (weighted-sum (fold + (map calculate-weighted-value valid-submissions) u0))
+    (result (if (> total-weight u0) (/ weighted-sum total-weight) u0))
+    (variance (calculate-variance valid-submissions result))
+    (avg-confidence (if (> (len valid-submissions) u0) 
+                       (/ (fold + (map get confidence) valid-submissions) (len valid-submissions)) 
+                       u0))
+  )
+    {
+      result: result,
+      confidence: avg-confidence,
+      variance: variance,
+      consensus-reached: (< variance u20) ;; Less than 20% variance indicates consensus
+    }))
+
+;; Helper functions for consensus calculation
+(define-private (is-valid-submission (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}))
+  (and (> (get provider-id submission) u0) (> (get confidence submission) u0)))
+
+(define-private (get-submission-weight (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}))
+  (* (get confidence submission) (get reputation submission)))
+
+(define-private (calculate-weighted-value (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}))
+  (* (get data-value submission) (get-submission-weight submission)))
+
+(define-private (calculate-variance (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})) (mean uint))
+  (if (> (len submissions) u1)
+      (let ((squared-diffs (map (lambda (s) (pow (abs-diff (get data-value s) mean) u2)) submissions)))
+        (/ (fold + squared-diffs u0) (len submissions)))
+      u0))
+
+(define-private (abs-diff (a uint) (b uint))
+  (if (>= a b) (- a b) (- b a)))
+
+;; Outlier detection and filtering
+(define-public (detect-outliers 
+  (pool-id uint) 
+  (submission-ids (list 10 uint)) 
+  (threshold-percentage uint))
+  (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+      (let (
+        (submissions-data (map get-submission-for-aggregation submission-ids))
+        (valid-submissions (filter is-valid-submission submissions-data))
+        (mean-value (calculate-mean valid-submissions))
+        (outliers (filter (lambda (s) (is-outlier s mean-value threshold-percentage)) valid-submissions))
+      )
+        (ok {
+          outliers: (map get provider-id outliers),
+          outlier-count: (len outliers),
+          mean-value: mean-value
+        }))
+      (err ERR-UNAUTHORIZED)))
+
+(define-private (calculate-mean (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})))
+  (if (> (len submissions) u0)
+      (/ (fold + (map get data-value) submissions) (len submissions))
+      u0))
+
+(define-private (is-outlier (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) (mean uint) (threshold uint))
+  (let ((deviation (abs-diff (get data-value submission) mean)))
+    (> (* deviation u100) (* mean threshold))))
+
+;; Confidence score aggregation
+(define-public (aggregate-confidence-scores (submission-ids (list 10 uint)))
+  (let (
+    (submissions-data (map get-submission-for-aggregation submission-ids))
+    (valid-submissions (filter is-valid-submission submissions-data))
+    (confidence-scores (map get confidence valid-submissions))
+    (weighted-confidence (calculate-weighted-confidence valid-submissions))
+  )
+    (ok {
+      average-confidence: (if (> (len confidence-scores) u0) 
+                            (/ (fold + confidence-scores u0) (len confidence-scores)) 
+                            u0),
+      weighted-confidence: weighted-confidence,
+      submission-count: (len valid-submissions)
+    })))
+
+(define-private (calculate-weighted-confidence 
+  (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})))
+  (let (
+    (total-weight (fold + (map get reputation) submissions) u0)
+    (weighted-sum (fold + (map (lambda (s) (* (get confidence s) (get reputation s))) submissions) u0))
+  )
+    (if (> total-weight u0) (/ weighted-sum total-weight) u0)))
+
+;; Read-only functions for aggregation results
+(define-read-only (get-aggregation-result (pool-id uint) (aggregation-id uint))
+  (map-get? aggregation-results { pool-id: pool-id, aggregation-id: aggregation-id }))
+
+(define-read-only (get-latest-aggregation (pool-id uint))
+  (let ((latest-id (- (var-get aggregation-counter) u1)))
+    (map-get? aggregation-results { pool-id: pool-id, aggregation-id: latest-id })))
