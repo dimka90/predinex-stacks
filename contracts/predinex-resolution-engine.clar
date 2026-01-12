@@ -24,10 +24,43 @@
 (define-constant ERR-POOL-SETTLED u409)
 (define-constant ERR-POOL-NOT-FOUND u404)
 
+;; Enhanced Resolution Engine Errors
+(define-constant ERR-INVALID-ORACLE-COUNT u460)
+(define-constant ERR-INVALID-REPUTATION-THRESHOLD u461)
+(define-constant ERR-REGEX-VALIDATION-FAILED u462)
+(define-constant ERR-INSUFFICIENT-QUALIFIED-ORACLES u463)
+(define-constant ERR-DEADLINE-MISSED u464)
+(define-constant ERR-CONSENSUS-NOT-REACHED u465)
+(define-constant ERR-CONFIDENCE-TOO-LOW u466)
+
 (define-constant RESOLUTION-FEE-PERCENT u5)
 (define-constant DISPUTE-BOND-PERCENT u5)
+(define-constant MIN-ORACLE-COUNT u1)
+(define-constant MAX-ORACLE-COUNT u10)
+(define-constant MIN-REPUTATION-THRESHOLD u0)
+(define-constant MAX-REPUTATION-THRESHOLD u1000)
+(define-constant DEFAULT-DISPUTE-WINDOW u1008) ;; ~1 week in blocks
 
-;; Data Structures
+;; Enhanced Data Structures
+(define-map advanced-resolution-configs
+  { pool-id: uint }
+  {
+    min-oracle-count: uint,           ;; 1-10 required oracles
+    min-reputation-threshold: uint,   ;; minimum reputation score
+    max-response-time: uint,          ;; maximum allowed response time
+    validation-rules: (string-ascii 512), ;; regex or custom rules
+    submission-deadline: uint,        ;; deadline for submissions
+    consensus-threshold: uint,        ;; percentage agreement required
+    dispute-window: uint,             ;; blocks for dispute period
+    fallback-enabled: bool,
+    custom-aggregation: (string-ascii 32), ;; aggregation method
+    created-by: principal,
+    created-at: uint,
+    last-updated: uint
+  }
+)
+
+;; Legacy resolution configs for backward compatibility
 (define-map resolution-configs
   { pool-id: uint }
   {
