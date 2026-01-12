@@ -15,6 +15,25 @@
 (define-constant ERR-INSUFFICIENT-CONFIDENCE u434)
 (define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND u435)
 
+;; Enhanced Oracle Registry Errors
+(define-constant ERR-INSUFFICIENT-STAKE u450)
+(define-constant ERR-INVALID-METADATA u451)
+(define-constant ERR-PROVIDER-SUSPENDED u452)
+(define-constant ERR-DEADLINE-EXCEEDED u453)
+(define-constant ERR-SCHEMA-VALIDATION-FAILED u454)
+(define-constant ERR-CONFLICT-OF-INTEREST u455)
+(define-constant ERR-COLLUSION-DETECTED u456)
+(define-constant ERR-ATTACK-PATTERN u457)
+(define-constant ERR-REPUTATION-TOO-LOW u458)
+(define-constant ERR-CIRCUIT-BREAKER-ACTIVE u459)
+
+;; System Constants
+(define-constant MIN-STAKE-AMOUNT u1000000000) ;; 1000 STX in microSTX
+(define-constant REPUTATION-SCALE u1000)
+(define-constant PREMIUM-PROVIDER-THRESHOLD u950) ;; 95% accuracy
+(define-constant SUSPENSION-THRESHOLD u3) ;; 3 consecutive failures
+(define-constant SLASHING-PERCENTAGE u10) ;; 10% of stake
+
 ;; Data Structures
 (define-map oracle-providers
   { provider-id: uint }
