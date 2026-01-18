@@ -86,7 +86,7 @@
 )
 
 ;; State Variables
-(define-data-var pool-counter uint u0)
+(define-data-var pool-counter uint u1)
 (define-data-var total-volume uint u0)
 (define-data-var authorized-resolution-engine principal tx-sender)
 
@@ -241,13 +241,14 @@
                     (total-pool-balance (+ (get total-a pool) (get total-b pool)))
                     (fee (/ (* total-pool-balance FEE-PERCENT) u100))
                     (net-pool-balance (- total-pool-balance fee))
+                    (user tx-sender)
                   )
                   (if (and (> user-winning-bet u0) (> pool-winning-total u0))
                       (let
                         (
                           (base-share (/ (* user-winning-bet net-pool-balance) pool-winning-total))
                         )
-                        (match (as-contract (stx-transfer? base-share tx-sender tx-sender))
+                        (match (as-contract (stx-transfer? base-share tx-sender user))
                           success (begin
                             (map-set claims { pool-id: pool-id, user: tx-sender } true)
                             (ok base-share)
@@ -359,8 +360,8 @@
   (match (get-provider-id-by-address tx-sender)
     provider-id (match (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id })
       fee-claim (if (not (get is-claimed fee-claim))
-                    (let ((fee-amount (get fee-amount fee-claim)))
-                      (match (as-contract (stx-transfer? fee-amount tx-sender tx-sender))
+                    (let ((fee-amount (get fee-amount fee-claim)) (recipient tx-sender))
+                      (match (as-contract (stx-transfer? fee-amount tx-sender recipient))
                         success (begin
                           (map-set oracle-fee-claims
                             { provider-id: provider-id, pool-id: pool-id }

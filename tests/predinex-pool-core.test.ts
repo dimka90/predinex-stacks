@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Cl } from '@stacks/transactions';
 
 const accounts = simnet.getAccounts();
@@ -6,6 +6,16 @@ const deployer = accounts.get('deployer')!;
 const wallet1 = accounts.get('wallet_1')!;
 
 describe('Predinex Pool - Core Functionality Tests', () => {
+
+    beforeEach(() => {
+        const poolPrincipal = `${deployer}.predinex-pool`;
+        simnet.callPublicFn(
+            'liquidity-incentives',
+            'set-authorized-contract',
+            [Cl.principal(poolPrincipal)],
+            deployer
+        );
+    });
 
     describe('Pool Creation', () => {
         it('should create a new prediction pool with valid parameters', () => {
@@ -22,7 +32,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 deployer
             );
 
-            expect(result).toBeOk(Cl.uint(0));
+            expect(result).toBeOk(Cl.uint(1));
         });
 
         it('should reject pool creation with empty title', () => {
@@ -79,14 +89,14 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0),
                     Cl.uint(50000000)
                 ],
                 wallet1
             );
 
-            expect(result).toBeOk(Cl.tuple({ "early-bettor": Cl.bool(true), "market-maker": Cl.bool(false) }));
+            expect(result).toBeOk(Cl.bool(true));
         });
 
         it('should reject bets below minimum amount', () => {
@@ -107,7 +117,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0),
                     Cl.uint(1000)
                 ],
@@ -135,7 +145,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(5),
                     Cl.uint(50000000)
                 ],
@@ -165,7 +175,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0),
                     Cl.uint(50000000)
                 ],
@@ -176,7 +186,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'settle-pool',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0)
                 ],
                 deployer
@@ -203,7 +213,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'settle-pool',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0)
                 ],
                 wallet1
@@ -232,7 +242,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0),
                     Cl.uint(50000000)
                 ],
@@ -243,7 +253,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'settle-pool',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0)
                 ],
                 deployer
@@ -252,7 +262,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
             const { result } = simnet.callPublicFn(
                 'predinex-pool',
                 'claim-winnings',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 wallet1
             );
 
@@ -277,7 +287,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'place-bet',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0),
                     Cl.uint(50000000)
                 ],
@@ -288,7 +298,7 @@ describe('Predinex Pool - Core Functionality Tests', () => {
                 'predinex-pool',
                 'settle-pool',
                 [
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(0)
                 ],
                 deployer
@@ -297,14 +307,14 @@ describe('Predinex Pool - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'claim-winnings',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 wallet1
             );
 
             const { result } = simnet.callPublicFn(
                 'predinex-pool',
                 'claim-winnings',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 wallet1
             );
 

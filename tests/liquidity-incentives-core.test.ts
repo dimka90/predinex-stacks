@@ -13,29 +13,32 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
-            expect(result).toBeOk(Cl.bool(true));
+            expect(result).toBeOk(Cl.uint(1));
         });
 
         it('should track pool incentive configuration', () => {
-            simnet.callPublicFn(
+            const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
+            expect(result).toBeOk(Cl.uint(1));
 
             const config = simnet.callReadOnlyFn(
                 'liquidity-incentives',
                 'get-pool-incentive-config',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
-
-            expect(config.result).toBeSome(Cl.tuple({}));
+            const val = (config.result as any).value.value;
+            expect(val['early-bird-enabled'].type).toBe('true');
+            expect(val['volume-bonus-enabled'].type).toBe('true');
+            expect(val['referral-enabled'].type).toBe('true');
         });
     });
 
@@ -44,39 +47,39 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'record-bet-and-calculate-early-bird',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)],
                 deployer
             );
 
-            expect(result).toBeOk(Cl.bool(true));
+            expect(result).toBeOk(Cl.uint(7500000));
         });
 
         it('should check early bird eligibility correctly', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'record-bet-and-calculate-early-bird',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)],
                 deployer
             );
 
             const eligible = simnet.callReadOnlyFn(
                 'liquidity-incentives',
                 'is-early-bird-eligible',
-                [Cl.uint(0), Cl.principal(wallet1)],
+                [Cl.uint(1), Cl.principal(wallet1)],
                 deployer
             );
 
@@ -89,25 +92,25 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'record-bet-and-calculate-early-bird',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(1000000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(1000000000)],
                 deployer
             );
 
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'award-volume-bonus',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(1000000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(1000000000)],
                 deployer
             );
 
-            expect(result).toBeOk(Cl.bool(true));
+            expect(result).toBeOk(Cl.uint(20000000));
         });
     });
 
@@ -116,7 +119,7 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
@@ -126,13 +129,13 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
                 [
                     Cl.principal(wallet1),
                     Cl.principal(wallet2),
-                    Cl.uint(0),
+                    Cl.uint(1),
                     Cl.uint(50000000)
                 ],
                 deployer
             );
 
-            expect(result).toBeOk(Cl.bool(true));
+            expect(result).toBeOk(Cl.uint(1000000));
         });
     });
 
@@ -141,7 +144,7 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
@@ -155,25 +158,25 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'record-bet-and-calculate-early-bird',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)],
                 deployer
             );
 
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'claim-incentive',
-                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                [Cl.uint(1), Cl.stringAscii('early-bird')],
                 wallet1
             );
 
-            expect(result).toBeOk(Cl.uint(5000000));
+            expect(result).toBeOk(Cl.uint(7500000));
         });
 
         it('should prevent duplicate claims', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'initialize-pool-incentives',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
 
@@ -187,25 +190,25 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'record-bet-and-calculate-early-bird',
-                [Cl.uint(0), Cl.principal(wallet1), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)],
                 deployer
             );
 
             simnet.callPublicFn(
                 'liquidity-incentives',
                 'claim-incentive',
-                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                [Cl.uint(1), Cl.stringAscii('early-bird')],
                 wallet1
             );
 
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'claim-incentive',
-                [Cl.uint(0), Cl.stringAscii('early-bird')],
+                [Cl.uint(1), Cl.stringAscii('early-bird')],
                 wallet1
             );
 
-            expect(result).toBeErr(Cl.uint(452));
+            expect(result).toBeErr(Cl.uint(410));
         });
     });
 });
