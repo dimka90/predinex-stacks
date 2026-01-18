@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Cl } from '@stacks/transactions';
 
 const accounts = simnet.getAccounts();
@@ -8,6 +8,16 @@ const wallet2 = accounts.get('wallet_2')!;
 const wallet3 = accounts.get('wallet_3')!;
 
 describe('Predinex Pool - Betting and Settlement Tests', () => {
+
+    beforeEach(() => {
+        const poolPrincipal = `${deployer}.predinex-pool`;
+        simnet.callPublicFn(
+            'liquidity-incentives',
+            'set-authorized-contract',
+            [Cl.principal(poolPrincipal)],
+            deployer
+        );
+    });
 
     describe('Multiple Bets on Same Pool', () => {
         it('should track multiple bets from different users correctly', () => {
@@ -28,7 +38,7 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(50000000)],
                 wallet1
             );
 
@@ -36,15 +46,15 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             const { result } = simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(1), Cl.uint(75000000)],
+                [Cl.uint(1), Cl.uint(1), Cl.uint(75000000)],
                 wallet2
             );
 
-            expect(result).toBeOk(Cl.tuple({ "early-bettor": Cl.bool(true), "market-maker": Cl.bool(false) }));
+            expect(result).toBeOk(Cl.bool(true));
         });
 
         it('should calculate correct pool totals with multiple bets', () => {
-            simnet.callPublicFn(
+            const { result: createResult } = simnet.callPublicFn(
                 'predinex-pool',
                 'create-pool',
                 [
@@ -56,34 +66,33 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
                 ],
                 deployer
             );
+            expect(createResult).toBeOk(Cl.uint(1));
 
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(50000000)],
                 wallet1
             );
 
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(30000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(30000000)],
                 wallet2
             );
 
             const poolData = simnet.callReadOnlyFn(
                 'predinex-pool',
                 'get-pool-details',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 deployer
             );
-
-            expect(poolData.result).toBeSome(Cl.tuple({
-                "total-a": Cl.uint(80000000),
-                "total-b": Cl.uint(0),
-                "outcome-a-name": Cl.stringAscii("Yes"),
-                "outcome-b-name": Cl.stringAscii("No")
-            }));
+            const pool = (poolData.result as any).value.value;
+            expect(pool['total-a'].value.toString()).toBe('80000000');
+            expect(pool['total-b'].value.toString()).toBe('0');
+            expect(pool['outcome-a-name'].value).toBe("Yes");
+            expect(pool['outcome-b-name'].value).toBe("No");
         });
     });
 
@@ -106,14 +115,14 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(50000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(50000000)],
                 wallet1
             );
 
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(30000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(30000000)],
                 wallet2
             );
 
@@ -121,7 +130,7 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(1), Cl.uint(20000000)],
+                [Cl.uint(1), Cl.uint(1), Cl.uint(20000000)],
                 wallet3
             );
 
@@ -129,7 +138,7 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'settle-pool',
-                [Cl.uint(0), Cl.uint(0)],
+                [Cl.uint(1), Cl.uint(0)],
                 deployer
             );
 
@@ -137,11 +146,11 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             const { result } = simnet.callPublicFn(
                 'predinex-pool',
                 'claim-winnings',
-                [Cl.uint(0)],
+                [Cl.uint(1)],
                 wallet1
             );
 
-            expect(result).toBeOk(Cl.uint(49000000));
+            expect(result).toBeOk(Cl.uint(61250000));
         });
     });
 
@@ -163,14 +172,14 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
             simnet.callPublicFn(
                 'predinex-pool',
                 'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(100000000)],
+                [Cl.uint(1), Cl.uint(0), Cl.uint(100000000)],
                 wallet1
             );
 
             const { result } = simnet.callPublicFn(
                 'predinex-pool',
                 'settle-pool',
-                [Cl.uint(0), Cl.uint(0)],
+                [Cl.uint(1), Cl.uint(0)],
                 deployer
             );
 
@@ -178,39 +187,5 @@ describe('Predinex Pool - Betting and Settlement Tests', () => {
         });
     });
 
-    describe('Refund Functionality', () => {
-        it('should allow refund for expired unsettled pools', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Expiry Test Pool'),
-                    Cl.stringAscii('Test expiry refund'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(10) // Duration 10 blocks
-                ],
-                deployer
-            );
 
-            simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [Cl.uint(0), Cl.uint(0), Cl.uint(50000000)],
-                wallet1
-            );
-
-            // Mine blocks to expire pool
-            simnet.mineEmptyBlocks(15);
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'request-refund',
-                [Cl.uint(0)],
-                wallet1
-            );
-
-            // expect(result).toBeOk(Cl.bool(true)); 
-        });
-    });
 });

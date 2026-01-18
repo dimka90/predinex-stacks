@@ -51,18 +51,15 @@ async function runInteractions() {
     for (let i = 0; i < TOTAL_TXS; i++) {
         console.log(`\n--- Tx ${i + 1}/${TOTAL_TXS} (Nonce: ${currentNonce}) ---`);
 
-        // Alternate between create-pool and register-user
-        const functionName = i % 2 === 0 ? 'create-pool' : 'register-user';
-        
-        const functionArgs = functionName === 'create-pool'
-            ? [
-                stringAsciiCV(`Pool ${i}`),
-                stringAsciiCV(`Test pool ${i}`),
-                stringAsciiCV("Yes"),
-                stringAsciiCV("No"),
-                uintCV(1000)
-            ]
-            : [];
+        const functionName = 'create-pool';
+
+        const functionArgs = [
+            stringAsciiCV(`Pool ${i}`),
+            stringAsciiCV(`Test pool ${i}`),
+            stringAsciiCV("Yes"),
+            stringAsciiCV("No"),
+            uintCV(1000)
+        ];
 
         const txOptions = {
             contractAddress: CONTRACT_ADDRESS,
@@ -99,7 +96,7 @@ async function runInteractions() {
         } catch (err: any) {
             console.error(`❌ Tx ${i} Error:`, err.message);
             failureCount++;
-            
+
             // If nonce error, fetch fresh nonce
             if (err.message?.includes('nonce')) {
                 console.log('🔄 Nonce conflict detected, fetching fresh nonce...');

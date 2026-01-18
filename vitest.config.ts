@@ -32,6 +32,7 @@ export default defineConfig({
       vitestSetupFilePath,
       // custom setup files can be added here
     ],
+    exclude: ["web/**", "node_modules/**"],
     environmentOptions: {
       clarinet: {
         ...getClarinetVitestsArgv(),
