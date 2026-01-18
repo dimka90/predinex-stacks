@@ -111,6 +111,12 @@ npm run test:report
 
 ## 📜 Deployment
 
+### Deployed Contracts
+
+| Network | Contract Name | Address |
+| :--- | :--- | :--- |
+| **Mainnet** | `predinex-pool` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
+
 The project includes scripts to facilitate deployment to the Stacks network (Testnet/Mainnet).
 
 1.  **Configure Environment**
