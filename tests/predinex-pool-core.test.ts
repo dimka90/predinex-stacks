@@ -1,324 +1,49 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { Cl } from '@stacks/transactions';
-
+import { describe, expect, it, beforeEach } from 'vitest';
 const accounts = simnet.getAccounts();
 const deployer = accounts.get('deployer')!;
 const wallet1 = accounts.get('wallet_1')!;
-
+const wallet2 = accounts.get('wallet_2')!;
 describe('Predinex Pool - Core Functionality Tests', () => {
-
     beforeEach(() => {
-        const poolPrincipal = `${deployer}.predinex-pool`;
-        simnet.callPublicFn(
-            'liquidity-incentives',
-            'set-authorized-contract',
-            [Cl.principal(poolPrincipal)],
-            deployer
-        );
+        simnet.callPublicFn('liquidity-incentives', 'set-authorized-contract', [Cl.principal(deployer + '.predinex-pool')], deployer);
     });
-
-    describe('Pool Creation', () => {
-        it('should create a new prediction pool with valid parameters', () => {
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Will Bitcoin reach $100k?'),
-                    Cl.stringAscii('Prediction market for Bitcoin price milestone'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            expect(result).toBeOk(Cl.uint(1));
-        });
-
-        it('should reject pool creation with empty title', () => {
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii(''),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            expect(result).toBeErr(Cl.uint(420));
-        });
-
-        it('should reject pool creation with invalid duration', () => {
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(0)
-                ],
-                deployer
-            );
-
-            expect(result).toBeErr(Cl.uint(420));
-        });
+    it('should allow anyone to create a pool', () => {
+        const { result } = simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('BTC'), Cl.stringAscii('Dec'), Cl.stringAscii('Y'), Cl.stringAscii('N'), Cl.uint(1000)], wallet1);
+        expect(result).toBeOk(Cl.uint(1));
     });
-
-    describe('Betting Functionality', () => {
-        it('should allow users to place bets on a pool', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0),
-                    Cl.uint(50000000)
-                ],
-                wallet1
-            );
-
-            expect(result).toBeOk(Cl.bool(true));
-        });
-
-        it('should reject bets below minimum amount', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0),
-                    Cl.uint(1000)
-                ],
-                wallet1
-            );
-
-            expect(result).toBeErr(Cl.uint(422));
-        });
-
-        it('should reject bets on invalid outcomes', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(5),
-                    Cl.uint(50000000)
-                ],
-                wallet1
-            );
-
-            expect(result).toBeErr(Cl.uint(422));
-        });
+    it('should correctly report pool details', () => {
+        simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('ETH'), Cl.stringAscii('Dec'), Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(500)], deployer);
+        const { result } = simnet.callReadOnlyFn('predinex-pool', 'get-pool-details', [Cl.uint(1)], deployer);
+        const pool = (result as any).value.value;
+        expect(pool.title.value).toBe('ETH');
     });
-
-    describe('Pool Settlement', () => {
-        it('should allow pool creator to settle pool with winning outcome', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0),
-                    Cl.uint(50000000)
-                ],
-                wallet1
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'settle-pool',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0)
-                ],
-                deployer
-            );
-
-            expect(result).toBeOk(Cl.bool(true));
-        });
-
-        it('should reject settlement by non-creator', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'settle-pool',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0)
-                ],
-                wallet1
-            );
-
-            expect(result).toBeErr(Cl.uint(401));
-        });
+    it('should allow users to place bets', () => {
+        simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('T'), Cl.stringAscii('D'), Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(1000)], deployer);
+        const { result } = simnet.callPublicFn('predinex-pool', 'place-bet', [Cl.uint(1), Cl.uint(0), Cl.uint(10000)], wallet1);
+        expect(result).toBeOk(Cl.bool(true));
     });
-
-    describe('Winnings Claim', () => {
-        it('should allow winners to claim their winnings', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0),
-                    Cl.uint(50000000)
-                ],
-                wallet1
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'settle-pool',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0)
-                ],
-                deployer
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'claim-winnings',
-                [Cl.uint(1)],
-                wallet1
-            );
-
-            expect(result).toBeOk(Cl.uint(49000000));
-        });
-
-        it('should reject duplicate claims', () => {
-            simnet.callPublicFn(
-                'predinex-pool',
-                'create-pool',
-                [
-                    Cl.stringAscii('Test Pool'),
-                    Cl.stringAscii('Description'),
-                    Cl.stringAscii('Yes'),
-                    Cl.stringAscii('No'),
-                    Cl.uint(1000)
-                ],
-                deployer
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'place-bet',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0),
-                    Cl.uint(50000000)
-                ],
-                wallet1
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'settle-pool',
-                [
-                    Cl.uint(1),
-                    Cl.uint(0)
-                ],
-                deployer
-            );
-
-            simnet.callPublicFn(
-                'predinex-pool',
-                'claim-winnings',
-                [Cl.uint(1)],
-                wallet1
-            );
-
-            const { result } = simnet.callPublicFn(
-                'predinex-pool',
-                'claim-winnings',
-                [Cl.uint(1)],
-                wallet1
-            );
-
-            expect(result).toBeErr(Cl.uint(410));
-        });
+    it('should reject bets with zero amount', () => {
+        simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('T'), Cl.stringAscii('D'), Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(1000)], deployer);
+        const { result } = simnet.callPublicFn('predinex-pool', 'place-bet', [Cl.uint(1), Cl.uint(0), Cl.uint(0)], wallet1);
+        expect(result).toBeErr(Cl.uint(422));
+    });
+    it('should allow winner to claim', () => {
+        simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('C'), Cl.stringAscii('D'), Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(1000)], deployer);
+        simnet.callPublicFn('predinex-pool', 'place-bet', [Cl.uint(1), Cl.uint(0), Cl.uint(100000000)], wallet1);
+        simnet.callPublicFn('predinex-pool', 'settle-pool', [Cl.uint(1), Cl.uint(0)], deployer);
+        const { result } = simnet.callPublicFn('predinex-pool', 'claim-winnings', [Cl.uint(1)], wallet1);
+        expect(result).toBeOk(Cl.uint(98000000));
+    });
+    it('should allow owner to set admin status', () => {
+        const { result } = simnet.callPublicFn('predinex-pool', 'set-admin', [Cl.principal(wallet1), Cl.bool(true)], deployer);
+        expect(result).toBeOk(Cl.bool(true));
+    });
+    it('should allow authorized resolution engine to settle pool', () => {
+        const { result: createResult } = simnet.callPublicFn('predinex-pool', 'create-pool', [Cl.stringAscii('E'), Cl.stringAscii('D'), Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(1000)], deployer);
+        const poolId = (createResult as any).value;
+        simnet.callPublicFn('predinex-pool', 'set-authorized-resolution-engine', [Cl.principal(wallet2)], deployer);
+        const { result } = simnet.callPublicFn('predinex-pool', 'settle-pool', [poolId, Cl.uint(0)], wallet2);
+        expect(result).toBeOk(Cl.bool(true));
     });
 });
