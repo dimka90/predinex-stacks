@@ -6,6 +6,15 @@ Predinex is a decentralized prediction market built on the Stacks blockchain. It
 
 ![Stacks](https://img.shields.io/badge/Stacks-Blockchain-blueviolet?style=flat-square) ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
 
+## 📜 Deployment
+
+### Deployed Contracts
+
+| Network | Contract Name | Address |
+| :--- | :--- | :--- |
+| **Mainnet** | `predinex-pool` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
+| **Mainnet** | `liquidity-incentives` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.liquidity-incentives` |
+
 ## 🏗 System Architecture
 
 The project consists of a Clarity smart contract (`predinex-pool`) that manages the state of all prediction pools and funds. Users interact with the contract directly or through TypeScript scripts/frontend applications.
@@ -69,6 +78,10 @@ stateDiagram-v2
 - **🆕 Dispute Mechanism**: Community-driven dispute resolution for contested automated settlements.
 - **🆕 Fee Distribution**: Automatic fee distribution to oracle providers and platform.
 - **🆕 Fallback Resolution**: Manual settlement when automated systems fail.
+- **🆕 Liquidity Incentives**: Advanced rewards system including Early Bird, Volume, Referral, and Loyalty bonuses.
+- **🆕 Reward Leaderboard**: Real-time tracking of top incentive earners per pool.
+- **🆕 Dynamic Bonus Rates**: Pool-specific bonus configurations for flexible incentive management.
+- **🆕 Vesting Schedule**: Enforced 1-week vesting period for all incentive claims to ensure ecosystem stability.
 - **Settlement**: The pool creator can settle the market, determining the winning outcome (functionality for claiming winnings would be the logical next step).
 - **Transparency**: All pool data, bets, and results are publicly verifiable on the Stacks blockchain.
 
@@ -109,21 +122,6 @@ To generate a coverage report:
 npm run test:report
 ```
 
-## 📜 Deployment
-
-### Deployed Contracts
-
-| Network | Contract Name | Address |
-| :--- | :--- | :--- |
-| **Mainnet** | `predinex-pool` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
-
-The project includes scripts to facilitate deployment to the Stacks network (Testnet/Mainnet).
-
-1.  **Configure Environment**
-    Ensure your `.env` file is set up with your deployer key and network settings.
-
-2.  **Run Deploy Script**
-    ```bash
     npm run deploy
     ```
 
@@ -195,6 +193,17 @@ For detailed documentation on the automated resolution system, see [AUTOMATED_RE
 | `trigger-fallback-resolution` | Public | Triggers manual resolution fallback. |
 | `collect-resolution-fee` | Public | Collects fees for automated resolution. |
 | `claim-oracle-fee` | Public | Allows oracles to claim their fees. |
+
+### 🆕 Liquidity Incentive Functions
+
+| Function | Type | Description |
+| :--- | :--- | :--- |
+| `initialize-pool-incentives` | Public | Initializes incentive structures for a new pool. |
+| `adjust-bonus-rates` | Public | Adjusts dynamic bonus percentages for a specific pool (Owner only). |
+| `claim-incentive` | Public | Claims earned incentives after vesting period. |
+| `get-top-earners` | Read-Only | Retrieves the leaderboard for a specific pool. |
+| `calculate-vesting-schedule` | Read-Only | Calculates the current vesting status of an earned incentive. |
+| `get-leaderboard-analytics` | Read-Only | Provides participation and earning analytics for a pool. |
 
 ## 🤝 Contributing
 
