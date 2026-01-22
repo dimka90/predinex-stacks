@@ -13,7 +13,7 @@ Predinex is a decentralized prediction market built on the Stacks blockchain. It
 | Network | Contract Name | Address |
 | :--- | :--- | :--- |
 | **Mainnet** | `predinex-pool` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
-| **Mainnet** | `liquidity-incentives` | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.liquidity-incentives` |
+| **Mainnet** | `liquidity-incentives` | *Not yet deployed* |
 
 ## 🏗 System Architecture
 
