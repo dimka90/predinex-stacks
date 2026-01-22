@@ -1,3 +1,0 @@
-V4=TX ID: 8c83ec8aaac4f4f25258a51d64a9a2b5f81b03a3314eb1c17dd56a102224c18e
-V5=SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-v5
-npx ts-node scripts/interact-batch.ts 2>&1
