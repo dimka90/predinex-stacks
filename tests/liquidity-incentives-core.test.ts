@@ -5,7 +5,6 @@ const accounts = simnet.getAccounts();
 const deployer = accounts.get('deployer')!;
 const wallet1 = accounts.get('wallet_1')!;
 const wallet2 = accounts.get('wallet_2')!;
-const wallet3 = accounts.get('wallet_3')!;
 
 describe('Liquidity Incentives - Core Functionality Tests', () => {
 
@@ -97,6 +96,9 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn('liquidity-incentives', 'deposit-incentive-funds', [Cl.uint(1000000000)], deployer);
             simnet.callPublicFn('liquidity-incentives', 'record-bet-and-calculate-early-bird', [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)], deployer);
 
+            // Advance blocks to satisfy vesting period (1008 blocks)
+            simnet.mineEmptyBlocks(1009);
+
             const { result } = simnet.callPublicFn(
                 'liquidity-incentives',
                 'claim-incentive',
@@ -110,6 +112,9 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
             simnet.callPublicFn('liquidity-incentives', 'initialize-pool-incentives', [Cl.uint(1)], deployer);
             simnet.callPublicFn('liquidity-incentives', 'deposit-incentive-funds', [Cl.uint(1000000000)], deployer);
             simnet.callPublicFn('liquidity-incentives', 'record-bet-and-calculate-early-bird', [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)], deployer);
+
+            // Advance blocks to satisfy vesting period
+            simnet.mineEmptyBlocks(1009);
 
             simnet.callPublicFn('liquidity-incentives', 'claim-incentive', [Cl.uint(1), Cl.stringAscii('early-bird')], wallet1);
 
@@ -128,8 +133,11 @@ describe('Liquidity Incentives - Core Functionality Tests', () => {
 
             simnet.callPublicFn('liquidity-incentives', 'record-bet-and-calculate-early-bird', [Cl.uint(1), Cl.principal(wallet1), Cl.uint(50000000)], deployer);
 
+            // Advance blocks to satisfy vesting period
+            simnet.mineEmptyBlocks(1009);
+
             const result = simnet.callPublicFn('liquidity-incentives', 'batch-claim-incentives', [Cl.uint(1), Cl.list([Cl.stringAscii('early-bird')])], wallet1);
-            expect(result.result).toBeOk(Cl.uint(7500000));
+            expect((result.result as any)).toBeOk(Cl.uint(7500000));
         });
     });
 
