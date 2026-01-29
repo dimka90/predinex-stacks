@@ -6,6 +6,25 @@ Predinex is a decentralized prediction market built on the Stacks blockchain. It
 
 ![Stacks](https://img.shields.io/badge/Stacks-Blockchain-blueviolet?style=flat-square) ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
 
+## 📜 Deployment
+
+### Deployed Contracts (v2 - Latest)
+
+All contracts are deployed on **Stacks Mainnet** with full integration:
+
+| Contract | Address | Transaction | Status |
+| :--- | :--- | :--- | :--- |
+| `predinex-oracle-registry` | `SP2W_EJMBN.predinex-oracle-registry-1769574272753` | [View TX](https://explorer.hiro.so/txid/0xd47f3e7e6c7c8c32102158c7668f0c4556b8d4015065f3f3f2f1bc3a5a4d580?chain=mainnet) | ✅ Confirmed |
+| `liquidity-incentives` | `SP2W_EJMBN.liquidity-incentives-1769574671620` | [View TX](https://explorer.hiro.so/txid/0x03_e6cd8?chain=mainnet) | ✅ Confirmed |
+| `predinex-pool` | `SP2W_EJMBN.predinex-pool-1769575549853` | [View TX](https://explorer.hiro.so/txid/90946d7008582bd8196a801c1a8b3029412b18610dc1506b31a7daa5071b158a?chain=mainnet) | ✅ Confirmed |
+| `predinex-resolution-engine` | `SP2W_EJMBN.predinex-resolution-engine-1769575734779` | [View TX](https://explorer.hiro.so/txid/2f6f9b88416479c75c4f825bc194b33000b42d5880b0bc79f4c80c1deb792e30?chain=mainnet) | ✅ Confirmed |
+
+### Previous Deployment (v1)
+
+| Contract | Address |
+| :--- | :--- |
+| `predinex-pool` (v1) | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
+
 ## 🏗 System Architecture
 
 The project consists of a Clarity smart contract (`predinex-pool`) that manages the state of all prediction pools and funds. Users interact with the contract directly or through TypeScript scripts/frontend applications.
@@ -69,6 +88,10 @@ stateDiagram-v2
 - **🆕 Dispute Mechanism**: Community-driven dispute resolution for contested automated settlements.
 - **🆕 Fee Distribution**: Automatic fee distribution to oracle providers and platform.
 - **🆕 Fallback Resolution**: Manual settlement when automated systems fail.
+- **🆕 Liquidity Incentives**: Advanced rewards system including Early Bird, Volume, Referral, and Loyalty bonuses.
+- **🆕 Reward Leaderboard**: Real-time tracking of top incentive earners per pool.
+- **🆕 Dynamic Bonus Rates**: Pool-specific bonus configurations for flexible incentive management.
+- **🆕 Vesting Schedule**: Enforced 1-week vesting period for all incentive claims to ensure ecosystem stability.
 - **Settlement**: The pool creator can settle the market, determining the winning outcome (functionality for claiming winnings would be the logical next step).
 - **Transparency**: All pool data, bets, and results are publicly verifiable on the Stacks blockchain.
 
@@ -109,15 +132,6 @@ To generate a coverage report:
 npm run test:report
 ```
 
-## 📜 Deployment
-
-The project includes scripts to facilitate deployment to the Stacks network (Testnet/Mainnet).
-
-1.  **Configure Environment**
-    Ensure your `.env` file is set up with your deployer key and network settings.
-
-2.  **Run Deploy Script**
-    ```bash
     npm run deploy
     ```
 
@@ -189,6 +203,17 @@ For detailed documentation on the automated resolution system, see [AUTOMATED_RE
 | `trigger-fallback-resolution` | Public | Triggers manual resolution fallback. |
 | `collect-resolution-fee` | Public | Collects fees for automated resolution. |
 | `claim-oracle-fee` | Public | Allows oracles to claim their fees. |
+
+### 🆕 Liquidity Incentive Functions
+
+| Function | Type | Description |
+| :--- | :--- | :--- |
+| `initialize-pool-incentives` | Public | Initializes incentive structures for a new pool. |
+| `adjust-bonus-rates` | Public | Adjusts dynamic bonus percentages for a specific pool (Owner only). |
+| `claim-incentive` | Public | Claims earned incentives after vesting period. |
+| `get-top-earners` | Read-Only | Retrieves the leaderboard for a specific pool. |
+| `calculate-vesting-schedule` | Read-Only | Calculates the current vesting status of an earned incentive. |
+| `get-leaderboard-analytics` | Read-Only | Provides participation and earning analytics for a pool. |
 
 ## 🤝 Contributing
 
