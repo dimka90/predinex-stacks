@@ -5,15 +5,27 @@ authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
+
+[contracts.predinex-oracle-registry]
+path = 'contracts/predinex-oracle-registry.clar'
+clarity_version = 2
+epoch = 'latest'
+
+[contracts.liquidity-incentives]
+path = 'contracts/liquidity-incentives.clar'
+clarity_version = 2
+epoch = 'latest'
+
 [contracts.predinex-pool]
 path = 'contracts/predinex-pool.clar'
 clarity_version = 2
 epoch = 'latest'
 
-[contracts.erc20-token]
-path = 'contracts/erc20-token.clar'
+[contracts.predinex-resolution-engine]
+path = 'contracts/predinex-resolution-engine.clar'
 clarity_version = 2
 epoch = 'latest'
+
 [repl.analysis]
 passes = ['check_checker']
 
