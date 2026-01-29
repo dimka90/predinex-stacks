@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * StacksProvider - React Context Provider for Stacks wallet authentication
+ * StacksProvider - React Context Provider for Stacks wallet authentication (Legacy Stacks wallet authentication Direct)
  * 
  * This component manages the authentication state for the entire application,
  * providing wallet connection, user session management, and authentication
@@ -9,8 +9,9 @@
  */
 
 import { AppConfig, UserSession } from '@stacks/auth';
-import { showConnect } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { connectWallet, WalletType } from '../lib/wallet-connector';
+import WalletModal from './WalletModal';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -30,6 +31,8 @@ interface StacksContextValue {
     signOut: () => void;
     /** Function to initiate wallet connection flow */
     authenticate: () => void;
+    /** Function to open wallet selection modal */
+    openWalletModal: () => void;
     /** Loading state during authentication initialization */
     isLoading: boolean;
 }
@@ -39,6 +42,7 @@ const StacksContext = createContext<StacksContextValue>({} as any);
 export function StacksProvider({ children }: { children: ReactNode }) {
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -64,34 +68,39 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         setUserData(null);
     }, []);
 
-    const authenticate = useCallback(async () => {
-        console.log('Authenticate function called');
+    const openWalletModal = useCallback(() => {
+        setIsWalletModalOpen(true);
+    }, []);
+
+    const handleWalletSelection = useCallback(async (walletType: WalletType) => {
         try {
-            await showConnect({
-                appDetails: {
-                    name: 'Predinex',
-                    icon: window.location.origin + '/favicon.ico',
-                },
-                redirectTo: '/',
-                onFinish: (authData) => {
-                    // Handle successful authentication
+            await connectWallet({
+                walletType,
+                userSession,
+                onFinish: async (authData) => {
                     console.log('Authentication finished:', authData);
-                    console.log('User data will be loaded on page reload');
-                    // Reload to trigger the useEffect that checks for signed in user
-                    window.location.reload();
+                    try {
+                        const userData = await userSession.handlePendingSignIn();
+                        setUserData(userData);
+                        console.log('Wallet connected successfully');
+                    } catch (error) {
+                        console.error('Error handling sign in:', error);
+                        window.location.reload();
+                    }
                 },
                 onCancel: () => {
-                    // Handle user cancellation gracefully
                     console.log('User cancelled wallet connection');
-                    console.log('Authentication state remains unchanged');
                 },
             });
         } catch (error) {
-            // Handle connection errors
             console.error('Wallet connection error:', error);
-            console.error('Please ensure you have a Stacks wallet extension installed (Leather or Xverse)');
+            alert(`Failed to connect to ${walletType}. Please try again.`);
         }
-    }, []);
+    }, [userSession]);
+
+    const authenticate = useCallback(() => {
+        openWalletModal();
+    }, [openWalletModal]);
 
     if (isLoading) {
         return (
@@ -105,7 +114,12 @@ export function StacksProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate, isLoading }}>
+        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate, openWalletModal, isLoading }}>
+            <WalletModal
+                isOpen={isWalletModalOpen}
+                onClose={() => setIsWalletModalOpen(false)}
+                onSelectWallet={handleWalletSelection}
+            />
             {children}
         </StacksContext.Provider>
     );
