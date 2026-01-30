@@ -27,6 +27,8 @@ export default function RewardsPage() {
                  </AccordionTrigger>
                  <AccordionContent className="text-base text-muted-foreground space-y-4">
                    <p>Rewards are based on your leaderboard position, which is determined by your activity across:</p>
+                   <ul className="list-disc pl-6 space-y-2 mt-2">
+                     <li>The activity and impact of the smart contracts you've deployed on Stacks</li>
                    {/* Points will be added here */}
                  </AccordionContent>
                </AccordionItem>
