@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar";
 import AuthGuard from "../../components/AuthGuard";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Info } from "lucide-react";
+import Leaderboard from "../../components/Leaderboard";
 
 export default function RewardsPage() {
   return (
@@ -11,6 +12,14 @@ export default function RewardsPage() {
       <Navbar />
       <AuthGuard>
         <div className="container mx-auto px-4 py-12 max-w-5xl">
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+             <div className="lg:col-span-2">
+                <Leaderboard />
+             </div>
+             <div className="lg:col-span-1">
+               {/* Stat Card Placeholder */}
+             </div>
+           </div>
            <div className="glass-panel p-8 rounded-2xl mb-8">
               <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
               <p className="text-muted-foreground">Track your performance and earnings</p>
