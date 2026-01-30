@@ -1,0 +1,6 @@
+
+/* Rewards Page Specifics */
+.glass-panel {
+  @apply bg-background/60 backdrop-blur-md border border-border;
+}
+
