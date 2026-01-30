@@ -41,3 +41,22 @@ const AccordionTrigger = React.forwardRef<
 AccordionTrigger.displayName = "AccordionTrigger"
 
 export { Accordion, AccordionItem, AccordionTrigger }
+
+const AccordionContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+      className
+    )}
+    {...props}
+  >
+    <div className={cn("pb-4 pt-0", className)}>{children}</div>
+  </div>
+))
+AccordionContent.displayName = "AccordionContent"
+
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
