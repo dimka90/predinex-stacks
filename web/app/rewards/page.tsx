@@ -29,6 +29,7 @@ export default function RewardsPage() {
                    <p>Rewards are based on your leaderboard position, which is determined by your activity across:</p>
                    <ul className="list-disc pl-6 space-y-2 mt-2">
                      <li>The activity and impact of the smart contracts you've deployed on Stacks</li>
+                     <li>Use of <code className="bg-muted px-1 py-0.5 rounded text-foreground">@stacks/connect</code> and <code className="bg-muted px-1 py-0.5 rounded text-foreground">@stacks/transactions</code> in your repos</li>
                    {/* Points will be added here */}
                  </AccordionContent>
                </AccordionItem>
