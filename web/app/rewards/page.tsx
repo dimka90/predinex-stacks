@@ -17,7 +17,11 @@ export default function RewardsPage() {
                 <Leaderboard />
              </div>
              <div className="lg:col-span-1">
-               {/* Stat Card Placeholder */}
+               <div className="glass-panel p-6 rounded-xl h-full flex flex-col justify-center items-center text-center">
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">Your Rank</h3>
+                  <div className="text-5xl font-bold text-primary mb-2">#42</div>
+                  <p className="text-sm text-muted-foreground">Top 5% of contributors</p>
+               </div>
              </div>
            </div>
            <div className="glass-panel p-8 rounded-2xl mb-8">
