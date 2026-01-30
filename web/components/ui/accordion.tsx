@@ -21,3 +21,23 @@ const AccordionItem = React.forwardRef<
 AccordionItem.displayName = "AccordionItem"
 
 export { Accordion, AccordionItem }
+
+const AccordionTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, children, ...props }, ref) => (
+  <button
+    ref={ref}
+    className={cn(
+      "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline",
+      className
+    )}
+    {...props}
+  >
+    {children}
+    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+  </button>
+))
+AccordionTrigger.displayName = "AccordionTrigger"
+
+export { Accordion, AccordionItem, AccordionTrigger }
