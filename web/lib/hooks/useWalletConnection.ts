@@ -1,19 +1,19 @@
-'use client';
-import { useAppKit } from './useAppKit';
+import { useState } from 'react';
 
 export function useWalletConnection() {
-  const { open, close, isConnected, address, status } = useAppKit();
+    const [isConnected, setIsConnected] = useState(false);
+    const [address, setAddress] = useState<string | null>(null);
 
-  const connect = () => open();
-  const disconnect = () => close();
+    const connect = () => {
+        // Mock connection
+        setIsConnected(true);
+        setAddress("SP1234...");
+    };
 
-  return {
-    connect,
-    disconnect,
-    isConnected,
-    address,
-    status,
-    isConnecting: status === 'connecting',
-    isReconnecting: status === 'reconnecting',
-  };
+    const disconnect = () => {
+        setIsConnected(false);
+        setAddress(null);
+    };
+
+    return { isConnected, address, connect, disconnect };
 }
