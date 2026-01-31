@@ -59,3 +59,4 @@ export async function getMarkets(filter: string): Promise<Pool[]> {
     }
   ];
 }
+// Types for Predinex Stacks API
