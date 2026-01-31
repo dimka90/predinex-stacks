@@ -7,3 +7,5 @@ https://explorer.hiro.so/txid/becd17ee63bcba6b723b416edd6fc078172f8c5a5d9c9244f0
 https://explorer.hiro.so/txid/e1adce134fd9d549b4abedfcbb10501ef12a2155fe27ec7bd0a6d525721a892d?chain=mainnet&tab=availableFunctions
 
 PRIVATE_KEY="your_key" STACKS_NETWORK="mainnet" npx tsx scripts/interact.ts
+npx tsx scripts/simple-gen.ts
+https://github.com/dimka90/predinex-stacks/pull/55
