@@ -1,32 +1,22 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { StacksProvider } from "./components/StacksProvider";
-import { AppKitProvider } from "../providers/AppKitProvider";
-import { ThemeProvider } from "./context/ThemeContext";
-import ErrorBoundary from "./components/ErrorBoundary";
+import './globals.css';
+import { Metadata } from 'next';
+import Footer from '../components/Footer';
 
 export const metadata: Metadata = {
-  title: "Predinex - Prediction Market",
-  description: "Decentralized Prediction Market on Stacks",
+  title: 'Predinex',
+  description: 'Decentralized Prediction Markets on Stacks',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
-        <ErrorBoundary>
-          <ThemeProvider>
-            <AppKitProvider>
-              <StacksProvider>
-                {children}
-              </StacksProvider>
-            </AppKitProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
+    <html lang="en" className="dark">
+      <body className="min-h-screen flex flex-col bg-background text-foreground">
+        {children}
+        <Footer />
       </body>
     </html>
   );
