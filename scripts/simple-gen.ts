@@ -4,7 +4,7 @@ import { makeContractCall, broadcastTransaction, AnchorMode, stringAsciiCV, uint
 import { STACKS_MAINNET } from '@stacks/network';
 
 // --- CONFIGURATION ---
-const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
+const CONTRACT_ADDRESS = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const CONTRACT_NAME = 'predinex-pool-1769575549853';
 const ENV_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 

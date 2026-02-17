@@ -137,7 +137,7 @@ git add DEPLOYMENT_STATUS.md
 git commit -m "deploy: deploy predinex-oracle-registry to Stacks mainnet
 
 Contract: predinex-oracle-registry-1769574272753
-Address: SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N
+Address: SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7
 TX: 917fa7ef6e79c0f3b32102158e766570e95f5968f030f39d08e217e2ca45a590
 
 First contract in dependency chain deployed successfully.
@@ -148,7 +148,7 @@ echo "📝 Commit 10/30: Deploy liquidity incentives to mainnet"
 git commit --allow-empty -m "deploy: deploy liquidity-incentives to Stacks mainnet
 
 Contract: liquidity-incentives-1769574671620
-Address: SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N
+Address: SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7
 Status: Confirmed
 
 Incentive system deployed with full bonus structure.
@@ -159,7 +159,7 @@ echo "📝 Commit 11/30: Deploy main pool contract to mainnet"
 git commit --allow-empty -m "deploy: deploy predinex-pool to Stacks mainnet
 
 Contract: predinex-pool-1769575549853
-Address: SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N
+Address: SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7
 TX: 90946d7008582bd8196a801c1a8b3029412b18610dc1506b31a7daa5071b158a
 
 Core prediction market contract deployed successfully.
@@ -170,7 +170,7 @@ echo "📝 Commit 12/30: Deploy resolution engine to mainnet"
 git commit --allow-empty -m "deploy: deploy predinex-resolution-engine to Stacks mainnet
 
 Contract: predinex-resolution-engine-1769575734779
-Address: SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N
+Address: SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7
 TX: 2f6f9b88416479c75c4f825bc194b33000b42d5880b0bc79f4c80c1deb792e30
 
 Automated resolution system deployed.

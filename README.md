@@ -23,7 +23,7 @@ All contracts are deployed on **Stacks Mainnet** with full integration:
 
 | Contract | Address |
 | :--- | :--- |
-| `predinex-pool` (v1) | `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-pool-1766043971498` |
+| `predinex-pool` (v1) | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-pool-1766043971498` |
 
 ## 🏗 System Architecture
 

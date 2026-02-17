@@ -8,8 +8,8 @@ import {
 import { StacksMainnet } from '@stacks/network';
 
 const NETWORK = new StacksMainnet();
-const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
-const CONTRACT_NAME = 'predinex-pool-1771298791065';
+const CONTRACT_ADDRESS = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
+const CONTRACT_NAME = 'predinex-pool-fresh-launch';
 
 export interface Pool {
   id: number;
