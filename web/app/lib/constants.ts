@@ -4,7 +4,7 @@
  */
 
 // Contract Configuration
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9';
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 export const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predinex-pool';
 
 // Network Configuration
