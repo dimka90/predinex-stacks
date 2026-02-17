@@ -121,7 +121,7 @@ export const ANALYTICS_CONFIG = {
 // Contract addresses and network configuration
 export const NETWORK_CONFIG = {
   MAINNET: {
-    CONTRACT_ADDRESS: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.predinex-pool',
+    CONTRACT_ADDRESS: 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-pool',
     NETWORK_URL: 'https://api.mainnet.hiro.so',
   },
   TESTNET: {
