@@ -9,7 +9,7 @@ import { StacksMainnet } from '@stacks/network';
 
 const NETWORK = new StacksMainnet();
 const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
-const CONTRACT_NAME = 'predinex-pool-1769575549853';
+const CONTRACT_NAME = 'predinex-pool-1771298791065';
 
 export interface Pool {
   id: number;
