@@ -2,7 +2,7 @@
 import { makeContractCall, broadcastTransaction, AnchorMode, principalCV, PostConditionMode } from '@stacks/transactions';
 import { STACKS_MAINNET } from '@stacks/network';
 
-const DEPLOYER_ADDR = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
+const DEPLOYER_ADDR = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const INCENTIVES_CONTRACT = 'liquidity-incentives-1769574671620';
 const POOL_CONTRACT = 'predinex-pool-1769575549853';
 

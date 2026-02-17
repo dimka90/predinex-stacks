@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 
 async function checkBalance() {
     console.log(`💰 Checking balance for: ${WALLET_ADDRESS}\n`);

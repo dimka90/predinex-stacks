@@ -102,10 +102,10 @@ All commits follow professional standards:
 
 | Contract | Address | Status |
 |----------|---------|--------|
-| `predinex-oracle-registry` | `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-oracle-registry-1769574272753` | ✅ Live |
-| `liquidity-incentives` | `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.liquidity-incentives-1769574671620` | ✅ Live |
-| `predinex-pool` | `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-pool-1769575549853` | ✅ Live |
-| `predinex-resolution-engine` | `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-resolution-engine-1769575734779` | ✅ Live |
+| `predinex-oracle-registry` | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-oracle-registry-1769574272753` | ✅ Live |
+| `liquidity-incentives` | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.liquidity-incentives-1769574671620` | ✅ Live |
+| `predinex-pool` | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-pool-1769575549853` | ✅ Live |
+| `predinex-resolution-engine` | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-resolution-engine-1769575734779` | ✅ Live |
 
 ## 🎯 Next Steps
 

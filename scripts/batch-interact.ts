@@ -15,7 +15,7 @@ import fetch from 'node-fetch';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
-const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
+const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const CONTRACT_NAME = process.env.LATEST_CONTRACT_NAME || 'predinex-pool-1766043971498';
 
 if (!PRIVATE_KEY) {
