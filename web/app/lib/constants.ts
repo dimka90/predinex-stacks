@@ -4,8 +4,8 @@
  */
 
 // Contract Configuration
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
-export const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predinex-pool';
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
+export const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'predinex-pool-1771407097278';
 
 // Network Configuration
 export const NETWORK_CONFIG = {
@@ -16,7 +16,7 @@ export const NETWORK_CONFIG = {
     chainId: 'stacks:mainnet',
   },
   testnet: {
-    name: 'Stacks Testnet', 
+    name: 'Stacks Testnet',
     coreApiUrl: 'https://api.testnet.hiro.so',
     explorerUrl: 'https://explorer.hiro.so?chain=testnet',
     chainId: 'stacks:testnet',
