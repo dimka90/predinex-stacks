@@ -21,9 +21,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
-const CONTRACT_ADDRESS = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
+const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
 const ORACLE_REGISTRY = 'predinex-oracle-registry-1769574272753';
-const RESOLUTION_ENGINE = 'predinex-resolution-engine-1771298802385';
+const RESOLUTION_ENGINE = 'predinex-resolution-engine-1771407103799';
 const NETWORK = STACKS_MAINNET;
 
 if (!PRIVATE_KEY) {
