@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const WALLET_ADDRESS = 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const WALLET_ADDRESS = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 
 async function analyzeTransactions() {
     console.log(`📊 Analyzing transaction history for: ${WALLET_ADDRESS}\n`);

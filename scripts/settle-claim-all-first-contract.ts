@@ -7,7 +7,7 @@ import {
 import { STACKS_MAINNET } from '@stacks/network';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
-const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const CONTRACT_NAME = 'predinex-pool-1766043971498'; // First contract
 
 if (!PRIVATE_KEY) {

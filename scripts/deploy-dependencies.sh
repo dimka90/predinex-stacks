@@ -38,7 +38,7 @@ echo -e "${BLUE}═════════════════════�
 echo -e "${BLUE}STEP 1: Deploying predinex-oracle-registry${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
 
-PRIVATE_KEY="${PRIVATE_KEY}" STACKS_NETWORK=mainnet WALLET_ADDRESS=SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N npx tsx scripts/deploy-single.ts predinex-oracle-registry
+PRIVATE_KEY="${PRIVATE_KEY}" STACKS_NETWORK=mainnet WALLET_ADDRESS=SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7 npx tsx scripts/deploy-single.ts predinex-oracle-registry
 
 echo -e "\n${YELLOW}⏰ Waiting 15 minutes for confirmation...${NC}"
 sleep 900  # 15 minutes
@@ -48,7 +48,7 @@ echo -e "\n${BLUE}════════════════════�
 echo -e "${BLUE}STEP 2: Deploying liquidity-incentives${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
 
-PRIVATE_KEY="${PRIVATE_KEY}" STACKS_NETWORK=mainnet WALLET_ADDRESS=SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N npx tsx scripts/deploy-single.ts liquidity-incentives
+PRIVATE_KEY="${PRIVATE_KEY}" STACKS_NETWORK=mainnet WALLET_ADDRESS=SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7 npx tsx scripts/deploy-single.ts liquidity-incentives
 
 echo -e "\n${GREEN}✅ Dependencies deployed!${NC}"
 echo -e "${YELLOW}⚠️  Now you need to:${NC}"

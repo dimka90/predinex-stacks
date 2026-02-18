@@ -2,7 +2,7 @@ import { fetchCallReadOnlyFunction, cvToValue, uintCV } from '@stacks/transactio
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
-const CONTRACT_ADDRESS = 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const CONTRACT_ADDRESS = 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const CONTRACT_NAME = 'predinex-pool';
 
 const network = NETWORK_ENV === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
