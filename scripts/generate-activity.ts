@@ -10,7 +10,7 @@ import * as readline from 'readline';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
-const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const CONTRACT_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const CONTRACT_NAME = 'predinex-pool';
 
 if (!PRIVATE_KEY) {

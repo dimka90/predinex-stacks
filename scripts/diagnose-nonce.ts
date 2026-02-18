@@ -5,7 +5,7 @@
 
 import fetch from 'node-fetch';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
 
 async function diagnoseNonce() {

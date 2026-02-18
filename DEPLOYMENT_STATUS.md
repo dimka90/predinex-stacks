@@ -6,7 +6,7 @@
 - **Status**: Transaction Sent
 - **TX ID**: `917fa7ef6e79c0f3b32102158e766570e95f5968f030f39d08e217e2ca45a590`
 - **Contract Name**: `predinex-oracle-registry-1769574272753`
-- **Address**: `SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-oracle-registry-1769574272753`
+- **Address**: `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-oracle-registry-1769574272753`
 - **Explorer**: https://explorer.hiro.so/txid/917fa7ef6e79c0f3b32102158e766570e95f5968f030f39d08e217e2ca45a590?chain=mainnet
 - **Wait Time**: 15 minutes (ongoing)
 
@@ -30,7 +30,7 @@
 
 Your `predinex-pool` contract deployment failed with:
 ```
-VM Error: use of unresolved contract 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N.predinex-oracle-registry'
+VM Error: use of unresolved contract 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-oracle-registry'
 ```
 
 **Root Cause**: Clarity smart contracts that reference other contracts with relative imports (`.contract-name`) require those dependencies to be deployed first. Your pool contract tried to call:

@@ -23,7 +23,7 @@ All contracts are deployed on **Stacks Mainnet** with full integration:
 
 | Contract | Address |
 | :--- | :--- |
-| `predinex-pool` (v1) | `SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V.predinex-pool-1766043971498` |
+| `predinex-pool` (v1) | `SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7.predinex-pool-1766043971498` |
 
 ## 🏗 System Architecture
 
@@ -246,9 +246,50 @@ For detailed documentation on the automated resolution system, see [AUTOMATED_RE
 | `calculate-vesting-schedule` | Read-Only | Calculates the current vesting status of an earned incentive. |
 | `get-leaderboard-analytics` | Read-Only | Provides participation and earning analytics for a pool. |
 
+## 🛣️ Roadmap to Launch
+
+To ensure Predinex becomes the premier destination for prediction markets on Bitcoin, we have defined the following milestones:
+
+### Phase 1: Core Infrastructure (COMPLETED)
+- ✅ Mainnet deployment of core contracts (v2).
+- ✅ Integration with Stacks Blockchain API for real-time data.
+- ✅ Automated Resolution Engine and Oracle Registry.
+
+### Phase 2: Enhanced User Experience (IN PROGRESS)
+- 🔄 Real on-chain data integration for the frontend (replacing mocks).
+- 🔄 Professional Oracle Feeder system bridging real BTC prices.
+- ⏳ Mobile-first responsive design refinements.
+- ⏳ Wallet integration with Hiro and Leather wallets.
+
+### Phase 3: Ecosystem Expansion (Q2 2026)
+- 📅 Integration with Stacks Nakamoto upgrade features.
+- 📅 Decentralized dispute resolution UI for community participation.
+- 📅 Multi-token support for prediction pools (sBTC, ALTI).
+- 📅 Governance dashboard for platform parameter updates.
+
+---
+
+## 📖 User Guide
+
+### For Traders
+1. **Connect Wallet**: Use the "Connect Wallet" button to sync your Stacks address.
+2. **Explore Markets**: Browse active markets on the Dashboard.
+3. **Place Bets**: Select an outcome and enter the amount of STX you wish to wager.
+4. **Claim Winnings**: Once a market is settled, if you won, navigate to the pool and click "Claim Winnings".
+
+### For Oracle Providers
+1. **Register**: Use the `predinex-oracle-registry` to register your provider address.
+2. **Monitor**: Watch for expired pools that require resolution.
+3. **Submit**: Run the `real-oracle-feeder.ts` script to bridge real-world data:
+   ```bash
+   npx tsx scripts/real-oracle-feeder.ts <pool-id>
+   ```
+
+---
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. We prioritize **meaningful** functional improvements over cosmetic changes.
 
 ## 📄 License
 

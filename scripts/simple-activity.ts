@@ -2,7 +2,7 @@ import { makeContractCall, broadcastTransaction, AnchorMode, stringAsciiCV, uint
 import { STACKS_MAINNET } from '@stacks/network';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPSHVWJVD3NP8G7ZM82KTHB91HKCMNTY3BKKNE5V';
+const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 
 if (!PRIVATE_KEY) {
   console.error("❌ Error: PRIVATE_KEY not set in .env");
