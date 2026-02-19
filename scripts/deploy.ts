@@ -4,6 +4,8 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 // Load environment variables
+
+// Load environment variables
 const PRIVATE_KEY = process.env.PRIVATE_KEY || process.env.DEPLOYER_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet'; // Default to mainnet for Builder Challenge
 
@@ -36,7 +38,7 @@ async function deployContract(contractFileName: string, contractNamePrefix: stri
         network,
         anchorMode: AnchorMode.Any,
         clarityVersion: ClarityVersion.Clarity3, // Clarity 3 supports Clarity 4 functions
-        fee: 150000, // Increased fee for mainnet
+        fee: 25000, // Reduced fee for low balance account (0.025 STX)
         postConditionMode: 0x01, // Allow
     };
 
