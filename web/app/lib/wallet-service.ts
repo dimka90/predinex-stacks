@@ -4,7 +4,7 @@
  */
 
 import { AppConfig, UserSession, showConnect, FinishedAuthData } from '@stacks/connect';
-import { StacksMainnet, StacksTestnet, StacksNetwork } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET, StacksNetwork } from '@stacks/network';
 import { ClarityValue } from '@stacks/transactions';
 
 export type WalletType = 'hiro' | 'xverse' | 'leather' | 'unknown';
@@ -46,7 +46,7 @@ export class WalletService {
   constructor(network: NetworkType = 'mainnet') {
     this.appConfig = new AppConfig(['store_write', 'publish_data']);
     this.userSession = new UserSession({ appConfig: this.appConfig });
-    this.network = network === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+    this.network = network === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
   }
 
   /**
@@ -151,11 +151,11 @@ export class WalletService {
     }
 
     const userData = this.getUserData();
-    
+
     // Import TransactionService here to avoid circular dependency
     const { TransactionService } = await import('./transaction-service');
     const txService = new TransactionService(this.network);
-    
+
     // Validate payload
     const validation = txService.validatePayload(payload);
     if (!validation.isValid) {
@@ -167,7 +167,7 @@ export class WalletService {
         fee: payload.fee,
         nonce: payload.nonce,
       });
-      
+
       return result.txId;
     } catch (error) {
       console.error('Transaction failed:', error);
@@ -179,14 +179,15 @@ export class WalletService {
    * Switch network
    */
   switchNetwork(network: NetworkType): void {
-    this.network = network === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+    this.network = network === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
   }
 
   /**
    * Get current network
    */
   getCurrentNetwork(): NetworkType {
-    return this.network instanceof StacksMainnet ? 'mainnet' : 'testnet';
+    // @ts-ignore
+    return this.network.chainId === 1 ? 'mainnet' : 'testnet';
   }
 
   /**
@@ -202,9 +203,9 @@ export class WalletService {
    */
   static formatSTXAmount(microSTX: number): string {
     const stx = microSTX / 1000000;
-    return `${stx.toLocaleString(undefined, { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 6 
+    return `${stx.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6
     })} STX`;
   }
 }

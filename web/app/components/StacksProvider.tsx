@@ -8,7 +8,7 @@
  * functions to child components through React Context.
  */
 
-import { AppConfig, UserSession } from '@stacks/auth';
+import { AppConfig, UserSession } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { connectWallet, WalletType } from '../lib/wallet-connector';
 import WalletModal from './WalletModal';
