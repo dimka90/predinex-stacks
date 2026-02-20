@@ -1,43 +1,46 @@
-import { ArrowRight, Trophy } from "lucide-react";
+import { ArrowRight, Trophy, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default function Hero() {
     return (
-        <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
-            {/* Background gradients */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl opacity-20 pointer-events-none">
-                <div className="absolute top-20 left-20 w-72 h-72 bg-primary rounded-full blur-[120px] animate-float" />
-                <div className="absolute top-40 right-20 w-96 h-96 bg-accent rounded-full blur-[120px] animate-float-delayed" />
+        <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-32 overflow-hidden">
+            {/* Soft background glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl opacity-30 pointer-events-none">
+                <div className="absolute top-0 left-[10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[140px] animate-float" />
+                <div className="absolute bottom-0 right-[10%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[160px] animate-float-delayed" />
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-muted/50 text-sm text-muted-foreground mb-8">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-bold text-primary mb-10 tracking-widest uppercase animate-pulse">
+                    <Sparkles size={14} />
                     Live on Stacks Testnet
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-                    Predict the <span className="text-gradient hover:scale-105 transition-transform inline-block cursor-default">Future</span>.
+                <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
+                    PREDICT THE <span className="text-gradient inline-block">FUTURE</span>.
                     <br />
-                    Win on <span className="text-foreground">Stacks</span>.
+                    WIN ON <span className="text-foreground">BITCOIN</span>.
                 </h1>
 
-                <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
-                    The decentralized prediction market built for the Bitcoin economy.
-                    Create pools, place bets, and settle trustlessly with Clarity smart contracts.
+                <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed font-medium">
+                    The institutional-grade prediction market built for the Stacks ecosystem.
+                    Scalable, trustless, and powered by Clarity smart contracts.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link href="/markets" className="w-full sm:w-auto px-8 py-4 bg-primary hover:bg-violet-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/25 active:scale-95">
-                        Explore Markets
-                        <ArrowRight className="w-5 h-5" />
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <Link
+                        href="/markets"
+                        className="w-full sm:w-auto px-10 py-5 bg-primary text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 active:scale-95 group"
+                    >
+                        EXPLORE MARKETS
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
-                    <Link href="/create" className="w-full sm:w-auto px-8 py-4 bg-muted hover:bg-zinc-800 border border-border text-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                    <Link
+                        href="/create"
+                        className="w-full sm:w-auto px-10 py-5 bg-muted/50 hover:bg-muted border border-border text-foreground font-black rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 glass"
+                    >
                         <Trophy className="w-5 h-5 text-accent" />
-                        Create Pool
+                        CREATE POOL
                     </Link>
                 </div>
             </div>
