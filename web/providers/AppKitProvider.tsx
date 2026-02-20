@@ -10,7 +10,7 @@ const queryClient = new QueryClient();
 // Initialize AppKit
 createAppKit({
   projectId: WALLETCONNECT_PROJECT_ID,
-  chains: [stacksNetworks.mainnet, stacksNetworks.testnet] as any, // Cast to any to bypass strict typing for custom chains
+  networks: [stacksNetworks.mainnet, stacksNetworks.testnet] as any,
   metadata: appKitMetadata,
   features: {
     analytics: true,

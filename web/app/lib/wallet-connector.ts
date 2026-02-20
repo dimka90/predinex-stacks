@@ -3,8 +3,7 @@
  * Supports Leather, Xverse, and WalletConnect
  */
 
-import { showConnect } from '@stacks/connect';
-import { UserSession } from '@stacks/auth';
+import { showConnect, UserSession } from '@stacks/connect';
 import { handleWalletError, WalletError } from './wallet-errors';
 
 export type WalletType = 'leather' | 'xverse' | 'walletconnect';
@@ -88,8 +87,6 @@ async function connectWalletConnect(
         },
         redirectTo: '/',
         userSession,
-        // Enable WalletConnect for mobile wallet support
-        connectVersion: '2',
         onFinish: async (authData) => {
             console.log('WalletConnect authentication finished:', authData);
             if (onFinish) {
