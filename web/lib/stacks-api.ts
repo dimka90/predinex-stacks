@@ -1,13 +1,13 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   cvToJSON,
   uintCV,
   ClarityValue,
   ClarityType
 } from '@stacks/transactions';
-import { StacksMainnet } from '@stacks/network';
+import { STACKS_MAINNET } from '@stacks/network';
 
-const NETWORK = new StacksMainnet();
+const NETWORK = STACKS_MAINNET;
 const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
 const CONTRACT_NAME = 'predinex-pool-1771407097278';
 
@@ -53,7 +53,7 @@ function parsePoolCV(poolCV: any, id: number): Pool {
 
 export async function getPool(id: number): Promise<Pool | null> {
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
       functionName: 'get-pool-details',
@@ -75,7 +75,7 @@ export async function getPool(id: number): Promise<Pool | null> {
 export async function getMarkets(filter: string): Promise<Pool[]> {
   try {
     // First, get the pool counter
-    const counterResult = await callReadOnlyFunction({
+    const counterResult = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
       functionName: 'get-pool-counter', // We might need to add this or check the contract
