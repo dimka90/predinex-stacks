@@ -77,3 +77,21 @@ Animations are implemented using simple CSS transitions for performance:
 - **Hover Transitions**: Smooth transitions on buttons and cards using `transition-all` and `duration-300`.
 - **Micro-interactions**: Subtle scale effects on clickable elements (`hover:scale-105`, `active:scale-95`).
 - **Pulse Effects**: Background glow animations used in the Hero section to draw user attention.
+
+## Accessibility & Inclusion
+
+Predinex is built to be accessible to everyone, following web standards and best practices for inclusion.
+
+- **ARIA Labels**: All interactive elements (buttons, links, navigation drawers) include descriptive `aria-label` and `aria-expanded` attributes.
+- **Heading Hierarchy**: We enforce a strict sequential heading hierarchy (H1 -> H2 -> H3) to ensure screen readers can build an accurate document outline.
+- **Focus Management**: Interactive elements feature clear `:focus` styles and ring offsets for keyboard navigability.
+- **Semantic HTML**: Extensive use of `<main>`, `<nav>`, `<section>`, and `<article>` tags for meaningful page structure.
+
+## Performance Optimization
+
+The application is optimized for speed and efficiency to ensure a smooth user experience.
+
+- **Component Memoization**: Critical components like the `Leaderboard` are memoized using `React.memo` to prevent unnecessary re-renders.
+- **Skeleton Loaders**: Custom `animate-pulse` skeletons are implemented for `MarketCard` and `PortfolioOverview` to improve perception of performance.
+- **LCP Optimization**: Strategic use of the `priority` property on critical images and optimized CSS variables for smooth transitions.
+- **Error Handling**: A global `ErrorBoundary` catches runtime failures, providing users with a graceful fallback and recovery path.
