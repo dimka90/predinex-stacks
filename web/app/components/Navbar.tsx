@@ -12,7 +12,15 @@ export default function Navbar() {
     const { userData, signOut } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyAddress = () => {
+        if (stxAddress) {
+            navigator.clipboard.writeText(stxAddress);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
@@ -25,7 +33,6 @@ export default function Navbar() {
                         </div>
                         <span className="font-bold text-xl tracking-tight text-gradient">Predinex</span>
                     </Link>
-
                     {/* Navigation Links - Desktop */}
                     <div className="hidden md:flex items-center gap-6" role="navigation" aria-label="Desktop navigation">
                         <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="View all markets">
@@ -45,12 +52,16 @@ export default function Navbar() {
                     <div className="hidden md:flex items-center gap-4">
                         {userData ? (
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border">
+                                <button
+                                    onClick={handleCopyAddress}
+                                    className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border hover:bg-muted transition-colors group relative"
+                                    title="Copy address"
+                                >
                                     <Wallet className={ICON_CLASS.sm + " text-primary"} />
                                     <span className="text-sm font-mono font-medium">
-                                        {stxAddress ? truncateAddress(stxAddress) : 'Connected'}
+                                        {copied ? 'Copied!' : (stxAddress ? truncateAddress(stxAddress) : 'Connected')}
                                     </span>
-                                </div>
+                                </button>
                                 <button
                                     onClick={signOut}
                                     className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full border border-red-500/20 transition-all hover:scale-110 active:scale-95"
