@@ -1,18 +1,10 @@
 'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { LogOut, Menu, X, Wallet } from "lucide-react";
-import AppKitButton from "../../components/AppKitButton";
-import { useStacks } from "./StacksProvider";
+import { truncateAddress } from "../lib/utils";
 
 export default function Navbar() {
     const { userData, signOut } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    const truncateAddress = (addr: string) => {
-        return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-    };
 
     const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
 
