@@ -56,7 +56,7 @@ export default function MarketsPage() {
         </div>
 
         {/* Controls */}
-        <div className="space-y-6 mb-8">
+        <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-transparent md:border-border/10">
           {/* Search */}
           <div className="max-w-2xl">
             <SearchBar
