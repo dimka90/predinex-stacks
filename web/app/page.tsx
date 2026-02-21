@@ -5,7 +5,7 @@ import MarketCardHeader from "../components/ui/MarketCardHeader";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+    <main className="min-h-screen bg-background text-foreground selection:bg-primary/20 animate-in fade-in duration-700">
       <Navbar />
       <Hero />
 
