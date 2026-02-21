@@ -15,6 +15,17 @@
     --transition-fast: 150ms;
     --transition-base: 300ms;
     --transition-slow: 500ms;
+
+    /* Typography Scale */
+    --font-xs: 0.75rem;
+    --font-sm: 0.875rem;
+    --font-base: 1rem;
+    --font-lg: 1.125rem;
+    --font-xl: 1.25rem;
+    --font-2xl: 1.5rem;
+    --font-3xl: 1.875rem;
+    --font-4xl: 2.25rem;
+    --font-5xl: 3rem;
 }
 
 @theme inline {
@@ -26,6 +37,16 @@
     --color-muted-foreground: var(--muted-foreground);
     --color-accent: var(--accent);
     --color-border: var(--border);
+
+    --font-size-xs: var(--font-xs);
+    --font-size-sm: var(--font-sm);
+    --font-size-base: var(--font-base);
+    --font-size-lg: var(--font-lg);
+    --font-size-xl: var(--font-xl);
+    --font-size-2xl: var(--font-2xl);
+    --font-size-3xl: var(--font-3xl);
+    --font-size-4xl: var(--font-4xl);
+    --font-size-5xl: var(--font-5xl);
 }
 
 body {
