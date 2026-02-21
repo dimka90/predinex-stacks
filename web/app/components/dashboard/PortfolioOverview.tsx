@@ -140,10 +140,9 @@ export default function PortfolioOverview({ portfolio, isLoading = false }: Port
         })}
       </div>
 
-      {/* Performance Summary */}
-      <div className="glass p-6 rounded-xl">
-        <h3 className="text-lg font-semibold mb-4">Performance Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="glass p-4 sm:p-6 rounded-xl">
+        <h3 className="text-lg font-semibold mb-4 text-center sm:text-left">Performance Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-500">
               {formatPercentage(portfolio.winRate)}
