@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Pool } from '../lib/stacks-api';
 import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
+import StatusBadge from './ui/StatusBadge';
 
 export default function MarketCard({ market }: { market: Pool }) {
     return (
@@ -15,15 +16,7 @@ export default function MarketCard({ market }: { market: Pool }) {
             >
                 {/* Status Badge */}
                 <div className="flex justify-between items-center mb-6">
-                    <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border ${market.status === 'active'
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                            : 'bg-muted text-muted-foreground border-border'
-                            }`}
-                        aria-label={`Market status: ${market.status}`}
-                    >
-                        {market.status}
-                    </span>
+                    <StatusBadge status={market.status} />
                     <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase tracking-tighter bg-muted/30 px-2 py-0.5 rounded">
                         #POOL-{market.id}
                     </span>
