@@ -80,6 +80,13 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
                                     onClose();
                                 }}
                                 disabled={!walletAvailability[wallet.id] && wallet.id !== 'walletconnect'}
+                                aria-label={walletAvailability[wallet.id]
+                                    ? `Connect using ${wallet.name} (Available)`
+                                    : wallet.id === 'walletconnect'
+                                        ? `Connect using WalletConnect (via QR code)`
+                                        : `Connect using ${wallet.name} (Not installed)`
+                                }
+                                aria-disabled={!walletAvailability[wallet.id] && wallet.id !== 'walletconnect'}
                                 className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative"
                             >
                                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
