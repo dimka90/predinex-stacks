@@ -39,6 +39,13 @@ interface StacksContextValue {
 
 const StacksContext = createContext<StacksContextValue>({} as any);
 
+/**
+ * StacksProvider is the root context provider for Stacks-related functionality.
+ * It initializes the authentication session, handles sign-ins, and provides
+ * a unified interface for wallet interactions to the rest of the application.
+ * 
+ * @param children - The React components to be wrapped by the provider
+ */
 export function StacksProvider({ children }: { children: ReactNode }) {
     const [userData, setUserData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -125,6 +132,12 @@ export function StacksProvider({ children }: { children: ReactNode }) {
     );
 }
 
+/**
+ * Custom hook to access the Stacks authentication context.
+ * Must be used within a component wrapped by StacksProvider.
+ * 
+ * @returns The current StacksContextValue
+ */
 export function useStacks() {
     return useContext(StacksContext);
 }
