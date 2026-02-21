@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X, Wallet } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 
@@ -10,12 +10,18 @@ export default function Navbar() {
     const { userData, signOut } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    const truncateAddress = (addr: string) => {
+        return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+    };
+
+    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
+
     return (
         <nav className="fixed top-0 w-full z-50 glass border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
+                    <Link href="/" className="flex items-center gap-2 group" aria-label="Predinex Home">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                             <span className="font-bold text-white">P</span>
                         </div>
@@ -23,15 +29,15 @@ export default function Navbar() {
                     </Link>
 
                     {/* Navigation Links - Desktop */}
-                    <div className="hidden md:flex items-center gap-6">
-                        <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <div className="hidden md:flex items-center gap-6" role="navigation" aria-label="Desktop navigation">
+                        <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="View all markets">
                             Markets
                         </Link>
-                        <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                        <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="Create a new prediction market">
                             Create
                         </Link>
                         {userData && (
-                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="User dashboard">
                                 Dashboard
                             </Link>
                         )}
@@ -39,15 +45,25 @@ export default function Navbar() {
 
                     {/* User Info & Connect Button - Desktop */}
                     <div className="hidden md:flex items-center gap-4">
-                        <AppKitButton />
-                        {userData && (
-                            <button
-                                onClick={signOut}
-                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-full border border-red-500/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                                aria-label="Sign out"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
+                        {userData ? (
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border">
+                                    <Wallet className="w-4 h-4 text-primary" />
+                                    <span className="text-sm font-mono font-medium">
+                                        {stxAddress ? truncateAddress(stxAddress) : 'Connected'}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={signOut}
+                                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full border border-red-500/20 transition-all hover:scale-110 active:scale-95"
+                                    aria-label="Sign out"
+                                    title="Sign out"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <AppKitButton />
                         )}
                     </div>
 
@@ -57,6 +73,8 @@ export default function Navbar() {
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                            aria-expanded={isMenuOpen}
+                            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                         >
                             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
