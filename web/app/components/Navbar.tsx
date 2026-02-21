@@ -82,9 +82,17 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile Menu Backdrop */}
             {isMenuOpen && (
-                <div className="md:hidden glass border-t border-border animate-float-delayed">
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[-1] md:hidden animate-in fade-in duration-300"
+                    onClick={() => setIsMenuOpen(false)}
+                />
+            )}
+
+            {/* Mobile Menu Content */}
+            {isMenuOpen && (
+                <div className="md:hidden glass border-t border-border animate-in slide-in-from-top-4 duration-300">
                     <div className="px-4 pt-2 pb-6 space-y-1">
                         <Link
                             href="/markets"
