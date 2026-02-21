@@ -21,9 +21,9 @@ export default function Footer() {
                     <div>
                         <h4 className="font-bold mb-4 text-sm uppercase tracking-wider">Protocol</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/markets" className="hover:text-primary transition-colors">Markets</Link></li>
-                            <li><Link href="/create" className="hover:text-primary transition-colors">Create Pool</Link></li>
-                            <li><Link href="/governance" className="hover:text-primary transition-colors">Governance</Link></li>
+                            <li><Link href="/markets" className="hover:text-primary transition-all hover:translate-x-1 inline-block">Markets</Link></li>
+                            <li><Link href="/create" className="hover:text-primary transition-all hover:translate-x-1 inline-block">Create Pool</Link></li>
+                            <li><Link href="/governance" className="hover:text-primary transition-all hover:translate-x-1 inline-block">Governance</Link></li>
                         </ul>
                     </div>
 
