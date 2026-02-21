@@ -1,6 +1,12 @@
 'use client';
 
+import { useState } from "react";
+import Link from "next/link";
+import { LogOut, Menu, X, Wallet } from "lucide-react";
+import AppKitButton from "../../components/AppKitButton";
+import { useStacks } from "./StacksProvider";
 import { truncateAddress } from "../lib/utils";
+import { ICON_CLASS } from "../lib/constants";
 
 export default function Navbar() {
     const { userData, signOut } = useStacks();
@@ -40,7 +46,7 @@ export default function Navbar() {
                         {userData ? (
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border">
-                                    <Wallet className="w-4 h-4 text-primary" />
+                                    <Wallet className={ICON_CLASS.sm + " text-primary"} />
                                     <span className="text-sm font-mono font-medium">
                                         {stxAddress ? truncateAddress(stxAddress) : 'Connected'}
                                     </span>
@@ -51,7 +57,7 @@ export default function Navbar() {
                                     aria-label="Sign out"
                                     title="Sign out"
                                 >
-                                    <LogOut className="w-4 h-4" />
+                                    <LogOut className={ICON_CLASS.sm} />
                                 </button>
                             </div>
                         ) : (
@@ -77,7 +83,7 @@ export default function Navbar() {
             {/* Mobile Menu Backdrop */}
             {isMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[-1] md:hidden animate-in fade-in duration-300"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-md z-[-1] md:hidden animate-in fade-in duration-300"
                     onClick={() => setIsMenuOpen(false)}
                 />
             )}
