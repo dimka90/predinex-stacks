@@ -16,8 +16,8 @@ All contracts are deployed on **Stacks Mainnet** with full integration:
 | :--- | :--- | :--- | :--- |
 | `predinex-oracle-registry` | `SP2W_EJMBN.predinex-oracle-registry-1769574272753` | [View TX](https://explorer.hiro.so/txid/0xd47f3e7e6c7c8c32102158c7668f0c4556b8d4015065f3f3f2f1bc3a5a4d580?chain=mainnet) | ✅ Confirmed |
 | `liquidity-incentives` | `SP2W_EJMBN.liquidity-incentives-1769574671620` | [View TX](https://explorer.hiro.so/txid/0x03_e6cd8?chain=mainnet) | ✅ Confirmed |
-| `predinex-pool` | `SP2W_EJMBN.predinex-pool-1769575549853` | [View TX](https://explorer.hiro.so/txid/90946d7008582bd8196a801c1a8b3029412b18610dc1506b31a7daa5071b158a?chain=mainnet) | ✅ Confirmed |
-| `predinex-resolution-engine` | `SP2W_EJMBN.predinex-resolution-engine-1769575734779` | [View TX](https://explorer.hiro.so/txid/2f6f9b88416479c75c4f825bc194b33000b42d5880b0bc79f4c80c1deb792e30?chain=mainnet) | ✅ Confirmed |
+| `predinex-pool` | `SP2W_EJMBN.predinex-pool-1771470759824` | [View TX](https://explorer.hiro.so/txid/34008e36bb074545f5b08c1add330196b47bae093a770b8727ce2e007f4ef311?chain=mainnet) | ✅ Confirmed |
+| `predinex-resolution-engine` | `SP2W_EJMBN.predinex-resolution-engine-1771470766226` | [View TX](https://explorer.hiro.so/txid/e9376447ebb76c4bf9800e840fb998d2e5455b5c36235a755da7f40ccdbe9518?chain=mainnet) | ✅ Confirmed |
 
 ### Previous Deployment (v1)
 
@@ -28,6 +28,18 @@ All contracts are deployed on **Stacks Mainnet** with full integration:
 ## 🏗 System Architecture
 
 The project consists of a Clarity smart contract (`predinex-pool`) that manages the state of all prediction pools and funds. Users interact with the contract directly or through TypeScript scripts/frontend applications.
+
+## 🖥️ Frontend Application
+
+The Predinex frontend is a modern Next.js application designed with professional UI/UX, accessibility, and high performance in mind.
+
+### Core Features
+- **Premium Design System**: Glassmorphism, institutional aesthetics, and smooth animations.
+- **Stacks SDK v7+ Integration**: Full compatibility with the latest Stacks transactions and network libraries.
+- **Multi-Wallet Support**: Integrated with Hiro, Leather, and Xverse via `@stacks/connect`.
+- **Responsive & Accessible**: Optimized for all screen sizes with WCAG-compliant ARIA labels and heading structures.
+
+For detailed frontend architecture, component breakdown, and styling guides, please refer to [FRONTEND.md](./web/FRONTEND.md).
 
 ```mermaid
 graph TD
