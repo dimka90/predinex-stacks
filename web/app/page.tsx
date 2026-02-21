@@ -1,6 +1,7 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import { TrendingUp, Clock, BarChart3 } from "lucide-react";
+import StatusBadge from "../components/ui/StatusBadge";
 
 export default function Home() {
   return (
@@ -35,7 +36,7 @@ export default function Home() {
             <div key={market.id} className="glass p-8 rounded-2xl border border-border/50 hover:border-primary/40 transition-all cursor-pointer group hover:shadow-2xl hover:shadow-primary/5">
               <div className="flex justify-between items-start mb-6">
                 <span className="text-[10px] font-mono bg-muted/50 px-2 py-1 rounded text-muted-foreground uppercase tracking-widest">#POOL-{market.id}</span>
-                <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Active</span>
+                <StatusBadge status="Active" />
               </div>
 
               <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors leading-tight">
