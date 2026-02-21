@@ -37,7 +37,7 @@ export default function Hero() {
                     </Link>
                     <Link
                         href="/create"
-                        className="w-full sm:w-auto px-10 py-5 bg-muted/50 hover:bg-muted border border-border text-foreground font-black rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 glass relative overflow-hidden"
+                        className="w-full sm:w-auto px-10 py-5 bg-muted/50 hover:bg-muted border border-border text-foreground font-black rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 glass relative overflow-hidden animate-glow"
                     >
                         <Trophy className="w-5 h-5 text-accent" />
                         CREATE POOL
