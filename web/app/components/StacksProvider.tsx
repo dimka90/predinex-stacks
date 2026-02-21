@@ -47,22 +47,33 @@ const StacksContext = createContext<StacksContextValue>({} as any);
  * @param children - The React components to be wrapped by the provider
  */
 export function StacksProvider({ children }: { children: ReactNode }) {
+    // State for storing authenticated user data (profile, addresses, etc.)
     const [userData, setUserData] = useState<any>(null);
+    // Tracks initial session verification to prevent flickers or unauthorized access
     const [isLoading, setIsLoading] = useState(true);
+    // Controls the visibility of the multi-wallet selection modal
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     useEffect(() => {
+        /**
+         * initializeAuth
+         * On component mount, check if there is an existing session or a pending sign-in from a redirect.
+         * Stacks authentication often uses a redirect flow that returns to the app with a 'authResponse' query param.
+         */
         const initializeAuth = async () => {
             try {
                 if (userSession.isSignInPending()) {
+                    // Handle completion of redirect authentication flow
                     const userData = await userSession.handlePendingSignIn();
                     setUserData(userData);
                 } else if (userSession.isUserSignedIn()) {
+                    // Load existing session data from local storage
                     setUserData(userSession.loadUserData());
                 }
             } catch (error) {
                 console.error('Error initializing authentication:', error);
             } finally {
+                // Signal that the app is ready for interaction
                 setIsLoading(false);
             }
         };
@@ -70,28 +81,43 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         initializeAuth();
     }, []);
 
+    /**
+     * Terminate the user session and clear local state.
+     * Note: This only clears the app's session; the user remains logged into their wallet extension.
+     */
     const signOut = useCallback(() => {
         userSession.signUserOut();
         setUserData(null);
     }, []);
 
+    /**
+     * UI helper to trigger the wallet selection UI.
+     */
     const openWalletModal = useCallback(() => {
         setIsWalletModalOpen(true);
     }, []);
 
+    /**
+     * Orchestrates the connection flow for a specific wallet provider.
+     * 
+     * @param walletType - The brand of wallet being connected (Leather, Xverse, etc.)
+     */
     const handleWalletSelection = useCallback(async (walletType: WalletType) => {
         try {
             await connectWallet({
                 walletType,
                 userSession,
                 onFinish: async (authData) => {
+                    // Authentication successful
                     console.log('Authentication finished:', authData);
                     try {
+                        // Crucial: Finalize the session after the wallet extension returns control
                         const userData = await userSession.handlePendingSignIn();
                         setUserData(userData);
                         console.log('Wallet connected successfully');
                     } catch (error) {
                         console.error('Error handling sign in:', error);
+                        // Fallback to refresh if session state becomes inconsistent
                         window.location.reload();
                     }
                 },
@@ -105,6 +131,9 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         }
     }, [userSession]);
 
+    /**
+     * Main entry point for starting the login flow.
+     */
     const authenticate = useCallback(() => {
         openWalletModal();
     }, [openWalletModal]);
