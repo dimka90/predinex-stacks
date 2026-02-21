@@ -5,7 +5,7 @@
  * Supports multiple wallet options: Leather, Xverse, and WalletConnect
  */
 
-import { X, Wallet, Smartphone, CheckCircle2 } from 'lucide-react';
+import { X, Wallet, Smartphone, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { isWalletAvailable, WalletType } from '../lib/wallet-connector';
 
@@ -13,9 +13,10 @@ interface WalletModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSelectWallet: (walletType: 'leather' | 'xverse' | 'walletconnect') => void;
+    error?: string;
 }
 
-export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletModalProps) {
+export default function WalletModal({ isOpen, onClose, onSelectWallet, error }: WalletModalProps) {
     const [walletAvailability, setWalletAvailability] = useState<Record<WalletType, boolean>>({
         leather: false,
         xverse: false,
@@ -68,6 +69,13 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
                         <X className="w-5 h-5" />
                     </button>
                 </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-500 animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                )}
 
                 <div className="space-y-3">
                     {wallets.map((wallet) => {
