@@ -43,3 +43,21 @@ Predinex is a decentralized prediction market built on the Stacks blockchain. Th
 - **MarketCard**: The primary display unit for prediction markets, featuring glassmorphism effects and hover interactions.
 - **Hero**: The landing page's main call-to-action section with Bitcoin-themed aesthetics.
 - **Leaderboard**: Displays top contributors and users based on platform activity.
+
+## State Management
+
+### StacksProvider (React Context)
+Predinex uses React Context for global state management related to user authentication and wallet connectivity.
+
+**Key State Variables:**
+- `userSession`: Instance of `@stacks/connect` UserSession.
+- `userData`: Authenticared user's data (address, public key, etc.).
+- `isLoading`: Tracks the initialization of the authentication state.
+
+**Available Actions:**
+- `authenticate()`: Triggers the wallet connection modal.
+- `signOut()`: Clears the user session and resets local state.
+- `openWalletModal()`: Programmatically opens the wallet selection interface.
+
+### Local Component State
+For UI-specific states (loading spinners, visibility toggles, form inputs), we favor React's `useState` and `useCallback` to keep components self-contained and performant.
