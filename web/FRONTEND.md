@@ -61,3 +61,19 @@ Predinex uses React Context for global state management related to user authenti
 
 ### Local Component State
 For UI-specific states (loading spinners, visibility toggles, form inputs), we favor React's `useState` and `useCallback` to keep components self-contained and performant.
+
+## Styling and Design System
+
+### Tailwind CSS
+We use Tailwind CSS for all component styling, leveraging a custom theme that provides a cohesive institutional aesthetic.
+
+**Core Design Principles:**
+- **Glassmorphism**: Extensive use of `backdrop-blur` and semi-transparent backgrounds (`bg-white/10` or `bg-black/10`).
+- **Gradients**: Dynamic background blobs and text gradients (e.g., `bg-gradient-to-r from-primary to-purple-400`).
+- **Institutional Palette**: A mix of deep backgrounds (`bg-background`) and vibrant highlight colors (`text-primary`).
+
+### Animations
+Animations are implemented using simple CSS transitions for performance:
+- **Hover Transitions**: Smooth transitions on buttons and cards using `transition-all` and `duration-300`.
+- **Micro-interactions**: Subtle scale effects on clickable elements (`hover:scale-105`, `active:scale-95`).
+- **Pulse Effects**: Background glow animations used in the Hero section to draw user attention.
