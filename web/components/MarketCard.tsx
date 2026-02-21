@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Pool } from '../lib/stacks-api';
 import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
-import StatusBadge from './ui/StatusBadge';
+import MarketCardHeader from './ui/MarketCardHeader';
 
 export default function MarketCard({ market }: { market: Pool }) {
     return (
@@ -15,12 +15,7 @@ export default function MarketCard({ market }: { market: Pool }) {
                 role="article"
             >
                 {/* Status Badge */}
-                <div className="flex justify-between items-center mb-6">
-                    <StatusBadge status={market.status} />
-                    <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase tracking-tighter bg-muted/30 px-2 py-0.5 rounded">
-                        #POOL-{market.id}
-                    </span>
-                </div>
+                <MarketCardHeader id={market.id} status={market.status} />
 
                 <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                     {market.title}
