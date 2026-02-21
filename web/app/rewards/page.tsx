@@ -11,7 +11,7 @@ export default function RewardsPage() {
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
       <AuthGuard>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="glass-panel p-8 rounded-2xl mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
             <p className="text-muted-foreground">Track your performance and earnings</p>
