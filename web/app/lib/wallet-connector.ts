@@ -7,6 +7,15 @@ import { showConnect, UserSession } from '@stacks/connect';
 import { handleWalletError, WalletError } from './wallet-errors';
 
 /**
+ * Configuration for the Stacks wallet connection
+ */
+const WALLET_CONFIG = {
+    name: 'Predinex',
+    icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+    redirectTo: '/',
+};
+
+/**
  * Supported wallet providers for the Predinex platform
  */
 export type WalletType = 'leather' | 'xverse' | 'walletconnect';
@@ -71,10 +80,10 @@ async function connectExtensionWallet(
 ): Promise<void> {
     await showConnect({
         appDetails: {
-            name: 'Predinex',
-            icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+            name: WALLET_CONFIG.name,
+            icon: WALLET_CONFIG.icon,
         },
-        redirectTo: '/',
+        redirectTo: WALLET_CONFIG.redirectTo,
         userSession,
         onFinish: async (authData) => {
             console.log(`${walletType} authentication finished:`, authData);
@@ -106,10 +115,10 @@ async function connectWalletConnect(
 ): Promise<void> {
     await showConnect({
         appDetails: {
-            name: 'Predinex',
-            icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+            name: WALLET_CONFIG.name,
+            icon: WALLET_CONFIG.icon,
         },
-        redirectTo: '/',
+        redirectTo: WALLET_CONFIG.redirectTo,
         userSession,
         onFinish: async (authData) => {
             console.log('WalletConnect authentication finished:', authData);
