@@ -57,8 +57,8 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet, error }: 
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="glass border border-border rounded-2xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="glass border border-border rounded-2xl p-6 max-w-md w-full mx-4 animate-in zoom-in-95 duration-300">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">Connect Wallet</h2>
                     <button
