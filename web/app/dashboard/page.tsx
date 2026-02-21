@@ -7,7 +7,7 @@ export default function Dashboard() {
         <main className="min-h-screen bg-background">
             <Navbar />
             <AuthGuard>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <h1 className="text-3xl font-bold mb-8">My Dashboard</h1>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div className="p-6 rounded-xl border border-border bg-card">
