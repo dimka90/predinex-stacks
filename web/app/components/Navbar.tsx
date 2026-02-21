@@ -9,9 +9,8 @@ import { truncateAddress } from "../lib/utils";
 import { ICON_CLASS } from "../lib/constants";
 
 export default function Navbar() {
-    const { userData, signOut } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
     const [copied, setCopied] = useState(false);
 
     const handleCopyAddress = () => {
