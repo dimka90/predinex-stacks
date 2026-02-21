@@ -13,6 +13,9 @@ import {
 import { StacksNetwork } from '@stacks/network';
 import { TransactionPayload } from './wallet-service';
 
+/**
+ * Options for customizing transaction behavior
+ */
 export interface TransactionOptions {
   fee?: number;
   nonce?: number;
@@ -20,18 +23,28 @@ export interface TransactionOptions {
   postConditionMode?: PostConditionMode;
 }
 
+/**
+ * Result of a transaction broadcast
+ */
 export interface TransactionResult {
   txId: string;
   transaction: any;
   broadcastResult: any;
 }
 
+/**
+ * Estimated costs and sequence for a transaction
+ */
 export interface TransactionEstimate {
   estimatedFee: number;
   estimatedNonce: number;
   totalCost: number;
 }
 
+/**
+ * TransactionService provides high-level utilities for interacting with the Stacks blockchain.
+ * It manages the lifecycle of a transaction from estimation and creation to broadcasting and status tracking.
+ */
 export class TransactionService {
   private network: StacksNetwork;
 
@@ -40,7 +53,12 @@ export class TransactionService {
   }
 
   /**
-   * Estimate transaction costs
+   * Estimates the fee and nonce for a given transaction payload.
+   * Currently uses a fallback estimation for unblocking the build.
+   * 
+   * @param payload - The transaction details (contract, function, args)
+   * @param senderAddress - The Stacks address of the sender
+   * @returns A promise resolving to the transaction estimation
    */
   async estimateTransaction(
     payload: TransactionPayload,
@@ -67,7 +85,10 @@ export class TransactionService {
   }
 
   /**
-   * Format transaction for display
+   * Formats a transaction payload into a human-readable structure for UI display.
+   * 
+   * @param payload - The transaction details to format
+   * @returns An object containing title, description, and key-value details
    */
   formatTransactionForDisplay(payload: TransactionPayload): {
     title: string;
@@ -92,7 +113,12 @@ export class TransactionService {
   }
 
   /**
-   * Create transaction for signing
+   * Creates a signed Stacks transaction ready for broadcasting.
+   * 
+   * @param payload - The transaction details
+   * @param senderKey - The private key of the sender
+   * @param options - Optional overrides for fee, nonce, etc.
+   * @returns A promise resolving to the signed transaction object
    */
   async createTransaction(
     payload: TransactionPayload,
@@ -132,7 +158,10 @@ export class TransactionService {
   }
 
   /**
-   * Broadcast signed transaction
+   * Broadcasts a signed transaction to the Stacks network.
+   * 
+   * @param transaction - The signed transaction object
+   * @returns A promise resolving to the broadcast result and ID
    */
   async broadcastTransaction(transaction: any): Promise<TransactionResult> {
     try {
@@ -158,7 +187,12 @@ export class TransactionService {
   }
 
   /**
-   * Complete transaction flow: create, sign, and broadcast
+   * Orchestrates the full transaction lifecycle: creation, signing, and broadcasting.
+   * 
+   * @param payload - The transaction details
+   * @param senderKey - The private key of the sender
+   * @param options - Optional overrides
+   * @returns A promise resolving to the execution result
    */
   async executeTransaction(
     payload: TransactionPayload,
@@ -175,7 +209,10 @@ export class TransactionService {
   }
 
   /**
-   * Validate transaction payload
+   * Validates that a transaction payload contains all required fields in the correct format.
+   * 
+   * @param payload - The payload to validate
+   * @returns An object indicating validity and a list of specific errors if any
    */
   validatePayload(payload: TransactionPayload): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
@@ -207,7 +244,10 @@ export class TransactionService {
   }
 
   /**
-   * Get transaction status
+   * Fetches the current status of a transaction from the Stacks node API.
+   * 
+   * @param txId - The unique transaction ID (hash)
+   * @returns A promise resolving to the status and optional data details
    */
   async getTransactionStatus(txId: string): Promise<{
     status: 'pending' | 'success' | 'failed' | 'not_found';

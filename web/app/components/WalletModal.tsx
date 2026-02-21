@@ -5,7 +5,7 @@
  * Supports multiple wallet options: Leather, Xverse, and WalletConnect
  */
 
-import { X, Wallet, Smartphone, CheckCircle2 } from 'lucide-react';
+import { X, Wallet, Smartphone, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { isWalletAvailable, WalletType } from '../lib/wallet-connector';
 
@@ -13,9 +13,10 @@ interface WalletModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSelectWallet: (walletType: 'leather' | 'xverse' | 'walletconnect') => void;
+    error?: string;
 }
 
-export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletModalProps) {
+export default function WalletModal({ isOpen, onClose, onSelectWallet, error }: WalletModalProps) {
     const [walletAvailability, setWalletAvailability] = useState<Record<WalletType, boolean>>({
         leather: false,
         xverse: false,
@@ -56,8 +57,8 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="glass border border-border rounded-2xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="glass border border-border rounded-2xl p-6 max-w-md w-full mx-4 animate-in zoom-in-95 duration-300">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">Connect Wallet</h2>
                     <button
@@ -68,6 +69,13 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
                         <X className="w-5 h-5" />
                     </button>
                 </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-500 animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                )}
 
                 <div className="space-y-3">
                     {wallets.map((wallet) => {
@@ -80,6 +88,13 @@ export default function WalletModal({ isOpen, onClose, onSelectWallet }: WalletM
                                     onClose();
                                 }}
                                 disabled={!walletAvailability[wallet.id] && wallet.id !== 'walletconnect'}
+                                aria-label={walletAvailability[wallet.id]
+                                    ? `Connect using ${wallet.name} (Available)`
+                                    : wallet.id === 'walletconnect'
+                                        ? `Connect using WalletConnect (via QR code)`
+                                        : `Connect using ${wallet.name} (Not installed)`
+                                }
+                                aria-disabled={!walletAvailability[wallet.id] && wallet.id !== 'walletconnect'}
                                 className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative"
                             >
                                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

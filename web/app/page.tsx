@@ -1,10 +1,11 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import { TrendingUp, Clock, BarChart3 } from "lucide-react";
+import MarketCardHeader from "../components/ui/MarketCardHeader";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+    <main className="min-h-screen bg-background text-foreground selection:bg-primary/20 animate-in fade-in duration-700">
       <Navbar />
       <Hero />
 
@@ -33,10 +34,7 @@ export default function Home() {
             { id: 3, title: "BTC Price: $150k Reach", desc: "Will Bitcoin touch $150,000 in the current year?", vol: "5,120 STX", time: "45d 1h" }
           ].map((market) => (
             <div key={market.id} className="glass p-8 rounded-2xl border border-border/50 hover:border-primary/40 transition-all cursor-pointer group hover:shadow-2xl hover:shadow-primary/5">
-              <div className="flex justify-between items-start mb-6">
-                <span className="text-[10px] font-mono bg-muted/50 px-2 py-1 rounded text-muted-foreground uppercase tracking-widest">#POOL-{market.id}</span>
-                <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Active</span>
-              </div>
+              <MarketCardHeader id={market.id} status="Active" />
 
               <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors leading-tight">
                 {market.title}

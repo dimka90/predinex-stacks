@@ -1,23 +1,21 @@
 import Link from 'next/link';
 import { Pool } from '../lib/stacks-api';
 import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
+import MarketCardHeader from './ui/MarketCardHeader';
 
 export default function MarketCard({ market }: { market: Pool }) {
     return (
-        <Link href={`/markets/${market.id}`} className="group block h-full">
-            <div className="p-8 rounded-3xl border border-border bg-card/40 hover:bg-card/60 hover:border-primary/40 transition-all h-full flex flex-col glass hover-lift relative overflow-hidden">
+        <Link
+            href={`/markets/${market.id}`}
+            className="group block h-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-3xl"
+            aria-label={`View details for market: ${market.title}`}
+        >
+            <div
+                className="p-8 rounded-3xl border border-border bg-card/40 hover:bg-card/60 hover:border-primary/40 transition-all h-full flex flex-col glass hover-lift relative overflow-hidden"
+                role="article"
+            >
                 {/* Status Badge */}
-                <div className="flex justify-between items-center mb-6">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border ${market.status === 'active'
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                            : 'bg-muted text-muted-foreground border-border'
-                        }`}>
-                        {market.status}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-mono font-bold uppercase tracking-tighter bg-muted/30 px-2 py-0.5 rounded">
-                        #POOL-{market.id}
-                    </span>
-                </div>
+                <MarketCardHeader id={market.id} status={market.status} />
 
                 <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                     {market.title}
@@ -28,17 +26,17 @@ export default function MarketCard({ market }: { market: Pool }) {
 
                 <div className="flex items-center justify-between pt-6 border-t border-border/50">
                     <div className="flex items-center gap-4">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Volume</span>
+                        <div className="flex flex-col gap-1" aria-label={`Pool volume: ${(market.totalA + market.totalB).toLocaleString()} STX`}>
+                            <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Volume</span>
                             <div className="flex items-center gap-1.5 font-bold text-sm">
-                                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                                <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                                 <span>{(market.totalA + market.totalB).toLocaleString()} STX</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
+                        <div className="flex flex-col gap-1" aria-label={`Expiry block: ${market.expiry}`}>
+                            <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Expiry</span>
                             <div className="flex items-center gap-1.5 font-bold text-sm">
-                                <Clock className="h-3.5 w-3.5 text-accent" />
+                                <Clock className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
                                 <span>Block {market.expiry}</span>
                             </div>
                         </div>
