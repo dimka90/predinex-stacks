@@ -395,3 +395,15 @@
 (define-read-only (get-creation-data (pool-id uint))
   (map-get? pools { pool-id: pool-id })
 )
+
+(define-read-only (get-pool-counter)
+  (ok (var-get pool-counter))
+)
+
+(define-read-only (get-total-volume)
+  (ok (var-get total-volume))
+)
+
+(define-read-only (get-user-claim-status (pool-id uint) (user principal))
+  (ok (default-to false (map-get? claims { pool-id: pool-id, user: user })))
+)
