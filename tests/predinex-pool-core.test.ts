@@ -261,5 +261,40 @@ describe('Predinex Pool - Core Functionality Tests', () => {
             );
             expect(result).toBeOk(Cl.bool(true));
         });
+
+        it('should allow a newly set admin to update resolution engine', () => {
+            // 1. Set wallet1 as admin
+            simnet.callPublicFn('predinex-pool', 'set-admin', [Cl.principal(wallet1), Cl.bool(true)], deployer);
+
+            // 2. wallet1 (the new admin) sets wallet3 as resolution engine
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'set-authorized-resolution-engine',
+                [Cl.principal(wallet3)],
+                wallet1
+            );
+            expect(result).toBeOk(Cl.bool(true));
+        });
+
+        it('should allow a newly set admin to settle any pool', () => {
+            // 1. Setup pool
+            const { result: createResult } = simnet.callPublicFn('predinex-pool', 'create-pool', [
+                Cl.stringAscii('Admin Settle'), Cl.stringAscii('Desc'),
+                Cl.stringAscii('A'), Cl.stringAscii('B'), Cl.uint(1000)
+            ], wallet2);
+            const poolId = (createResult as any).value;
+
+            // 2. Set wallet1 as admin
+            simnet.callPublicFn('predinex-pool', 'set-admin', [Cl.principal(wallet1), Cl.bool(true)], deployer);
+
+            // 3. wallet1 settles the pool created by wallet2
+            const { result } = simnet.callPublicFn(
+                'predinex-pool',
+                'settle-pool',
+                [poolId, Cl.uint(0)],
+                wallet1
+            );
+            expect(result).toBeOk(Cl.bool(true));
+        });
     });
 });
