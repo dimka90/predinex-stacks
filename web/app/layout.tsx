@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
+import { ToastProvider } from "../providers/ToastProvider";
 import Footer from "./components/Footer";
 
 const geistSans = Geist({
@@ -52,8 +53,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <StacksProvider>
-          {children}
-          <Footer />
+          <ToastProvider>
+            {children}
+            <Footer />
+          </ToastProvider>
         </StacksProvider>
       </body>
     </html>
