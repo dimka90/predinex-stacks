@@ -98,7 +98,7 @@
 ;; Private helpers to check oracle validity via Registry
 (define-private (validate-single-oracle (oracle-id uint) (is-valid bool))
   (if is-valid
-    (match (contract-call? .predinex-oracle-registry-1769574272753 get-provider-details oracle-id)
+    (match (contract-call? .predinex-oracle-registry get-provider-details oracle-id)
       provider (get is-active provider)
       false
     )
@@ -121,7 +121,7 @@
   (logical-operator (string-ascii 8))
   (retry-attempts uint))
   
-  (match (contract-call? .predinex-pool-1769575549853 get-pool-details pool-id)
+  (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (if (is-eq tx-sender (get creator pool))
              (match (map-get? resolution-configs { pool-id: pool-id })
                config (err ERR-RESOLUTION-ALREADY-CONFIGURED)
@@ -164,7 +164,7 @@
 )
 
 (define-public (attempt-automated-resolution (pool-id uint))
-  (match (contract-call? .predinex-pool-1769575549853 get-pool-details pool-id)
+  (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (match (map-get? resolution-configs { pool-id: pool-id })
       config (let ((attempt-id (var-get resolution-attempt-counter)))
                (if (and 
@@ -185,7 +185,7 @@
                                is-successful: true
                              }
                            )
-                           (match (contract-call? .predinex-pool-1769575549853 settle-pool pool-id outcome)
+                           (match (contract-call? .predinex-pool settle-pool pool-id outcome)
                              success (begin
                                (var-set resolution-attempt-counter (+ attempt-id u1))
                                (ok outcome)
@@ -220,7 +220,7 @@
 
 
 (define-public (create-dispute (pool-id uint) (dispute-reason (string-ascii 512)) (evidence-hash (optional (buff 32))))
-  (match (contract-call? .predinex-pool-1769575549853 get-pool-details pool-id)
+  (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (if (get settled pool)
              (if (> (len dispute-reason) u0)
                  (let (
@@ -335,7 +335,7 @@
 )
 
 (define-public (trigger-fallback-resolution (pool-id uint) (failure-reason (string-ascii 128)))
-  (match (contract-call? .predinex-pool-1769575549853 get-pool-details pool-id)
+  (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (match (map-get? resolution-configs { pool-id: pool-id })
       config (if (is-eq tx-sender (as-contract tx-sender)) ;; Original Logic: self-call?
                  ;; Currently logic allows anyone? No, checks self-call.
@@ -371,7 +371,7 @@
 )
 
 (define-public (manual-settle-fallback (pool-id uint) (winning-outcome uint))
-  (match (contract-call? .predinex-pool-1769575549853 get-pool-details pool-id)
+  (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (match (map-get? fallback-resolutions { pool-id: pool-id })
       fallback (if (is-eq tx-sender (get creator pool))
                    (if (and 
@@ -379,7 +379,7 @@
                         (or (is-eq winning-outcome u0) (is-eq winning-outcome u1))
                         (> burn-block-height (+ (get triggered-at fallback) u144))
                        )
-                       (match (contract-call? .predinex-pool-1769575549853 settle-pool pool-id winning-outcome)
+                       (match (contract-call? .predinex-pool settle-pool pool-id winning-outcome)
                           success (ok true)
                           error (err error)
                        )

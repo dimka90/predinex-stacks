@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useStacks } from './StacksProvider';
-import { useWalletConnect } from '../lib/hooks/useWalletConnect';
+import { useWalletConnection } from '../../lib/hooks/useWalletConnection';
+import { useToast } from '../../providers/ToastProvider';
 import { openContractCall } from '@stacks/connect';
 import { uintCV } from '@stacks/transactions';
-import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../lib/constants';
+import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../../lib/constants';
 import { Loader2, Wallet, AlertCircle } from 'lucide-react';
-import { Pool } from '../lib/stacks-api';
+import { Pool } from '../../lib/stacks-api';
 
 interface BettingSectionProps {
     pool: Pool;
@@ -16,18 +17,21 @@ interface BettingSectionProps {
 
 export default function BettingSection({ pool, poolId }: BettingSectionProps) {
     const { userData, authenticate } = useStacks();
-    const { session } = useWalletConnect();
+    const { isConnected, address } = useWalletConnection();
+    const { showToast } = useToast();
     const [betAmount, setBetAmount] = useState("");
     const [isBetting, setIsBetting] = useState(false);
     const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
-    // Fetch wallet balance when session changes
+    // Fetch wallet balance when connection changes
     useEffect(() => {
-        if (session?.isConnected) {
+        if (isConnected) {
             // In a real app, fetch balance from API
-            setWalletBalance(session.balance || 0);
+            setWalletBalance(100.0); // Mock balance for testing
+        } else {
+            setWalletBalance(null);
         }
-    }, [session]);
+    }, [isConnected]);
 
     const placeBet = async (outcome: number) => {
         if (!userData) {
@@ -37,18 +41,18 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
 
         const amount = parseFloat(betAmount);
         if (!betAmount || isNaN(amount) || amount <= 0) {
-            alert("Please enter a valid bet amount greater than 0.");
+            showToast("Please enter a valid bet amount greater than 0.", "error");
             return;
         }
 
         if (amount < 0.1) {
-            alert("Minimum bet amount is 0.1 STX.");
+            showToast("Minimum bet amount is 0.1 STX.", "error");
             return;
         }
 
         // Check wallet balance
         if (walletBalance !== null && amount > walletBalance) {
-            alert(`Insufficient balance. You have ${walletBalance} STX.`);
+            showToast(`Insufficient balance. You have ${walletBalance} STX.`, "error");
             return;
         }
 
@@ -67,18 +71,19 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                 ],
                 onFinish: (data) => {
                     console.log('Bet placed successfully:', data);
-                    alert(`Bet placed successfully! Transaction ID: ${data.txId}`);
+                    showToast(`Bet placed successfully!`, "success");
                     setIsBetting(false);
                     setBetAmount("");
                 },
                 onCancel: () => {
                     console.log('User cancelled bet transaction');
+                    showToast("Transaction cancelled", "info");
                     setIsBetting(false);
                 },
             });
         } catch (error) {
             console.error("Bet transaction failed:", error);
-            alert(`Bet failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
+            showToast(`Bet failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`, "error");
             setIsBetting(false);
         }
     };
@@ -92,7 +97,7 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
         );
     }
 
-    if (!userData && !session?.isConnected) {
+    if (!userData && !isConnected) {
         return (
             <div className="text-center py-6 bg-muted/50 rounded-lg">
                 <Wallet className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -112,12 +117,12 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
     return (
         <div className="space-y-4">
             {/* Wallet Info */}
-            {session?.isConnected && (
+            {isConnected && address && (
                 <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-sm text-muted-foreground">Connected Wallet</p>
-                            <p className="font-mono text-sm">{session.address.slice(0, 8)}...{session.address.slice(-6)}</p>
+                            <p className="font-mono text-sm">{address.slice(0, 8)}...{address.slice(-6)}</p>
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-muted-foreground">Balance</p>
