@@ -93,12 +93,12 @@
 ;; Private Helpers
 
 (define-private (is-admin (user principal))
-  (default-to false (map-get? admins { admin: user }))
+  (or (is-eq user CONTRACT-OWNER) (default-to false (map-get? admins { admin: user })))
 )
 
 ;; Registry Helper
 (define-private (get-provider-id-by-address (provider-address principal))
-  (contract-call? .predinex-oracle-registry-1769574272753 get-provider-id-by-address provider-address)
+  (contract-call? .predinex-oracle-registry get-provider-id-by-address provider-address)
 )
 
 ;; Public Functions
@@ -134,7 +134,7 @@
           )
           ;; Initialize incentives via external contract
           ;; Note: liquidity-incentives contract must allow this call
-          (unwrap! (as-contract (contract-call? .liquidity-incentives-1769574671620 initialize-pool-incentives pool-id)) (err u500))
+          (unwrap! (as-contract (contract-call? .liquidity-incentives initialize-pool-incentives pool-id)) (err u500))
           
           (var-set pool-counter (+ pool-id u1))
           (ok pool-id)
@@ -178,7 +178,7 @@
                    
                    ;; Call external incentive contract
                    ;; We ignore the result (bonus amount) to not block bet if incentives fail/are maxed
-                   (match (contract-call? .liquidity-incentives-1769574671620 record-bet-and-calculate-early-bird pool-id tx-sender amount)
+                   (match (contract-call? .liquidity-incentives record-bet-and-calculate-early-bird pool-id tx-sender amount)
                      bonus-ok true
                      bonus-err true ;; Log or handle error? For now, we proceed.
                    )
@@ -200,6 +200,7 @@
     pool (if (or 
                (is-eq tx-sender (get creator pool))
                (is-eq tx-sender (var-get authorized-resolution-engine))
+               (is-admin tx-sender)
              )
              (if (not (get settled pool))
                  (if (or (is-eq winning-outcome u0) (is-eq winning-outcome u1))
@@ -272,18 +273,16 @@
 )
 
 (define-public (set-admin (admin principal) (status bool))
-  (if (is-eq tx-sender CONTRACT-OWNER)
-      (begin
-        (map-set admins { admin: admin } status)
-        (ok true)
-      )
-      (err ERR-UNAUTHORIZED)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
+    (map-set admins { admin: admin } status)
+    (ok true)
   )
 )
 
 (define-public (set-authorized-resolution-engine (engine principal))
   (begin
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
+    (asserts! (is-admin tx-sender) (err ERR-UNAUTHORIZED))
     (var-set authorized-resolution-engine engine)
     (ok true)
   )
