@@ -12,6 +12,7 @@ export interface UserBet {
   status: 'active' | 'won' | 'lost' | 'expired';
   claimStatus: 'unclaimed' | 'claimed' | 'not_eligible';
   claimableAmount?: number;
+  actualWinnings?: number;
 }
 
 export interface BetHistory extends UserBet {

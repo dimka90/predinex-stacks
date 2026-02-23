@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Clock, TrendingUp, ExternalLink, Gift } from 'lucide-react';
 import { UserBet, ClaimTransaction } from '../../lib/dashboard-types';
-import { formatCurrency, formatTimeRemaining } from '../../lib/market-utils';
-import { formatPercentage } from '../../lib/dashboard-utils';
+import { formatTimeRemaining } from '../../lib/market-utils';
+import { formatPercentage, formatCurrency } from '../../lib/dashboard-utils';
 
 interface ActiveBetsCardProps {
   bets: UserBet[];
@@ -13,11 +13,11 @@ interface ActiveBetsCardProps {
   isLoading?: boolean;
 }
 
-export default function ActiveBetsCard({ 
-  bets, 
-  claimTransactions, 
-  onClaim, 
-  isLoading = false 
+export default function ActiveBetsCard({
+  bets,
+  claimTransactions,
+  onClaim,
+  isLoading = false
 }: ActiveBetsCardProps) {
   if (isLoading) {
     return (
@@ -66,7 +66,7 @@ export default function ActiveBetsCard({
               <div key={`${bet.poolId}-${bet.outcomeChosen}`} className="p-4 bg-muted/30 rounded-lg hover:bg-muted/40 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <Link 
+                    <Link
                       href={`/markets/${bet.poolId}`}
                       className="font-medium hover:text-primary transition-colors flex items-center gap-2"
                     >
@@ -124,12 +124,12 @@ export default function ActiveBetsCard({
               const claimTx = claimTransactions.get(bet.poolId);
               const isClaimPending = claimTx?.status === 'pending';
               const isClaimFailed = claimTx?.status === 'failed';
-              
+
               return (
                 <div key={`${bet.poolId}-${bet.outcomeChosen}`} className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <Link 
+                      <Link
                         href={`/markets/${bet.poolId}`}
                         className="font-medium hover:text-primary transition-colors flex items-center gap-2"
                       >
@@ -152,7 +152,7 @@ export default function ActiveBetsCard({
                     <div className="text-sm text-muted-foreground">
                       Original bet: {formatCurrency(bet.amountBet)}
                     </div>
-                    
+
                     <button
                       onClick={() => onClaim(bet.poolId)}
                       disabled={isClaimPending}

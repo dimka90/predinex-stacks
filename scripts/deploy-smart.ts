@@ -1,7 +1,5 @@
 import { makeContractDeploy, broadcastTransaction, AnchorMode, ClarityVersion } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
-import { readFileSync, writeFileSync } from 'fs';
-import path from 'path';
 
 /**
  * deploy-smart.ts
@@ -9,7 +7,27 @@ import path from 'path';
  * Automatically updates contract source code to reference newly deployed names.
  */
 
-// Load environment variables
+// Simple .env parser to avoid extra dependencies
+function loadEnv() {
+    try {
+        const envPath = path.join(process.cwd(), '.env');
+        const envContent = readFileSync(envPath, 'utf-8');
+        envContent.split('\n').forEach(line => {
+            const [key, value] = line.split('=');
+            if (key && value) {
+                process.env[key.trim()] = value.trim().replace(/^["']|["']$/g, '');
+            }
+        });
+    } catch (e) {
+        console.warn('⚠️  Could not load .env file, relying on system environment');
+    }
+}
+
+// Load environment variables before anything else
+import path from 'path';
+import { readFileSync, writeFileSync } from 'fs';
+loadEnv();
+
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const NETWORK_ENV = process.env.STACKS_NETWORK || 'mainnet';
 const WALLET_ADDRESS = process.env.WALLET_ADDRESS;
