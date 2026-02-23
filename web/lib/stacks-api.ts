@@ -6,10 +6,11 @@ import {
   ClarityType
 } from '@stacks/transactions';
 import { STACKS_MAINNET } from '@stacks/network';
+import { CONTRACT_ADDRESS as CONST_ADDRESS, CONTRACT_NAME as CONST_NAME } from './constants';
 
 const NETWORK = STACKS_MAINNET;
-const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
-const CONTRACT_NAME = 'predinex-pool-1771407097278';
+const CONTRACT_ADDRESS = CONST_ADDRESS;
+const CONTRACT_NAME = CONST_NAME;
 
 export interface Pool {
   id: number;
@@ -22,6 +23,7 @@ export interface Pool {
   totalB: number;
   expiry: number;
   settled: boolean;
+  winningOutcome?: number;
   status: 'active' | 'settled' | 'expired';
 }
 
@@ -31,10 +33,15 @@ function parsePoolCV(poolCV: any, id: number): Pool {
 
   const expiry = Number(data.expiry.value);
   const settled = data.settled.type === ClarityType.BoolTrue;
+  const winningOutcomeCV = data['winning-outcome'];
+  let winningOutcome: number | undefined = undefined;
+
+  if (winningOutcomeCV && winningOutcomeCV.type === ClarityType.OptionalSome) {
+    winningOutcome = Number(winningOutcomeCV.value.value);
+  }
 
   let status: 'active' | 'settled' | 'expired' = 'active';
   if (settled) status = 'settled';
-  // Note: we'd ideally fetch real burn-block-height
 
   return {
     id,
@@ -47,6 +54,7 @@ function parsePoolCV(poolCV: any, id: number): Pool {
     totalB: Number(data['total-b'].value),
     expiry: expiry,
     settled: settled,
+    winningOutcome: winningOutcome,
     status: status
   };
 }
