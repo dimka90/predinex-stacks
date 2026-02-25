@@ -3,8 +3,15 @@ import Navbar from "../../components/Navbar";
 import AuthGuard from "../../components/AuthGuard";
 import PortfolioOverview from "../../components/PortfolioOverview";
 import PlatformStats from "../../components/PlatformStats";
+import ActivityFeed from "../components/ActivityFeed";
+import { useUserActivity } from "../hooks/useUserActivity";
+import { useStacks } from "../components/StacksProvider";
 
 export default function Dashboard() {
+    const { userData } = useStacks();
+    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
+    const { activities, isLoading, error, refresh } = useUserActivity(stxAddress, 5);
+
     return (
         <main className="min-h-screen bg-background">
             <Navbar />
@@ -29,11 +36,13 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="p-8 rounded-3xl border border-border bg-card/40 glass shadow-xl">
-                            <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
-                                <div className="w-2 h-6 bg-accent rounded-full" />
-                                Recent Activity
-                            </h2>
-                            <p className="text-muted-foreground font-medium py-12 text-center">Your recent transaction history is empty.</p>
+                            <ActivityFeed
+                                activities={activities}
+                                isLoading={isLoading}
+                                error={error}
+                                onRefresh={refresh}
+                                limit={5}
+                            />
                         </div>
                     </div>
                 </div>
