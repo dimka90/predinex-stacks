@@ -34,6 +34,15 @@ export const WALLET_CONFIG = {
   transactionTimeout: 300000, // 5 minutes
 } as const;
 
+// Icon Styles
+export const ICON_CLASS = {
+  xs: 'w-3 h-3',
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6',
+  xl: 'w-8 h-8',
+} as const;
+
 // Application URLs
 export const APP_CONFIG = {
   name: 'Predinex',
@@ -41,6 +50,9 @@ export const APP_CONFIG = {
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://predinex.app',
   logo: '/logo.png',
 } as const;
+
+// Stacks API Base URL (derived from current network)
+export const STACKS_API_BASE_URL = NETWORK_CONFIG[DEFAULT_NETWORK].coreApiUrl;
 
 // Feature Flags
 export const FEATURES = {
