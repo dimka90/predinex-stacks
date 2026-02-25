@@ -114,3 +114,92 @@ export async function getUserBet(poolId: number, userAddress: string): Promise<U
         return null;
     }
 }
+
+// --- Activity Feed ---
+
+export interface ActivityItem {
+    txId: string;
+    type: 'bet-placed' | 'winnings-claimed' | 'pool-created' | 'contract-call';
+    functionName: string;
+    timestamp: number;
+    status: 'success' | 'pending' | 'failed';
+    amount?: number;
+    poolId?: number;
+    explorerUrl: string;
+}
+
+/**
+ * Fetches recent on-chain activity for a user address by querying the
+ * Stacks blockchain API for contract-call transactions targeting the
+ * Predinex contract.
+ */
+export async function getUserActivity(
+    userAddress: string,
+    limit: number = 20
+): Promise<ActivityItem[]> {
+    try {
+        const { STACKS_API_BASE_URL } = await import('./constants');
+        const { NETWORK_CONFIG, DEFAULT_NETWORK } = await import('./constants');
+        const explorerBase = NETWORK_CONFIG[DEFAULT_NETWORK].explorerUrl;
+
+        const url = `${STACKS_API_BASE_URL}/extended/v1/address/${userAddress}/transactions?limit=${limit}&type=contract_call`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            console.error(`Stacks API error: ${response.status}`);
+            return [];
+        }
+
+        const data = await response.json();
+        const results: any[] = data.results || [];
+
+        // Filter to only Predinex contract interactions
+        const predinexTxs = results.filter((tx: any) => {
+            const callInfo = tx.contract_call;
+            if (!callInfo) return false;
+            return callInfo.contract_id?.includes(CONTRACT_ADDRESS);
+        });
+
+        return predinexTxs.map((tx: any): ActivityItem => {
+            const callInfo = tx.contract_call;
+            const fnName: string = callInfo?.function_name || 'unknown';
+
+            let type: ActivityItem['type'] = 'contract-call';
+            if (fnName === 'place-bet') type = 'bet-placed';
+            else if (fnName === 'claim-winnings') type = 'winnings-claimed';
+            else if (fnName === 'create-pool') type = 'pool-created';
+
+            let status: ActivityItem['status'] = 'pending';
+            if (tx.tx_status === 'success') status = 'success';
+            else if (tx.tx_status === 'abort_by_response' || tx.tx_status === 'abort_by_post_condition') status = 'failed';
+
+            // Extract amount from function args if available
+            let amount: number | undefined;
+            let poolId: number | undefined;
+            const args: any[] = callInfo?.function_args || [];
+
+            for (const arg of args) {
+                if (arg.name === 'amount' && arg.repr) {
+                    amount = Number(arg.repr.replace('u', ''));
+                }
+                if (arg.name === 'pool-id' && arg.repr) {
+                    poolId = Number(arg.repr.replace('u', ''));
+                }
+            }
+
+            return {
+                txId: tx.tx_id,
+                type,
+                functionName: fnName,
+                timestamp: tx.burn_block_time || Math.floor(Date.now() / 1000),
+                status,
+                amount,
+                poolId,
+                explorerUrl: `${explorerBase}/txid/${tx.tx_id}`,
+            };
+        });
+    } catch (e) {
+        console.error('Failed to fetch user activity', e);
+        return [];
+    }
+}
