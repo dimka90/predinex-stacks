@@ -1,10 +1,10 @@
-# Predinex Stacks - Decentralized Prediction Market
+# Predinex Stacks
 
-Predinex is a decentralized prediction market built on the Stacks blockchain. It allows users to create prediction pools, place bets on binary outcomes (e.g., "Yes" vs "No"), and settle markets in a transparent and trustless manner using Clarity smart contracts.
+> Next-generation prediction markets on Bitcoin (via Stacks).
 
-**🆕 NEW: Automated Market Resolution System** - Markets can now be settled automatically using oracle data feeds, with community dispute mechanisms and fallback options.
-
-![Stacks](https://img.shields.io/badge/Stacks-Blockchain-blueviolet?style=flat-square) ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
+![Status](https://img.shields.io/badge/Status-IMPROVED-success?style=for-the-badge)
+![Commits](https://img.shields.io/badge/Project_Lifecycle-50_Commits_Complete-blue?style=for-the-badge)
+ ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
 
 ## 📜 Deployment
 
