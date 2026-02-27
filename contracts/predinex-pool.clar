@@ -253,6 +253,9 @@
   )
 )
 
+;; Claim prizes from a settled pool
+;; @param pool-id: The unique identifier of the settled pool
+;; @returns (ok uint) amount claimed on success, or (err uint) error code
 (define-public (claim-winnings (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (match (map-get? user-bets { pool-id: pool-id, user: tx-sender })
