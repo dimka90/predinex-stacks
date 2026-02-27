@@ -17,7 +17,7 @@ export default function Hero() {
                 </div>
 
                 <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
-                    PREDICT THE <span className="text-gradient inline-block">FUTURE</span>.
+                    PREDICT THE <span className="gradient-text inline-block">FUTURE</span>.
                     <br />
                     WIN ON <span className="text-foreground">BITCOIN</span>.
                 </h1>
@@ -30,14 +30,14 @@ export default function Hero() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <Link
                         href="/markets"
-                        className="w-full sm:w-auto px-10 py-5 bg-primary text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 active:scale-95 group relative overflow-hidden"
+                        className="btn-primary flex items-center gap-3 group"
                     >
                         EXPLORE MARKETS
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link
                         href="/create"
-                        className="w-full sm:w-auto px-10 py-5 bg-muted/50 hover:bg-muted border border-border text-foreground font-black rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 glass relative overflow-hidden animate-glow"
+                        className="glass-panel px-10 py-5 flex items-center gap-3 active:scale-95"
                     >
                         <Trophy className="w-5 h-5 text-accent" />
                         CREATE POOL
