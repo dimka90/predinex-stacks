@@ -28,3 +28,18 @@ This document provides a reference for the public and read-only functions availa
 
 - **`get-provider-details (provider-id)`**: Returns oracle registration details.
 - **`get-provider-id-by-address (address)`**: Maps an address to its provider ID.
+
+## Common Error Codes
+
+| Error Code | Name | Description |
+| :--- | :--- | :--- |
+| `u400` | `ERR-INVALID-AMOUNT` | The provided STX amount is below the minimum or invalid. |
+| `u401` | `ERR-UNAUTHORIZED` | The caller does not have permission for the action. |
+| `u404` | `ERR-POOL-NOT-FOUND` | The specified pool ID does not exist. |
+| `u409` | `ERR-POOL-SETTLED` | The pool has already been settled. |
+| `u410` | `ERR-ALREADY-CLAIMED` | The user has already claimed their winnings/incentives. |
+| `u411` | `ERR-NO-WINNINGS` | The user is not eligible for winnings in the specified pool. |
+| `u412` | `ERR-NOT-SETTLED` | The pool must be settled before this action can be taken. |
+| `u430` | `ERR-ORACLE-NOT-FOUND` | The oracle provider is not registered. |
+| `u431` | `ERR-ORACLE-INACTIVE` | The oracle provider is currently deactivated. |
+| `u444` | `ERR-ALREADY-VOTED` | The user has already cast a vote in this dispute. |
