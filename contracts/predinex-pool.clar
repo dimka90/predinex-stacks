@@ -216,6 +216,7 @@
                              { pool-id: pool-id }
                              (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
                            )
+                           (print { event: "settle-pool", pool-id: pool-id, winning-outcome: winning-outcome, settled-at: burn-block-height })
                            (ok true)
                          )
                          error (err error)
