@@ -39,7 +39,14 @@ The Predinex frontend is a modern Next.js application designed with professional
 - **Multi-Wallet Support**: Integrated with Hiro, Leather, and Xverse via `@stacks/connect`.
 - **Responsive & Accessible**: Optimized for all screen sizes with WCAG-compliant ARIA labels and heading structures.
 
-For detailed frontend architecture, component breakdown, and styling guides, please refer to [FRONTEND.md](./web/FRONTEND.md).
+## 📚 Documentation
+
+For deep dives into the Predinex ecosystem, refer to the following guides:
+
+- [Contract Architecture](./docs/CONTRACT_ARCHITECTURE.md): Technical overview of how contracts interact.
+- [API Reference](./docs/API_REFERENCE.md): Detailed function signatures and error codes.
+- [Automated Resolution Guide](./AUTOMATED_RESOLUTION_GUIDE.md): Mechanics of the oracle-driven settlement.
+- [Frontend Documentation](./web/FRONTEND.md): UI/UX standards and component library.
 
 ```mermaid
 graph TD
