@@ -1,10 +1,10 @@
-# Predinex Stacks - Decentralized Prediction Market
+# Predinex Stacks
 
-Predinex is a decentralized prediction market built on the Stacks blockchain. It allows users to create prediction pools, place bets on binary outcomes (e.g., "Yes" vs "No"), and settle markets in a transparent and trustless manner using Clarity smart contracts.
+> Next-generation prediction markets on Bitcoin (via Stacks).
 
-**🆕 NEW: Automated Market Resolution System** - Markets can now be settled automatically using oracle data feeds, with community dispute mechanisms and fallback options.
-
-![Stacks](https://img.shields.io/badge/Stacks-Blockchain-blueviolet?style=flat-square) ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
+![Status](https://img.shields.io/badge/Status-IMPROVED-success?style=for-the-badge)
+![Commits](https://img.shields.io/badge/Project_Lifecycle-50_Commits_Complete-blue?style=for-the-badge)
+ ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
 
 ## 📜 Deployment
 
@@ -39,7 +39,14 @@ The Predinex frontend is a modern Next.js application designed with professional
 - **Multi-Wallet Support**: Integrated with Hiro, Leather, and Xverse via `@stacks/connect`.
 - **Responsive & Accessible**: Optimized for all screen sizes with WCAG-compliant ARIA labels and heading structures.
 
-For detailed frontend architecture, component breakdown, and styling guides, please refer to [FRONTEND.md](./web/FRONTEND.md).
+## 📚 Documentation
+
+For deep dives into the Predinex ecosystem, refer to the following guides:
+
+- [Contract Architecture](./docs/CONTRACT_ARCHITECTURE.md): Technical overview of how contracts interact.
+- [API Reference](./docs/API_REFERENCE.md): Detailed function signatures and error codes.
+- [Automated Resolution Guide](./AUTOMATED_RESOLUTION_GUIDE.md): Mechanics of the oracle-driven settlement.
+- [Frontend Documentation](./web/FRONTEND.md): UI/UX standards and component library.
 
 ```mermaid
 graph TD

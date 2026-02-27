@@ -7,17 +7,17 @@
 
 ;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED u401)
-(define-constant ERR-INVALID-AMOUNT u400)
-(define-constant ERR-POOL-NOT-FOUND u404)
-(define-constant ERR-POOL-SETTLED u409)
-(define-constant ERR-INVALID-OUTCOME u422)
-(define-constant ERR-NOT-SETTLED u412)
-(define-constant ERR-ALREADY-CLAIMED u410)
-(define-constant ERR-NO-WINNINGS u411)
-(define-constant ERR-POOL-NOT-EXPIRED u413)
-(define-constant ERR-INVALID-TITLE u420)
-(define-constant ERR-ORACLE-NOT-FOUND u430)
+(define-constant ERR-UNAUTHORIZED u401) ;; Unauthorized caller
+(define-constant ERR-INVALID-AMOUNT u400) ;; Bet amount below minimum
+(define-constant ERR-POOL-NOT-FOUND u404) ;; Pool ID does not exist
+(define-constant ERR-POOL-SETTLED u409)   ;; Pool is already settled
+(define-constant ERR-INVALID-OUTCOME u422) ;; Specified outcome is invalid
+(define-constant ERR-NOT-SETTLED u412)    ;; Pool must be settled first
+(define-constant ERR-ALREADY-CLAIMED u410) ;; User has already claimed rewards
+(define-constant ERR-NO-WINNINGS u411)    ;; No rewards available for this user
+(define-constant ERR-POOL-NOT-EXPIRED u413) ;; Pool duration has not passed
+(define-constant ERR-INVALID-TITLE u420)   ;; Title or description length invalid
+(define-constant ERR-ORACLE-NOT-FOUND u430) ;; Oracle provider not found
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
@@ -101,8 +101,20 @@
   (contract-call? .predinex-oracle-registry get-provider-id-by-address provider-address)
 )
 
+;; Fee Calculation Helper
+(define-private (calculate-pool-fee (total-balance uint))
+  (/ (* total-balance FEE-PERCENT) u100)
+)
+
 ;; Public Functions
 
+;; Create a new prediction pool
+;; @param title: The title of the market (max 256 chars)
+;; @param description: Full description of the market (max 512 chars)
+;; @param outcome-a: Name of outcome A (max 128 chars)
+;; @param outcome-b: Name of outcome B (max 128 chars)
+;; @param duration: Length of betting period in blocks
+;; @returns (ok uint) pool-id on success, or (err uint) error code
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
     (if (and 
@@ -137,6 +149,7 @@
           (unwrap! (as-contract (contract-call? .liquidity-incentives initialize-pool-incentives pool-id)) (err u500))
           
           (var-set pool-counter (+ pool-id u1))
+          (print { event: "create-pool", pool-id: pool-id, creator: tx-sender })
           (ok pool-id)
         )
         (err ERR-INVALID-TITLE)
@@ -144,6 +157,11 @@
   )
 )
 
+;; Place a bet on a prediction pool
+;; @param pool-id: The unique identifier of the target pool
+;; @param outcome: The choice (0 for A, 1 for B)
+;; @param amount: STX amount in microstacks
+;; @returns (ok bool) on success, or (err uint) error code
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (if (and 
@@ -184,6 +202,7 @@
                    )
 
                    (var-set total-volume (+ (var-get total-volume) amount))
+                   (print { event: "place-bet", pool-id: pool-id, user: tx-sender, outcome: outcome, amount: amount })
                    (ok true)
                  )
                  error (err error)
@@ -195,6 +214,10 @@
   )
 )
 
+;; Settle a prediction pool and declare a winner
+;; @param pool-id: The unique identifier of the pool
+;; @param winning-outcome: The result (0 or 1)
+;; @returns (ok bool) on success, or (err uint) error code
 (define-public (settle-pool (pool-id uint) (winning-outcome uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (if (or 
@@ -206,7 +229,7 @@
                  (if (or (is-eq winning-outcome u0) (is-eq winning-outcome u1))
                      (let (
                        (total-pool-balance (+ (get total-a pool) (get total-b pool)))
-                       (fee (/ (* total-pool-balance FEE-PERCENT) u100))
+                       (fee (calculate-pool-fee total-pool-balance))
                      )
                        (match (if (> fee u0) (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)) (ok true))
                          success (begin
@@ -214,6 +237,7 @@
                              { pool-id: pool-id }
                              (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
                            )
+                           (print { event: "settle-pool", pool-id: pool-id, winning-outcome: winning-outcome, settled-at: burn-block-height })
                            (ok true)
                          )
                          error (err error)
@@ -229,6 +253,9 @@
   )
 )
 
+;; Claim prizes from a settled pool
+;; @param pool-id: The unique identifier of the settled pool
+;; @returns (ok uint) amount claimed on success, or (err uint) error code
 (define-public (claim-winnings (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (match (map-get? user-bets { pool-id: pool-id, user: tx-sender })
@@ -252,6 +279,7 @@
                         (match (as-contract (stx-transfer? base-share tx-sender user))
                           success (begin
                             (map-set claims { pool-id: pool-id, user: tx-sender } true)
+                            (print { event: "claim-winnings", pool-id: pool-id, user: user, amount: base-share })
                             (ok base-share)
                           )
                           error (err error)
@@ -389,6 +417,18 @@
 
 (define-read-only (get-user-bet (pool-id uint) (user principal))
   (map-get? user-bets { pool-id: pool-id, user: user })
+)
+
+(define-read-only (get-pool-bet-info (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (ok {
+      total-a: (get total-a pool),
+      total-b: (get total-b pool),
+      total-volume: (+ (get total-a pool) (get total-b pool)),
+      settled: (get settled pool)
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
 )
 
 (define-read-only (get-creation-data (pool-id uint))

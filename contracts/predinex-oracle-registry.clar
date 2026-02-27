@@ -212,6 +212,21 @@
   (var-get total-staked-amount)
 )
 
+(define-read-only (get-total-providers)
+  (ok (var-get oracle-provider-counter))
+)
+
+(define-read-only (get-oracle-stats (provider-id uint))
+  (match (map-get? oracle-providers { provider-id: provider-id })
+    provider (ok {
+      reliability-score: (get reliability-score provider),
+      total-resolutions: (get total-resolutions provider),
+      is-active: (get is-active provider)
+    })
+    (err ERR-ORACLE-NOT-FOUND)
+  )
+)
+
 ;; Private helper
 (define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
   (begin
@@ -242,7 +257,11 @@
   (supported-data-types (list 10 (string-ascii 32)))
   (metadata (string-ascii 512)))
   (let ((provider-id (var-get oracle-provider-counter)))
-    (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+    (if (and 
+          (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+          (> (len supported-data-types) u0)
+          (not (is-eq provider-address CONTRACT-OWNER))
+        )
         (if (is-none (get-provider-id-by-address provider-address))
             (if (>= stake-amount MIN-STAKE-AMOUNT)
                 (if (> (len metadata) u0)
