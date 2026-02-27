@@ -137,6 +137,7 @@
           (unwrap! (as-contract (contract-call? .liquidity-incentives initialize-pool-incentives pool-id)) (err u500))
           
           (var-set pool-counter (+ pool-id u1))
+          (print { event: "create-pool", pool-id: pool-id, creator: tx-sender })
           (ok pool-id)
         )
         (err ERR-INVALID-TITLE)
