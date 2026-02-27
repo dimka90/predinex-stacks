@@ -7,17 +7,17 @@
 
 ;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED u401)
-(define-constant ERR-INVALID-AMOUNT u400)
-(define-constant ERR-POOL-NOT-FOUND u404)
-(define-constant ERR-POOL-SETTLED u409)
-(define-constant ERR-INVALID-OUTCOME u422)
-(define-constant ERR-NOT-SETTLED u412)
-(define-constant ERR-ALREADY-CLAIMED u410)
-(define-constant ERR-NO-WINNINGS u411)
-(define-constant ERR-POOL-NOT-EXPIRED u413)
-(define-constant ERR-INVALID-TITLE u420)
-(define-constant ERR-ORACLE-NOT-FOUND u430)
+(define-constant ERR-UNAUTHORIZED u401) ;; Unauthorized caller
+(define-constant ERR-INVALID-AMOUNT u400) ;; Bet amount below minimum
+(define-constant ERR-POOL-NOT-FOUND u404) ;; Pool ID does not exist
+(define-constant ERR-POOL-SETTLED u409)   ;; Pool is already settled
+(define-constant ERR-INVALID-OUTCOME u422) ;; Specified outcome is invalid
+(define-constant ERR-NOT-SETTLED u412)    ;; Pool must be settled first
+(define-constant ERR-ALREADY-CLAIMED u410) ;; User has already claimed rewards
+(define-constant ERR-NO-WINNINGS u411)    ;; No rewards available for this user
+(define-constant ERR-POOL-NOT-EXPIRED u413) ;; Pool duration has not passed
+(define-constant ERR-INVALID-TITLE u420)   ;; Title or description length invalid
+(define-constant ERR-ORACLE-NOT-FOUND u430) ;; Oracle provider not found
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
