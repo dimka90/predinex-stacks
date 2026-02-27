@@ -185,6 +185,7 @@
                    )
 
                    (var-set total-volume (+ (var-get total-volume) amount))
+                   (print { event: "place-bet", pool-id: pool-id, user: tx-sender, outcome: outcome, amount: amount })
                    (ok true)
                  )
                  error (err error)
