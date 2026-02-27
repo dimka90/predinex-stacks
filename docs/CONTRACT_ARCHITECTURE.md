@@ -38,3 +38,12 @@ Contracts must be deployed in the following order due to internal contract-calls
 2. `liquidity-incentives`
 3. `predinex-pool` (Depends on 1 & 2)
 4. `predinex-resolution-engine` (Depends on 1 & 3)
+
+## Security & Access Control
+
+The Predinex ecosystem uses a multi-layered security approach:
+
+- **Admin Roles**: Specific administrative functions (like registering oracles or adjusting platform parameters) are restricted to the `CONTRACT-OWNER` or authorized `admin` principals.
+- **Contract Decoupling**: Contracts interact via `contract-call?`, allowing for modular upgrades and isolation of concerns.
+- **Post-Conditions**: All client-side transactions are expected to use strict post-conditions to ensure only the specified amount of STX is transferred.
+- **Vesting Periods**: Liquidity incentives are subject to a 1-week vesting period to prevent "pump and dump" behavior and ensure long-term participation.
