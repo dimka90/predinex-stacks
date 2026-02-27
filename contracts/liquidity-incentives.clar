@@ -218,6 +218,16 @@
 (define-data-var emergency-mode bool false)
 (define-data-var authorized-contract principal tx-sender)
 
+(define-read-only (get-contract-stats)
+  (ok {
+    total-distributed: (var-get total-incentives-distributed),
+    total-claimed: (var-get total-incentives-claimed),
+    active-pools: (var-get active-pools-with-incentives),
+    contract-balance: (var-get contract-balance),
+    total-users: (var-get total-unique-users)
+  })
+)
+
 ;; [NEW] Global Spend Tracking
 (define-data-var global-daily-spend uint u0)
 (define-data-var global-weekly-spend uint u0)
