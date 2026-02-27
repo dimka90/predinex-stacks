@@ -247,8 +247,9 @@
                                created-at: burn-block-height
                              }
                            )
-                           (var-set dispute-counter (+ dispute-id u1))
-                           (ok dispute-id)
+                            (print { event: "create-dispute", dispute-id: dispute-id, pool-id: pool-id, disputer: tx-sender })
+                            (var-set dispute-counter (+ dispute-id u1))
+                            (ok dispute-id)
                          )
                          error (err error)
                        )
@@ -288,6 +289,7 @@
                           votes-against: (if vote (get votes-against dispute) (+ (get votes-against dispute) voting-power))
                         })
                       )
+                      (print { event: "vote-dispute", dispute-id: dispute-id, voter: tx-sender, vote: vote })
                       (ok true)
                     )
                   )
