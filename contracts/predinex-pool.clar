@@ -101,6 +101,11 @@
   (contract-call? .predinex-oracle-registry get-provider-id-by-address provider-address)
 )
 
+;; Fee Calculation Helper
+(define-private (calculate-pool-fee (total-balance uint))
+  (/ (* total-balance FEE-PERCENT) u100)
+)
+
 ;; Public Functions
 
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
@@ -208,7 +213,7 @@
                  (if (or (is-eq winning-outcome u0) (is-eq winning-outcome u1))
                      (let (
                        (total-pool-balance (+ (get total-a pool) (get total-b pool)))
-                       (fee (/ (* total-pool-balance FEE-PERCENT) u100))
+                       (fee (calculate-pool-fee total-pool-balance))
                      )
                        (match (if (> fee u0) (as-contract (stx-transfer? fee tx-sender CONTRACT-OWNER)) (ok true))
                          success (begin
