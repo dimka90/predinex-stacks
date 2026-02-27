@@ -400,6 +400,18 @@
   (map-get? user-bets { pool-id: pool-id, user: user })
 )
 
+(define-read-only (get-pool-bet-info (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (ok {
+      total-a: (get total-a pool),
+      total-b: (get total-b pool),
+      total-volume: (+ (get total-a pool) (get total-b pool)),
+      settled: (get settled pool)
+    })
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
 (define-read-only (get-creation-data (pool-id uint))
   (map-get? pools { pool-id: pool-id })
 )
