@@ -11,15 +11,25 @@ Predinex Stacks consists of four primary Clarity smart contracts that work toget
 
 ## Interaction Flow
 
+## Detailed Interaction
+
 ```mermaid
-graph TD
-    User[User] --> Pool[predinex-pool]
-    User --> Incentives[liquidity-incentives]
-    Oracle[Oracle Provider] --> Registry[predinex-oracle-registry]
-    Pool --> Registry
-    Pool --> Incentives
-    Engine[resolution-engine] --> Pool
-    Engine --> Registry
+sequenceDiagram
+    participant U as User
+    participant P as predinex-pool
+    participant I as liquidity-incentives
+    participant R as resolution-engine
+    participant O as oracle-registry
+
+    U->>P: create-pool
+    P->>I: initialize-pool-incentives
+    U->>P: place-bet
+    P->>I: record-bet-and-calculate-early-bird
+    O-->>R: submit-oracle-data
+    R->>P: attempt-automated-resolution
+    P->>P: settle-pool (updates state)
+    U->>P: claim-winnings
+    U->>I: claim-incentive
 ```
 
 ### Dependency Order
