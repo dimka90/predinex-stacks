@@ -240,6 +240,7 @@
     )
     
     (var-set active-pools-with-incentives (+ (var-get active-pools-with-incentives) u1))
+    (print { event: "initialize-incentives", pool-id: pool-id })
     (ok pool-id)
   )
 )
