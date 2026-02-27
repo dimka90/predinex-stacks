@@ -398,3 +398,16 @@
 (define-read-only (get-dispute-details (dispute-id uint))
   (map-get? pool-disputes { dispute-id: dispute-id })
 )
+
+(define-read-only (get-voting-stats (dispute-id uint))
+  (match (map-get? pool-disputes { dispute-id: dispute-id })
+    dispute (ok {
+      votes-for: (get votes-for dispute),
+      votes-against: (get votes-against dispute),
+      total-votes: (+ (get votes-for dispute) (get votes-against dispute)),
+      deadline: (get voting-deadline dispute),
+      status: (get status dispute)
+    })
+    (err ERR-DISPUTE-NOT-FOUND)
+  )
+)
