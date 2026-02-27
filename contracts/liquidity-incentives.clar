@@ -200,6 +200,13 @@
   }
 )
 
+(define-read-only (get-user-incentive-totals (user principal))
+  (ok (default-to 
+    { total-pools-participated: u0, total-bets-placed: u0, total-incentives-earned: u0, total-incentives-claimed: u0 }
+    (map-get? user-loyalty-history { user: user })
+  ))
+)
+
 ;; Data variables
 (define-data-var total-incentives-distributed uint u0)
 (define-data-var total-incentives-claimed uint u0)
