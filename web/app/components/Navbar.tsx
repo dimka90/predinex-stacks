@@ -23,7 +23,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed top-0 w-full z-50 glass border-b border-border">
+        <nav className="fixed top-0 w-full z-50 glass-panel !rounded-none !border-x-0 !border-t-0 border-b border-white/10 shadow-lg">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
