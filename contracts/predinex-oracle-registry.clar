@@ -131,6 +131,7 @@
               )
               (map-insert oracle-address-to-id { provider-address: provider-address } provider-id)
               (fold register-data-type-for-provider supported-data-types provider-id)
+              (print { event: "register-oracle", provider-id: provider-id, address: provider-address })
               (var-set oracle-provider-counter (+ provider-id u1))
               (ok provider-id)
             )
@@ -146,6 +147,7 @@
     provider (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
                  (begin
                    (map-set oracle-providers { provider-id: provider-id } (merge provider { is-active: false }))
+                   (print { event: "deactivate-oracle", provider-id: provider-id })
                    (ok true)
                  )
                  (err ERR-UNAUTHORIZED))
