@@ -255,6 +255,7 @@
                         (match (as-contract (stx-transfer? base-share tx-sender user))
                           success (begin
                             (map-set claims { pool-id: pool-id, user: tx-sender } true)
+                            (print { event: "claim-winnings", pool-id: pool-id, user: user, amount: base-share })
                             (ok base-share)
                           )
                           error (err error)
