@@ -157,6 +157,11 @@
   )
 )
 
+;; Place a bet on a prediction pool
+;; @param pool-id: The unique identifier of the target pool
+;; @param outcome: The choice (0 for A, 1 for B)
+;; @param amount: STX amount in microstacks
+;; @returns (ok bool) on success, or (err uint) error code
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (if (and 
