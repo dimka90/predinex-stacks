@@ -108,6 +108,13 @@
 
 ;; Public Functions
 
+;; Create a new prediction pool
+;; @param title: The title of the market (max 256 chars)
+;; @param description: Full description of the market (max 512 chars)
+;; @param outcome-a: Name of outcome A (max 128 chars)
+;; @param outcome-b: Name of outcome B (max 128 chars)
+;; @param duration: Length of betting period in blocks
+;; @returns (ok uint) pool-id on success, or (err uint) error code
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
     (if (and 
