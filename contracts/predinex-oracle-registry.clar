@@ -120,8 +120,10 @@
   )
 )
 
-;; Public Functions
-
+;; Register a new oracle provider
+;; @param provider-address: The principal address of the oracle
+;; @param supported-data-types: List of strings identifying the data types provided
+;; @returns (ok uint) provider-id on success, or (err uint) error code
 (define-public (register-oracle-provider (provider-address principal) (supported-data-types (list 10 (string-ascii 32))))
   (let ((provider-id (var-get oracle-provider-counter)))
     (if (and 
