@@ -320,3 +320,4 @@ This project is built with robustness in mind, featuring automated event monitor
 - Real-time Event Monitoring
 
 All smart contracts are verified using Clarinet 1.x.
+ 
