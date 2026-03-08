@@ -14,7 +14,7 @@ export default function RewardsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="glass-panel p-8 rounded-2xl mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
-            <p className="text-muted-foreground">Track your performance and earnings</p>
+            <p className="text-muted-foreground">Monitor your performance and rank and earnings</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
