@@ -315,3 +315,6 @@ Contributions are welcome! Please feel free to submit a Pull Request. We priorit
 This project is licensed under the ISC License. 
 ### Project Resilience
 This project is built with robustness in mind, featuring automated event monitoring and diagnostic tools.
+
+- Decentralized Oracle Integration
+- Real-time Event Monitoring
