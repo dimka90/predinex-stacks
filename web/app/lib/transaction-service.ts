@@ -292,4 +292,4 @@ export class TransactionService {
     const stacksAddressRegex = /^S[PT][0-9A-HJKMNP-TV-Z]{39}$/;
     return stacksAddressRegex.test(address);
   }
-}
+}// Plan: Integrate with Hiro Explorer API
