@@ -69,3 +69,5 @@ This feature was implemented via a series of 30 granular, professional commits:
 
 ---
 *Ready for review and merge into main.*
+
+- [ ] Code is linted and properly formatted
