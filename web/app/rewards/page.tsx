@@ -13,7 +13,7 @@ export default function RewardsPage() {
       <AuthGuard>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="glass-panel p-8 rounded-2xl mb-8">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
+            <h1 className="text-4xl font-extrabold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
             <p className="text-muted-foreground">Monitor your performance and rank and earnings</p>
           </div>
 
@@ -24,7 +24,7 @@ export default function RewardsPage() {
             <div className="lg:col-span-1">
               <div className="glass-panel p-6 rounded-xl h-full flex flex-col justify-center items-center text-center">
                 <h2 className="text-lg font-medium text-muted-foreground mb-2">Your Rank</h2>
-                <div className="text-5xl font-bold text-primary mb-2">#42</div>
+                <div className="text-5xl font-extrabold text-primary mb-2">#42</div>
                 <p className="text-sm text-muted-foreground">Top 5% of contributors</p>
               </div>
             </div>
