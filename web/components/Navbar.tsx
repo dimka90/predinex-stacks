@@ -20,3 +20,4 @@ export default function Navbar() {
     </nav>
   );
 }
+// Generic navigation bar for all pages
