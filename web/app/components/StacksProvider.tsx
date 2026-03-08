@@ -170,3 +170,4 @@ export function StacksProvider({ children }: { children: ReactNode }) {
 export function useStacks() {
     return useContext(StacksContext);
 }
+// Entry point for Stacks network integration
