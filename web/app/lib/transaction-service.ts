@@ -293,3 +293,4 @@ export class TransactionService {
     return stacksAddressRegex.test(address);
   }
 }// Plan: Integrate with Hiro Explorer API
+// Note: Consider implementing caching for frequently accessed transaction statuses
