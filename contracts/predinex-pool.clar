@@ -446,3 +446,4 @@
 (define-read-only (get-user-claim-status (pool-id uint) (user principal))
   (ok (default-to false (map-get? claims { pool-id: pool-id, user: user })))
 );; TODO: Implement dynamic fee adjustment logic
+;; TODO: Implement dynamic fee adjustment logic
