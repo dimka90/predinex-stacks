@@ -337,3 +337,4 @@ All smart contracts are verified using Clarinet 1.x.
 // Step 31 of project hardening
 // Step 32 of project hardening
 // Step 33 of project hardening
+// Step 34 of project hardening
