@@ -39,34 +39,15 @@ export function NetworkSwitcher() {
   return (
     <div className="flex items-center gap-2">
       <Globe className="w-4 h-4 text-muted-foreground" />
-      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-        <button
-          onClick={() => handleNetworkSwitch('mainnet')}
-          disabled={isLoading}
-          className={`px-3 py-1 text-xs rounded transition-colors ${currentNetwork === 'mainnet'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-            }`}
-        >
-          <div className="flex items-center gap-1">
-            Mainnet
-            {currentNetwork === 'mainnet' && <Check className="w-3 h-3" />}
-          </div>
-        </button>
-        <button
-          onClick={() => handleNetworkSwitch('testnet')}
-          disabled={isLoading}
-          className={`px-3 py-1 text-xs rounded transition-colors ${currentNetwork === 'testnet'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-            }`}
-        >
-          <div className="flex items-center gap-1">
-            Testnet
-            {currentNetwork === 'testnet' && <Check className="w-3 h-3" />}
-          </div>
-        </button>
-      </div>
+      <select
+        value={currentNetwork}
+        onChange={e => handleNetworkSwitch(e.target.value as NetworkType)}
+        disabled={isLoading}
+        className="bg-muted rounded p-1 text-sm"
+      >
+        <option value="mainnet">Mainnet</option>
+        <option value="testnet">Testnet</option>
+      </select>
 
       {error && (
         <div className="flex items-center gap-1 text-red-500 text-xs">
