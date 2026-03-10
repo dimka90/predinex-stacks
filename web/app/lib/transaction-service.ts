@@ -294,3 +294,4 @@ export class TransactionService {
   }
 }// Plan: Integrate with Hiro Explorer API
 // Note: Consider implementing caching for frequently accessed transaction statuses
+/** @param {string} txId @returns {Promise<any>} */
