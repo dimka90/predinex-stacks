@@ -334,3 +334,4 @@ This project is built with robustness in mind, featuring automated event monitor
 All smart contracts are verified using Clarinet 1.x.
  
 // Step 30 of project hardening
+// Step 31 of project hardening
