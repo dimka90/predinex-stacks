@@ -327,3 +327,6 @@ Successfully reached the 30-improvement milestone!
  
 ### Project Resilience
 This project is built with robustness in mind, featuring automated event monitoring and diagnostic tools.
+
+- Decentralized Oracle Integration
+- Real-time Event Monitoring
