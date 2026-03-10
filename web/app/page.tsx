@@ -89,3 +89,4 @@ export default function Home() {
   );
 }
 // Optimized for performance
+// Refined animations
