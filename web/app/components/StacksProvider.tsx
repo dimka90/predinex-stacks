@@ -171,3 +171,4 @@ export function useStacks() {
     return useContext(StacksContext);
 }
 // Entry point for Stacks network integration
+// Entry point for Stacks network integration
