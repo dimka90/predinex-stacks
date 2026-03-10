@@ -156,3 +156,4 @@ export function isWalletAvailable(walletType: WalletType): boolean {
     }
 }
 
+// Plan: Integrate with Hiro Explorer/AppKit enhancements
