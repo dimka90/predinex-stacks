@@ -72,3 +72,5 @@ This feature was implemented via a series of 30 granular, professional commits:
 
 - [ ] Code is linted and properly formatted
 - [ ] Verified on Safari/Chrome/Firefox
+
+- [ ] Code is linted and properly formatted
