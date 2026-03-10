@@ -25,3 +25,4 @@ export default function StatusBadge({ status, className }: StatusBadgeProps) {
         </span>
     );
 }
+// Helper component for status indicators
