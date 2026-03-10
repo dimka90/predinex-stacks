@@ -84,3 +84,4 @@ export function WalletStatus() {
     </div>
   );
 }// Component to display current Stacks connection status
+// Component to display current Stacks connection status
