@@ -324,3 +324,6 @@ All smart contracts are verified using Clarinet 1.x.
  
 ### Project Status
 Successfully reached the 30-improvement milestone!
+ 
+### Project Resilience
+This project is built with robustness in mind, featuring automated event monitoring and diagnostic tools.
