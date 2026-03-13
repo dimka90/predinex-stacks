@@ -242,7 +242,11 @@
   (supported-data-types (list 10 (string-ascii 32)))
   (metadata (string-ascii 512)))
   (let ((provider-id (var-get oracle-provider-counter)))
-    (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+    (if (and 
+          (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
+          (> (len supported-data-types) u0)
+          (not (is-eq provider-address CONTRACT-OWNER))
+        )
         (if (is-none (get-provider-id-by-address provider-address))
             (if (>= stake-amount MIN-STAKE-AMOUNT)
                 (if (> (len metadata) u0)

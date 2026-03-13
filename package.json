@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@stacks/network": "^7.2.0",
+    "@types/node-fetch": "^2.6.13",
     "tsx": "^4.21.0"
   }
 }

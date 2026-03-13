@@ -23,7 +23,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed top-0 w-full z-50 glass border-b border-border">
+        <nav className="fixed top-0 w-full z-50 glass-panel !rounded-none !border-x-0 !border-t-0 border-b border-white/10 shadow-lg">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
@@ -41,6 +41,11 @@ export default function Navbar() {
                         <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="Create a new prediction market">
                             Create
                         </Link>
+                        {userData && (
+                            <Link href="/activity" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="View activity feed">
+                                Activity
+                            </Link>
+                        )}
                         {userData && (
                             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="User dashboard">
                                 Dashboard
@@ -118,6 +123,15 @@ export default function Navbar() {
                             Create
                         </Link>
                         {userData && (
+                            <Link
+                                href="/activity"
+                                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                Activity
+                            </Link>
+                        )}
+                        {userData && (
                             <>
                                 <Link
                                     href="/dashboard"
@@ -143,3 +157,4 @@ export default function Navbar() {
         </nav>
     );
 }
+// Generic navigation bar for all pages

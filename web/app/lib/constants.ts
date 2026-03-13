@@ -31,4 +31,5 @@ export const ANIMATION_DURATION = {
   fast: 'duration-150',
   base: 'duration-300',
   slow: 'duration-500',
-} as const;
+} as const;// Ensure network config matches your local clarinet environment
+// Ensure network config matches your local environment

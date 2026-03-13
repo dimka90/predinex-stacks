@@ -1,8 +1,12 @@
 import fetch from 'node-fetch';
 
-const WALLET_ADDRESS = process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
+const WALLET_ADDRESS = process.argv[2] || process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
 
 async function checkBalance() {
+    if (!WALLET_ADDRESS) {
+        console.error("❌ Error: No wallet address provided. Set WALLET_ADDRESS env var or pass as argument.");
+        return;
+    }
     console.log(`💰 Checking balance for: ${WALLET_ADDRESS}\n`);
 
     try {
@@ -25,7 +29,7 @@ async function checkBalance() {
         console.log(`   Locked: ${data.locked} microSTX`);
         console.log(`   Nonce: ${data.nonce}`);
         console.log(`   Transaction Count: ${data.tx_count}`);
-        
+
         if (data.balance === '0') {
             console.log(`\n⚠️  WARNING: Your balance is 0! You need STX to pay for transactions.`);
             console.log(`   Get testnet STX from: https://faucet.stacks.org/`);

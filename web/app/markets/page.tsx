@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import Navbar from "../components/Navbar";
+import { StatsCard } from '@/components/ui/StatsCard';
 import SearchBar from "../components/SearchBar";
 import FilterControls from "../components/FilterControls";
 import SortControls from "../components/SortControls";
@@ -53,6 +54,13 @@ export default function MarketsPage() {
           <p className="text-muted-foreground">
             Discover and participate in decentralized prediction markets on Stacks
           </p>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <StatsCard title="Total Markets" value={filterCounts.all} />
+          <StatsCard title="Active" value={filterCounts.active} />
+          <StatsCard title="Settled" value={filterCounts.settled} />
         </div>
 
         {/* Controls */}

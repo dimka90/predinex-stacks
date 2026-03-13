@@ -21,7 +21,7 @@ export default function Badge({
 }: BadgeProps) {
     const variantClasses = {
         default: 'bg-muted text-muted-foreground border-border',
-        primary: 'bg-primary/10 text-primary border-primary/20',
+        primary: 'bg-primary/90/10 text-primary border-primary/20',
         success: 'bg-green-500/10 text-green-400 border-green-500/20',
         warning: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
         error: 'bg-red-500/10 text-red-500 border-red-500/20',

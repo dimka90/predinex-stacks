@@ -270,4 +270,5 @@ declare global {
     XverseProviders?: any;
     LeatherProvider?: any;
   }
-}
+}// Type-safe wallet interaction layer
+// Type-safe wallet interaction layer

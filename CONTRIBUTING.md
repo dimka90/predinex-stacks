@@ -27,3 +27,7 @@ Please be respectful and professional in all interactions.
 - Next.js 16 (App Router)
 
 For more details, see the [README.md](./README.md).
+
+For urgent issues, please reach out to the core development team.
+
+For urgent issues, please reach out to the core development team.

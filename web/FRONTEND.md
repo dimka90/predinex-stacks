@@ -61,6 +61,18 @@ Predinex uses React Context for global state management related to user authenti
 
 ### Local Component State
 For UI-specific states (loading spinners, visibility toggles, form inputs), we favor React's `useState` and `useCallback` to keep components self-contained and performant.
+## On-Chain Data Integration
+
+The frontend interacts with Stacks smart contracts using `@stacks/transactions`.
+
+### Fetching Data
+- **Read-Only Calls**: Use `callReadOnlyFunction` for fetching pool details, user bets, and system stats.
+- **Contract Map Polling**: Strategic polling of contract maps to ensure the UI reflects the latest on-chain state.
+
+### Executing Transactions
+- **Wallet Signing**: Utilizes `@stacks/connect` to prompt users for transaction signing.
+- **Transaction Monitoring**: Custom hooks in `web/lib/` track transaction status from `pending` to `success` or `failed`.
+- **Post-Conditions**: Strict STX post-conditions are applied to all betting transactions to prevent unauthorized fund movements.
 
 ## Styling and Design System
 
