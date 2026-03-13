@@ -207,6 +207,18 @@
   ))
 )
 
+;; Get fee discount based on user tier
+;; @param user: The principal to check
+;; @returns uint: Discount percentage (e.g., 10 for 10% discount)
+(define-read-only (get-tier-fee-discount (user principal))
+  (let ((tier-info (default-to { tier: TIER-BRONZE, multiplier: u1, total-volume: u0 } (map-get? user-tiers { user: user }))))
+    (if (is-eq (get tier tier-info) TIER-PLATINUM) u20 ;; 20% discount
+      (if (is-eq (get tier tier-info) TIER-GOLD) u15 ;; 15% discount
+        (if (is-eq (get tier tier-info) TIER-SILVER) u10 ;; 10% discount
+          u0)))
+  )
+)
+
 ;; Data variables
 (define-data-var total-incentives-distributed uint u0)
 (define-data-var total-incentives-claimed uint u0)
