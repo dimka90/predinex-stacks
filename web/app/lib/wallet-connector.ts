@@ -3,21 +3,43 @@
  * Supports Leather, Xverse, and WalletConnect
  */
 
-import { showConnect } from '@stacks/connect';
-import { UserSession } from '@stacks/auth';
+import { showConnect, UserSession } from '@stacks/connect';
 import { handleWalletError, WalletError } from './wallet-errors';
 
+/**
+ * Configuration for the Stacks wallet connection
+ */
+const WALLET_CONFIG = {
+    name: 'Predinex',
+    icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+    redirectTo: '/',
+};
+
+/**
+ * Supported wallet providers for the Predinex platform
+ */
 export type WalletType = 'leather' | 'xverse' | 'walletconnect';
 
+/**
+ * Configuration options for establishing a wallet connection
+ */
 export interface WalletConnectionOptions {
+    /** The specific wallet provider to use */
     walletType: WalletType;
+    /** The Stacks UserSession instance to manage the auth state */
     userSession: UserSession;
+    /** Callback triggered when the connection is successfully established */
     onFinish?: (authData: any) => void;
+    /** Callback triggered if the user cancels the connection process */
     onCancel?: () => void;
 }
 
 /**
- * Connect to a specific wallet type
+ * Initiates the connection flow for a specific wallet type.
+ * Dispatches to the appropriate connector based on the provided walletType.
+ * 
+ * @param options - The connection parameters and callbacks
+ * @returns A promise that resolves when the connection process is complete (successfully or cancelled)
  */
 export async function connectWallet(options: WalletConnectionOptions): Promise<void> {
     const { walletType, userSession, onFinish, onCancel } = options;
@@ -42,7 +64,13 @@ export async function connectWallet(options: WalletConnectionOptions): Promise<v
 }
 
 /**
- * Connect to extension wallets (Leather or Xverse)
+ * Internal helper to handle connections for extension-based wallets (Leather and Xverse).
+ * Uses the Stacks Connect library to trigger the browser extension popup.
+ * 
+ * @param walletType - The type of extension wallet ('leather' or 'xverse')
+ * @param userSession - The active session to be updated
+ * @param onFinish - Success callback
+ * @param onCancel - Cancellation callback
  */
 async function connectExtensionWallet(
     walletType: 'leather' | 'xverse',
@@ -52,10 +80,10 @@ async function connectExtensionWallet(
 ): Promise<void> {
     await showConnect({
         appDetails: {
-            name: 'Predinex',
-            icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+            name: WALLET_CONFIG.name,
+            icon: WALLET_CONFIG.icon,
         },
-        redirectTo: '/',
+        redirectTo: WALLET_CONFIG.redirectTo,
         userSession,
         onFinish: async (authData) => {
             console.log(`${walletType} authentication finished:`, authData);
@@ -73,8 +101,12 @@ async function connectExtensionWallet(
 }
 
 /**
- * Connect via WalletConnect (mobile wallets)
- * Uses Stacks Connect with WalletConnect protocol support
+ * Internal helper to handle connections via the WalletConnect protocol.
+ * Suitable for connecting to mobile wallets by displaying a QR code.
+ * 
+ * @param userSession - The active session to be updated
+ * @param onFinish - Success callback
+ * @param onCancel - Cancellation callback
  */
 async function connectWalletConnect(
     userSession: UserSession,
@@ -83,13 +115,11 @@ async function connectWalletConnect(
 ): Promise<void> {
     await showConnect({
         appDetails: {
-            name: 'Predinex',
-            icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+            name: WALLET_CONFIG.name,
+            icon: WALLET_CONFIG.icon,
         },
-        redirectTo: '/',
+        redirectTo: WALLET_CONFIG.redirectTo,
         userSession,
-        // Enable WalletConnect for mobile wallet support
-        connectVersion: '2',
         onFinish: async (authData) => {
             console.log('WalletConnect authentication finished:', authData);
             if (onFinish) {
@@ -106,7 +136,10 @@ async function connectWalletConnect(
 }
 
 /**
- * Check if a specific wallet extension is available
+ * Verifies if a specific wallet extension is installed and available in the user's browser.
+ * 
+ * @param walletType - The wallet provider to check for
+ * @returns True if the wallet is detected, false otherwise
  */
 export function isWalletAvailable(walletType: WalletType): boolean {
     if (typeof window === 'undefined') return false;

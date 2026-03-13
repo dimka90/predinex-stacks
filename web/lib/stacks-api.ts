@@ -1,15 +1,16 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   cvToJSON,
   uintCV,
   ClarityValue,
   ClarityType
 } from '@stacks/transactions';
-import { StacksMainnet } from '@stacks/network';
+import { STACKS_MAINNET } from '@stacks/network';
+import { CONTRACT_ADDRESS as CONST_ADDRESS, CONTRACT_NAME as CONST_NAME } from './constants';
 
-const NETWORK = new StacksMainnet();
-const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
-const CONTRACT_NAME = 'predinex-pool-1771407097278';
+const NETWORK = STACKS_MAINNET;
+const CONTRACT_ADDRESS = CONST_ADDRESS;
+const CONTRACT_NAME = CONST_NAME;
 
 export interface Pool {
   id: number;
@@ -22,6 +23,7 @@ export interface Pool {
   totalB: number;
   expiry: number;
   settled: boolean;
+  winningOutcome?: number;
   status: 'active' | 'settled' | 'expired';
 }
 
@@ -31,10 +33,15 @@ function parsePoolCV(poolCV: any, id: number): Pool {
 
   const expiry = Number(data.expiry.value);
   const settled = data.settled.type === ClarityType.BoolTrue;
+  const winningOutcomeCV = data['winning-outcome'];
+  let winningOutcome: number | undefined = undefined;
+
+  if (winningOutcomeCV && winningOutcomeCV.type === ClarityType.OptionalSome) {
+    winningOutcome = Number(winningOutcomeCV.value.value);
+  }
 
   let status: 'active' | 'settled' | 'expired' = 'active';
   if (settled) status = 'settled';
-  // Note: we'd ideally fetch real burn-block-height
 
   return {
     id,
@@ -47,13 +54,14 @@ function parsePoolCV(poolCV: any, id: number): Pool {
     totalB: Number(data['total-b'].value),
     expiry: expiry,
     settled: settled,
+    winningOutcome: winningOutcome,
     status: status
   };
 }
 
 export async function getPool(id: number): Promise<Pool | null> {
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
       functionName: 'get-pool-details',
@@ -74,33 +82,30 @@ export async function getPool(id: number): Promise<Pool | null> {
 
 export async function getMarkets(filter: string): Promise<Pool[]> {
   try {
-    // First, get the pool counter
-    const counterResult = await callReadOnlyFunction({
+    const counterResult = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
-      functionName: 'get-pool-counter', // We might need to add this or check the contract
+      functionName: 'get-pool-counter',
       functionArgs: [],
       network: NETWORK,
       senderAddress: CONTRACT_ADDRESS,
     });
 
-    // If get-pool-counter doesn't exist, we might have to use a different approach
-    // In our contract it's (define-data-var pool-counter uint u1)
-    // We didn't define a read-only for it in the previous snippet, 
-    // let me check the contract's read-only section again.
-
-    // Actually, looking at the contract, there is no get-pool-counter read-only.
-    // We should probably add it or just try fetching until we hit a null.
+    let count = 0;
+    if (counterResult.type === ClarityType.ResponseOk) {
+      // @ts-ignore
+      count = Number(counterResult.value.value);
+    } else {
+      // Fallback to manual probing if counter fails
+      count = 20;
+    }
 
     const pools: Pool[] = [];
-    const maxAttempt = 20; // Limit for now to avoid freezing
-
-    for (let i = 1; i <= maxAttempt; i++) {
+    // pool-id starts from 1 in the contract
+    for (let i = 1; i < count; i++) {
       const pool = await getPool(i);
       if (pool) {
         pools.push(pool);
-      } else {
-        break;
       }
     }
 
@@ -113,4 +118,24 @@ export async function getMarkets(filter: string): Promise<Pool[]> {
     return [];
   }
 }
-// Types for Predinex Stacks API
+export async function getTotalVolume(): Promise<number> {
+  try {
+    const result = await fetchCallReadOnlyFunction({
+      contractAddress: CONTRACT_ADDRESS,
+      contractName: CONTRACT_NAME,
+      functionName: 'get-total-volume',
+      functionArgs: [],
+      network: NETWORK,
+      senderAddress: CONTRACT_ADDRESS,
+    });
+
+    if (result.type === ClarityType.ResponseOk) {
+      // @ts-ignore
+      return Number(result.value.value);
+    }
+    return 0;
+  } catch (error) {
+    console.error("Error fetching total volume:", error);
+    return 0;
+  }
+}

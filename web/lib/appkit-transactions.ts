@@ -1,5 +1,5 @@
 import { openContractCall } from '@stacks/connect';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 import { PostConditionMode } from '@stacks/transactions';
 
 export async function callContract(params: {
@@ -11,7 +11,7 @@ export async function callContract(params: {
   onFinish?: (data: any) => void;
   onCancel?: () => void;
 }) {
-  const network = params.network === 'testnet' ? new StacksTestnet() : new StacksMainnet();
+  const network = params.network === 'testnet' ? STACKS_TESTNET : STACKS_MAINNET;
 
   await openContractCall({
     network,
