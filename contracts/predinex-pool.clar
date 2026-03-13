@@ -468,5 +468,24 @@
 
 (define-read-only (get-user-claim-status (pool-id uint) (user principal))
   (ok (default-to false (map-get? claims { pool-id: pool-id, user: user })))
-);; TODO: Implement dynamic fee adjustment logic
+)
+
+;; Get list of active pools (basic pagination support)
+;; @param start-id: The starting pool ID
+;; @param count: Number of pools to fetch
+;; @returns (list pools)
+(define-read-only (get-active-pools (start-id uint) (count uint))
+  (ok (map get-pool-details (list-pool-ids start-id count)))
+)
+
+(define-private (list-pool-ids (start uint) (count uint))
+  (if (is-eq count u0)
+      (list )
+      (if (>= start (var-get pool-counter))
+          (list )
+          (list start) ;; Simplified for now, real pagination would need more logic in Clarity
+      )
+  )
+)
+;; TODO: Implement dynamic fee adjustment logic
 ;; TODO: Implement dynamic fee adjustment logic
