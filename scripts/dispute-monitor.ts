@@ -1,5 +1,5 @@
 import { STACKS_MAINNET } from '@stacks/network';
-import { callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
+import { fetchCallReadOnlyFunction, cvToJSON } from '@stacks/transactions';
 
 const CONTRACT_ADDRESS = 'SP2WWKKF25SED3K5P6ETY7MDDNBQH50GPSP8EJM8N';
 const ENGINE_CONTRACT = 'predinex-resolution-engine';
