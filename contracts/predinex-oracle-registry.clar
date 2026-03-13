@@ -212,21 +212,6 @@
   (var-get total-staked-amount)
 )
 
-(define-read-only (get-total-providers)
-  (ok (var-get oracle-provider-counter))
-)
-
-(define-read-only (get-oracle-stats (provider-id uint))
-  (match (map-get? oracle-providers { provider-id: provider-id })
-    provider (ok {
-      reliability-score: (get reliability-score provider),
-      total-resolutions: (get total-resolutions provider),
-      is-active: (get is-active provider)
-    })
-    (err ERR-ORACLE-NOT-FOUND)
-  )
-)
-
 ;; Private helper
 (define-private (register-data-type-for-provider (data-type (string-ascii 32)) (provider-id uint))
   (begin
@@ -791,5 +776,4 @@
             (err ERR-ORACLE-NOT-FOUND))
           (err ERR-ORACLE-NOT-FOUND))
         (err ERR-ORACLE-NOT-FOUND))
-      (err ERR-UNAUTHORIZED)));; Registry Version: 1.1.0
-;; Registry Version: 1.1.0
+      (err ERR-UNAUTHORIZED)))
