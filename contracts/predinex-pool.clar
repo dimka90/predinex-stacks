@@ -159,6 +159,26 @@
   )
 )
 
+;; Cancel an empty pool
+;; @param pool-id: The ID of the pool to cancel
+;; @returns (ok bool) on success
+(define-public (cancel-pool (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (if (or (is-eq tx-sender (get creator pool)) (is-admin tx-sender))
+             (if (and (is-eq (get total-a pool) u0) (is-eq (get total-b pool) u0))
+                 (begin
+                   (map-delete pools { pool-id: pool-id })
+                   (print { event: "cancel-pool", pool-id: pool-id, actor: tx-sender })
+                   (ok true)
+                 )
+                 (err ERR-POOL-HAS-BETS)
+             )
+             (err ERR-UNAUTHORIZED)
+         )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
 ;; Place a bet on a prediction pool
 ;; @param pool-id: The unique identifier of the target pool
 ;; @param outcome: The choice (0 for A, 1 for B)
