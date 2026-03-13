@@ -22,6 +22,7 @@
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
 (define-constant RESOLUTION-FEE-PERCENT u5)
+(define-constant MAX-BET-TOTAL u1000000000) ;; 1000 STX max per user
 
 ;; Data Structures
 (define-map pools
@@ -167,9 +168,10 @@
     pool (if (and 
                (not (get settled pool))
                (or (is-eq outcome u0) (is-eq outcome u1))
-               (>= amount MIN-BET-AMOUNT)
-               (< burn-block-height (get expiry pool))
-             )
+                (>= amount MIN-BET-AMOUNT)
+                (< burn-block-height (get expiry pool))
+                (<= (+ (get total-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))) amount) MAX-BET-TOTAL)
+              )
              (let ((pool-principal (as-contract tx-sender)))
                (match (stx-transfer? amount tx-sender pool-principal)
                  success (begin
