@@ -18,6 +18,7 @@
 (define-constant ERR-POOL-NOT-EXPIRED u413) ;; Pool duration has not passed
 (define-constant ERR-INVALID-TITLE u420)   ;; Title or description length invalid
 (define-constant ERR-ORACLE-NOT-FOUND u430) ;; Oracle provider not found
+(define-constant ERR-POOL-HAS-BETS u450)     ;; Cannot cancel pool with active bets
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
