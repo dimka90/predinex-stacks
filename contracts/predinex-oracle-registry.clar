@@ -326,6 +326,25 @@
     (err ERR-ORACLE-NOT-FOUND)
   )
 )
+;; Deregister an oracle provider (and unlock stake)
+;; @param provider-id: ID of the provider to deregister
+;; @returns (ok bool)
+(define-public (deregister-oracle (provider-id uint))
+  (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
+    provider (if (is-eq tx-sender (get provider-address provider))
+                 (begin
+                   (map-set enhanced-oracle-providers { provider-id: provider-id }
+                     (merge provider { is-active: false }))
+                   (map-set provider-stakes { provider-id: provider-id }
+                     (merge (unwrap-panic (map-get? provider-stakes { provider-id: provider-id }))
+                            { unlock-height: (some (+ burn-block-height u144)) })) ;; 1 day unlock delay
+                   (ok true)
+                 )
+                 (err ERR-UNAUTHORIZED))
+    (err ERR-ORACLE-NOT-FOUND)
+  )
+)
+
 
 (define-public (submit-enhanced-oracle-data 
   (pool-id uint) 

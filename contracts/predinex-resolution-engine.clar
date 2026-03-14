@@ -127,6 +127,7 @@
 ;; State Variables
 (define-data-var resolution-attempt-counter uint u0)
 (define-data-var dispute-counter uint u0)
+(define-data-var circuit-breaker-active bool false)
 
 ;; Private helpers to check oracle validity via Registry
 (define-private (validate-single-oracle (oracle-id uint) (is-valid bool))
@@ -430,6 +431,14 @@
 
 (define-read-only (get-dispute-details (dispute-id uint))
   (map-get? pool-disputes { dispute-id: dispute-id })
+)
+
+(define-public (toggle-circuit-breaker (status bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
+    (var-set circuit-breaker-active status)
+    (ok true)
+  )
 )
 
 ;; Enhanced resolution configuration

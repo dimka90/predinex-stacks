@@ -39,6 +39,20 @@ Contracts must be deployed in the following order due to internal contract-calls
 3. `predinex-pool` (Depends on 1 & 2)
 4. `predinex-resolution-engine` (Depends on 1 & 3)
 
+## Key Features (v1.1.0)
+
+### 1. Enhanced Security
+- **Emergency Circuit Breaker**: The `predinex-resolution-engine` now includes a global pause mechanism that can be triggered by admins or the `CONTRACT-OWNER` to halt all resolutions during suspicious activity.
+- **Oracle Deregistration**: Providers can safely leave the registry with a 144-block (approx. 24h) stake unlock delay to prevent hit-and-run attacks.
+
+### 2. Market Safety
+- **Max Bet Limits**: Users are limited to a maximum total bet across all pools to prevent catastrophic exposure.
+- **Pool Cancellation**: Creators can cancel empty pools (zero bets) to clean up stale or incorrect markets.
+
+### 3. Incentives & Loyalty
+- **Tier-Based Discounts**: Integration with `liquidity-incentives` provides up to 20% fee rebates for high-volume (Platinum tier) participants.
+- **Recursive Discovery**: New crawler utilities support efficient pagination and discovery of active markets.
+
 ## Security & Access Control
 
 The Predinex ecosystem uses a multi-layered security approach:

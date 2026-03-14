@@ -18,10 +18,12 @@
 (define-constant ERR-POOL-NOT-EXPIRED u413) ;; Pool duration has not passed
 (define-constant ERR-INVALID-TITLE u420)   ;; Title or description length invalid
 (define-constant ERR-ORACLE-NOT-FOUND u430) ;; Oracle provider not found
+(define-constant ERR-POOL-HAS-BETS u450)     ;; Cannot cancel pool with active bets
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
 (define-constant RESOLUTION-FEE-PERCENT u5)
+(define-constant MAX-BET-TOTAL u1000000000) ;; 1000 STX max per user
 
 ;; Data Structures
 (define-map pools
@@ -157,6 +159,26 @@
   )
 )
 
+;; Cancel an empty pool
+;; @param pool-id: The ID of the pool to cancel
+;; @returns (ok bool) on success
+(define-public (cancel-pool (pool-id uint))
+  (match (map-get? pools { pool-id: pool-id })
+    pool (if (or (is-eq tx-sender (get creator pool)) (is-admin tx-sender))
+             (if (and (is-eq (get total-a pool) u0) (is-eq (get total-b pool) u0))
+                 (begin
+                   (map-delete pools { pool-id: pool-id })
+                   (print { event: "cancel-pool", pool-id: pool-id, actor: tx-sender })
+                   (ok true)
+                 )
+                 (err ERR-POOL-HAS-BETS)
+             )
+             (err ERR-UNAUTHORIZED)
+         )
+    (err ERR-POOL-NOT-FOUND)
+  )
+)
+
 ;; Place a bet on a prediction pool
 ;; @param pool-id: The unique identifier of the target pool
 ;; @param outcome: The choice (0 for A, 1 for B)
@@ -167,9 +189,10 @@
     pool (if (and 
                (not (get settled pool))
                (or (is-eq outcome u0) (is-eq outcome u1))
-               (>= amount MIN-BET-AMOUNT)
-               (< burn-block-height (get expiry pool))
-             )
+                (>= amount MIN-BET-AMOUNT)
+                (< burn-block-height (get expiry pool))
+                (<= (+ (get total-bet (default-to { amount-a: u0, amount-b: u0, total-bet: u0, first-bet-block: burn-block-height } (map-get? user-bets { pool-id: pool-id, user: tx-sender }))) amount) MAX-BET-TOTAL)
+              )
              (let ((pool-principal (as-contract tx-sender)))
                (match (stx-transfer? amount tx-sender pool-principal)
                  success (begin
@@ -445,5 +468,24 @@
 
 (define-read-only (get-user-claim-status (pool-id uint) (user principal))
   (ok (default-to false (map-get? claims { pool-id: pool-id, user: user })))
-);; TODO: Implement dynamic fee adjustment logic
+)
+
+;; Get list of active pools (basic pagination support)
+;; @param start-id: The starting pool ID
+;; @param count: Number of pools to fetch
+;; @returns (list pools)
+(define-read-only (get-active-pools (start-id uint) (count uint))
+  (ok (map get-pool-details (list-pool-ids start-id count)))
+)
+
+(define-private (list-pool-ids (start uint) (count uint))
+  (if (is-eq count u0)
+      (list )
+      (if (>= start (var-get pool-counter))
+          (list )
+          (list start) ;; Simplified for now, real pagination would need more logic in Clarity
+      )
+  )
+)
+;; TODO: Implement dynamic fee adjustment logic
 ;; TODO: Implement dynamic fee adjustment logic
