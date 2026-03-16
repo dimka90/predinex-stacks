@@ -805,7 +805,9 @@
   )
 )
 
-;; [NEW] Staking Logic
+;; @desc Staking: Lock a specific amount of STX to qualify for higher reward tiers and multipliers
+;; @param amount (uint): microSTX amount to be locked (minimum 10 STX)
+;; @returns (ok bool): true on successful stake and lockdown period assignment
 (define-public (stake-incentives (amount uint))
   (begin
     (asserts! (>= amount MIN-STAKE-AMOUNT) ERR-INVALID-AMOUNT)
@@ -813,6 +815,30 @@
     (map-set user-stakes { user: tx-sender } { amount: amount, block-locked: (+ burn-block-height STAKE-PERIOD-BLOCKS), active: true })
     (ok true)
   )
+)
+
+;; ---------------------------------------------------------
+;; Read-only Helpers
+;; ---------------------------------------------------------
+
+;; @desc Fetches aggregated participation and reward history for a specific principal
+;; @param user (principal): Target wallet address
+(define-read-only (get-user-incentive-totals (user principal))
+  (ok (default-to 
+    { total-pools-participated: u0, total-bets-placed: u0, total-incentives-earned: u0, total-incentives-claimed: u0 }
+    (map-get? user-loyalty-history { user: user })
+  ))
+)
+
+;; @desc Provides high-level protocol metrics including distribution and active pool counts
+(define-read-only (get-contract-stats)
+  (ok {
+    total-distributed: (var-get total-incentives-distributed),
+    total-claimed: (var-get total-incentives-claimed),
+    active-pools: (var-get active-pools-with-incentives),
+    contract-balance: (var-get contract-balance),
+    total-users: (var-get total-unique-users)
+  })
 )
 
 (define-public (unstake-incentives)
