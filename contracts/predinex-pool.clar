@@ -7,18 +7,20 @@
 
 ;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED u401) ;; Unauthorized caller
-(define-constant ERR-INVALID-AMOUNT u400) ;; Bet amount below minimum
-(define-constant ERR-POOL-NOT-FOUND u404) ;; Pool ID does not exist
-(define-constant ERR-POOL-SETTLED u409)   ;; Pool is already settled
-(define-constant ERR-INVALID-OUTCOME u422) ;; Specified outcome is invalid
-(define-constant ERR-NOT-SETTLED u412)    ;; Pool must be settled first
-(define-constant ERR-ALREADY-CLAIMED u410) ;; User has already claimed rewards
-(define-constant ERR-NO-WINNINGS u411)    ;; No rewards available for this user
-(define-constant ERR-POOL-NOT-EXPIRED u413) ;; Pool duration has not passed
-(define-constant ERR-INVALID-TITLE u420)   ;; Title or description length invalid
-(define-constant ERR-ORACLE-NOT-FOUND u430) ;; Oracle provider not found
-(define-constant ERR-POOL-HAS-BETS u450)     ;; Cannot cancel pool with active bets
+
+;; Standard Error Codes (HTTP-aligned where possible)
+(define-constant ERR-UNAUTHORIZED u401)    ;; The caller is not authorized for this action
+(define-constant ERR-INVALID-AMOUNT u400)  ;; The bet or pool amount does not meet minimum requirements
+(define-constant ERR-POOL-NOT-FOUND u404)  ;; The specified pool ID cannot be found in the registry
+(define-constant ERR-POOL-SETTLED u409)    ;; The action failed because the pool has already been settled
+(define-constant ERR-INVALID-OUTCOME u422) ;; The provided outcome index is out of bounds or invalid
+(define-constant ERR-NOT-SETTLED u412)     ;; A precondition (pool settlement) has not been met
+(define-constant ERR-ALREADY-CLAIMED u410) ;; The user has already successfully claimed their winnings
+(define-constant ERR-NO-WINNINGS u411)     ;; The user does not have any winnings to claim for this pool
+(define-constant ERR-POOL-NOT-EXPIRED u413) ;; The pool duration has not yet reached its block height expiry
+(define-constant ERR-INVALID-TITLE u420)   ;; Title or description validation failed (length or content)
+(define-constant ERR-ORACLE-NOT-FOUND u430) ;; The specified oracle provider is not registered
+(define-constant ERR-POOL-HAS-BETS u450)   ;; Operation refused: the pool already contains active bets
 
 (define-constant FEE-PERCENT u2) ;; 2% fee
 (define-constant MIN-BET-AMOUNT u10000) ;; 0.01 STX
