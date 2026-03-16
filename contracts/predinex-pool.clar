@@ -331,6 +331,10 @@
   )
 )
 
+;; @desc Administrative: Grand or revoke admin privileges
+;; @param admin (principal): The address to update
+;; @param status (bool): true to grant, false to revoke
+;; @returns (ok bool): true on success, or (err ERR-UNAUTHORIZED)
 (define-public (set-admin (admin principal) (status bool))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
@@ -339,6 +343,9 @@
   )
 )
 
+;; @desc Administrative: Specify the contract address authorized to resolve markets
+;; @param engine (principal): The resolution engine contract address
+;; @returns (ok bool): true on success, or (err ERR-UNAUTHORIZED)
 (define-public (set-authorized-resolution-engine (engine principal))
   (begin
     (asserts! (is-admin tx-sender) (err ERR-UNAUTHORIZED))
@@ -347,7 +354,9 @@
   )
 )
 
+;; ---------------------------------------------------------
 ;; Fee management functions (kept for legacy support or future resolution integration)
+;; ---------------------------------------------------------
 
 (define-public (collect-resolution-fee (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
