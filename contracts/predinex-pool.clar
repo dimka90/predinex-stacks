@@ -283,9 +283,10 @@
   )
 )
 
-;; Claim prizes from a settled pool
-;; @param pool-id: The unique identifier of the settled pool
-;; @returns (ok uint) amount claimed on success, or (err uint) error code
+;; @desc Claim prizes and winnings from a settled prediction pool
+;; @param pool-id (uint): The identifier of the settled pool
+;; @returns (ok uint): The net amount of microSTX transferred to the user
+;; @returns (err uint): ERR-POOL-NOT-FOUND (u404), ERR-NOT-SETTLED (u412), ERR-ALREADY-CLAIMED (u410), ERR-NO-WINNINGS (u411)
 (define-public (claim-winnings (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (match (map-get? user-bets { pool-id: pool-id, user: tx-sender })
