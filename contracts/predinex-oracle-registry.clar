@@ -353,6 +353,14 @@
 )
 
 
+;; @desc Submit verified data for a specific prediction pool
+;; @param pool-id (uint): The identifier of the pool being resolved
+;; @param data-value (string-ascii 256): The result or price value
+;; @param data-type (string-ascii 32): The type of data being provided
+;; @param confidence-score (uint): The provider's self-assessed confidence (1-100)
+;; @param validation-hash (buff 32): Off-chain computation proof or content hash
+;; @returns (ok uint): Submission ID on success
+;; @returns (err uint): ERR-CIRCUIT-BREAKER-ACTIVE (u459), ERR-ORACLE-INACTIVE (u431), ERR-REPUTATION-TOO-LOW (u458)
 (define-public (submit-enhanced-oracle-data 
   (pool-id uint) 
   (data-value (string-ascii 256)) 
