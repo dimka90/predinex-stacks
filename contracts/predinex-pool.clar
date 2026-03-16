@@ -450,15 +450,25 @@
   )
 )
 
+;; ---------------------------------------------------------
 ;; Read-only getters
+;; ---------------------------------------------------------
+
+;; @desc Fetches the complete metadata for a specific pool
+;; @param pool-id (uint): Target pool unique identifier
 (define-read-only (get-pool-details (pool-id uint))
   (map-get? pools { pool-id: pool-id })
 )
 
+;; @desc Retrieves the bet information for a specific user in a specific pool
+;; @param pool-id (uint): Target pool unique identifier
+;; @param user (principal): The address of the contributor
 (define-read-only (get-user-bet (pool-id uint) (user principal))
   (map-get? user-bets { pool-id: pool-id, user: user })
 )
 
+;; @desc Provides an aggregated object with pool balance and volume information
+;; @param pool-id (uint): Target pool unique identifier
 (define-read-only (get-pool-bet-info (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (ok {
@@ -471,18 +481,19 @@
   )
 )
 
-(define-read-only (get-creation-data (pool-id uint))
-  (map-get? pools { pool-id: pool-id })
-)
-
+;; @desc Returns the current global pool counter value (ID for next pool)
 (define-read-only (get-pool-counter)
   (ok (var-get pool-counter))
 )
 
+;; @desc Returns the cumulative trading volume across all Predinex pools
 (define-read-only (get-total-volume)
   (ok (var-get total-volume))
 )
 
+;; @desc Checks if a user has already successfully claimed their share of a winning pool
+;; @param pool-id (uint): Target pool unique identifier
+;; @param user (principal): The address to check
 (define-read-only (get-user-claim-status (pool-id uint) (user principal))
   (ok (default-to false (map-get? claims { pool-id: pool-id, user: user })))
 )
