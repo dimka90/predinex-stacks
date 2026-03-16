@@ -320,6 +320,11 @@
   )
 )
 
+;; @desc Community: Cast a vote on an active dispute
+;; @param dispute-id (uint): The identifier of the dispute being voted on
+;; @param vote (bool): true to uphold the dispute (invalid resolution), false to reject
+;; @returns (ok bool): true on successful vote commitment
+;; @returns (err uint): ERR-ALREADY-VOTED (u444), ERR-DISPUTE-WINDOW-CLOSED (u442)
 (define-public (vote-on-dispute (dispute-id uint) (vote bool))
   (match (map-get? pool-disputes { dispute-id: dispute-id })
     dispute (if (and 
