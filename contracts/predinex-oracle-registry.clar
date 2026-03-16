@@ -236,8 +236,13 @@
   )
 )
 
-;; Enhanced Public Functions
-
+;; @desc Administrative: Register a new oracle provider with a mandatory STX stake
+;; @param provider-address (principal): The wallet address of the provider
+;; @param stake-amount (uint): Initial STX locked (must be >= 1000 STX)
+;; @param supported-data-types (list 10): List of strings (e.g., "BTC-USD", "ETH-USD")
+;; @param metadata (string-ascii 512): Documentation or link for the provider's source
+;; @returns (ok uint): Assinged provider ID on success
+;; @returns (err uint): ERR-UNAUTHORIZED (u401), ERR-INSUFFICIENT-STAKE (u450), ERR-ORACLE-ALREADY-EXISTS (u433)
 (define-public (register-oracle-provider-with-stake 
   (provider-address principal) 
   (stake-amount uint) 
