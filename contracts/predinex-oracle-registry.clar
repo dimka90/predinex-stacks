@@ -506,7 +506,10 @@
         (err ERR-ORACLE-NOT-FOUND))
       (err ERR-UNAUTHORIZED)))
 
-;; Security and monitoring functions
+;; @desc Administrative: Activate the system-wide circuit breaker (Emergency Halt)
+;; @param reason (string-ascii 128): Descriptive reason for the emergency halt
+;; @param duration (uint): Estimated downtime in blocks (advisory)
+;; @returns (ok bool): true on successful circuit breaker activation
 (define-public (trigger-circuit-breaker (reason (string-ascii 128)) (duration uint))
   (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
       (begin
@@ -516,6 +519,8 @@
         (ok true))
       (err ERR-UNAUTHORIZED)))
 
+;; @desc Administrative: Deactivate the circuit breaker and restore normal operations
+;; @returns (ok bool): true on successful circuit breaker deactivation
 (define-public (deactivate-circuit-breaker)
   (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
       (begin
