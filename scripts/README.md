@@ -38,4 +38,13 @@ Tools to simulate platform activity and oracle data feeds for testing and metric
 - **`bulk-bets.ts`**: Utility for high-volume bet simulations to test contract congestion limits.
 - **`test-resolution.sh`**: End-to-end automated test for market settlement and reward distribution.
 
+## 📦 Batch Operations
+
+High-efficiency scripts for managing multiple markets and bets in single blocks.
+
+- **`batch-interact.ts`**: Orchestrates multiple contract interactions to save on latency.
+- **`batch-settle.ts`**: Aggregates settlement calls for mature markets to optimize fee spending.
+- **`bulk-bets.ts`**: Facilitates the placement of multiple bets across different pools.
+- **`create-pools-nonce-managed.ts`**: Highly reliable market creation utility with advanced nonce management.
+
 ---
