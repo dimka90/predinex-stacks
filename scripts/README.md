@@ -20,4 +20,13 @@ These scripts handle the complex orchestration of deploying Predinex smart contr
 - **`deploy-dependencies.sh`**: Bash orchestrator for environment setup and multi-contract ordering.
 - **`verify-deployment.ts`**: Post-deployment verification to ensure on-chain state matches local configuration.
 
+## 📊 Diagnostic & Monitoring
+
+Utilities for real-time system health and account status auditing.
+
+- **`health-check.ts`**: Verifies reachability and responsiveness of all core smart contracts.
+- **`check-balance.ts`**: Batch validate the STX balances and nonces of platform operators.
+- **`monitor-events.ts`**: Listens for and logs on-chain events from the Predinex contracts.
+- **`analyze-transactions.ts`**: Generates reports based on historical transaction volume and fee impact.
+
 ---
