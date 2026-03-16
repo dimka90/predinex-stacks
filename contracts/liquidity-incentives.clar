@@ -364,7 +364,11 @@
   )
 )
 
-;; Calculate and award volume bonus when threshold is reached
+;; @desc Resolution Hook: Award a volume-based bonus once a pool reaches the required liquidity threshold
+;; @param pool-id (uint): The identifier of the prediction market
+;; @param user (principal): The wallet address of the bettor
+;; @param current-pool-volume (uint): The total liquidity (in microSTX) currently in the pool
+;; @returns (ok uint): The volume bonus amount awarded or 0
 (define-public (award-volume-bonus (pool-id uint) (user principal) (current-pool-volume uint))
   (let (
     (config (unwrap! (map-get? incentive-configs { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
@@ -403,7 +407,12 @@
   )
 )
 
-;; Award referral bonus when referred user places bet
+;; @desc Social Mining: Award a referral bonus to the principal who introduced a new active bettor
+;; @param referrer (principal): The wallet address receiving the bonus
+;; @param referred-user (principal): The wallet address of the participating user
+;; @param pool-id (uint): The identifier of the prediction market
+;; @param referred-bet-amount (uint): The microSTX amount committed by the referred user
+;; @returns (ok uint): The referral bonus amount awarded or 0
 (define-public (award-referral-bonus (referrer principal) (referred-user principal) (pool-id uint) (referred-bet-amount uint))
   (let (
     (config (unwrap! (map-get? incentive-configs { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
@@ -461,7 +470,11 @@
   )
 )
 
-;; Award loyalty bonus for repeat bettors
+;; @desc Retention: Award a loyalty bonus for repeat participation across different markets
+;; @param pool-id (uint): The current prediction market identifier
+;; @param user (principal): The wallet address of the loyal participant
+;; @param current-bet-amount (uint): The microSTX amount committed to the current pool
+;; @returns (ok uint): The loyalty bonus amount awarded or 0
 (define-public (award-loyalty-bonus (pool-id uint) (user principal) (current-bet-amount uint))
   (let (
     (config (unwrap! (map-get? incentive-configs { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
