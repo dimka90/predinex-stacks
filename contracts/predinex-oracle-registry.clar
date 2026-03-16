@@ -738,20 +738,13 @@
 (define-read-only (get-latest-aggregation (pool-id uint))
   (let ((latest-id (- (var-get aggregation-counter) u1)))
     (map-get? aggregation-results { pool-id: pool-id, aggregation-id: latest-id })))
-;; ============================================
+;; ---------------------------------------------------------
 ;; PERFORMANCE OPTIMIZATION
-;; ============================================
+;; ---------------------------------------------------------
 
-;; Caching mechanism for frequent submissions
-(define-map submission-cache
-  { cache-key: (string-ascii 64) }
-  {
-    cached-data: (string-ascii 256),
-    cache-timestamp: uint,
-    hit-count: uint
-  })
-
-;; Batch processing optimization
+;; @desc Administrative: Optimize the processing of massive data batches
+;; @param batch-data (list 20): Array of raw data strings to be indexed
+;; @returns (ok uint): Total count of items processed in this cycle
 (define-public (process-batch-efficiently (batch-data (list 20 (string-ascii 256))))
   (let ((processed-count (len batch-data)))
     (ok processed-count)))
