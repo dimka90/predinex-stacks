@@ -7,25 +7,27 @@
 
 ;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED u401)
-(define-constant ERR-ORACLE-NOT-FOUND u430)
-(define-constant ERR-ORACLE-INACTIVE u431)
-(define-constant ERR-INVALID-DATA-TYPE u432)
-(define-constant ERR-ORACLE-ALREADY-EXISTS u433)
-(define-constant ERR-INSUFFICIENT-CONFIDENCE u434)
-(define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND u435)
 
-;; Enhanced Oracle Registry Errors
-(define-constant ERR-INSUFFICIENT-STAKE u450)
-(define-constant ERR-INVALID-METADATA u451)
-(define-constant ERR-PROVIDER-SUSPENDED u452)
-(define-constant ERR-DEADLINE-EXCEEDED u453)
-(define-constant ERR-SCHEMA-VALIDATION-FAILED u454)
-(define-constant ERR-CONFLICT-OF-INTEREST u455)
-(define-constant ERR-COLLUSION-DETECTED u456)
-(define-constant ERR-ATTACK-PATTERN u457)
-(define-constant ERR-REPUTATION-TOO-LOW u458)
-(define-constant ERR-CIRCUIT-BREAKER-ACTIVE u459)
+;; Standard Error Codes (Registry & Data Layer)
+(define-constant ERR-UNAUTHORIZED u401)           ;; Operation attempted by a non-authorized principal
+(define-constant ERR-ORACLE-NOT-FOUND u430)       ;; The requested oracle provider ID does not exist
+(define-constant ERR-ORACLE-INACTIVE u431)        ;; Submission rejected: oracle provider is currently deactivated
+(define-constant ERR-INVALID-DATA-TYPE u432)      ;; The provided data type is not supported by this provider
+(define-constant ERR-ORACLE-ALREADY-EXISTS u433)  ;; Registration failed: provider address already registered
+(define-constant ERR-INSUFFICIENT-CONFIDENCE u434) ;; Data rejected: confidence score below threshold (1-100)
+(define-constant ERR-ORACLE-SUBMISSION-NOT-FOUND u435) ;; Submission ID does not exist in the ledger
+
+;; Enhanced Security and Governance Errors
+(define-constant ERR-INSUFFICIENT-STAKE u450)     ;; Stake amount is below the required minimum (1000 STX)
+(define-constant ERR-INVALID-METADATA u451)      ;; Metadata validation failed (length or required fields)
+(define-constant ERR-PROVIDER-SUSPENDED u452)     ;; Action blocked: provider is under active suspension
+(define-constant ERR-DEADLINE-EXCEEDED u453)      ;; Submission rejected: time window for this pool resolution closed
+(define-constant ERR-SCHEMA-VALIDATION-FAILED u454) ;; Data value format does not match registry schema
+(define-constant ERR-CONFLICT-OF-INTEREST u455)   ;; Interaction detected between conflicting principals
+(define-constant ERR-COLLUSION-DETECTED u456)      ;; Potential collusion pattern identified by security monitor
+(define-constant ERR-ATTACK-PATTERN u457)         ;; Transaction matches known malicious signature patterns
+(define-constant ERR-REPUTATION-TOO-LOW u458)     ;; Action blocked: provider reputation below minimum (50/1000)
+(define-constant ERR-CIRCUIT-BREAKER-ACTIVE u459) ;; Emergency halt: all registry operations currently suspended
 
 ;; System Constants
 (define-constant MIN-STAKE-AMOUNT u1000000000) ;; 1000 STX in microSTX
