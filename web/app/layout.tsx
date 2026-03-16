@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     },
   },
   keywords: ["Stacks", "Bitcoin", "Prediction Market", "DeFi", "Clarity", "Crypto", "Betting"],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
