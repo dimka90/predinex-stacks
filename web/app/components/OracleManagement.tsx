@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { StacksClient } from 'predinex-stacks-sdk';
+import { CONTRACT_ADDRESS, CONTRACT_NAME, DEFAULT_NETWORK } from '../lib/constants'; // Adjusting based on grep later
 
-interface OracleProvider {
-  id: number;
-  address: string;
-  reliabilityScore: number;
-  totalResolutions: number;
-  successfulResolutions: number;
-  isActive: boolean;
-  dataTypes: string[];
+// types already defined above in interfaces
+id: number;
+address: string;
+reliabilityScore: number;
+totalResolutions: number;
+successfulResolutions: number;
+isActive: boolean;
+dataTypes: string[];
 }
 
 interface OracleSubmission {
@@ -28,71 +29,66 @@ export default function OracleManagement() {
   const [selectedTab, setSelectedTab] = useState<'providers' | 'submissions' | 'register'>('providers');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for demonstration
+  const [contractConfig] = useState({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: CONTRACT_NAME,
+    network: DEFAULT_NETWORK === 'mainnet' ? 'mainnet' : 'testnet'
+  });
+
   useEffect(() => {
-    const mockProviders: OracleProvider[] = [
-      {
-        id: 0,
-        address: 'SP1HTBVD3JG9C05J7HBJTHGR0GGW7KX975CN0QKA',
-        reliabilityScore: 95,
-        totalResolutions: 47,
-        successfulResolutions: 45,
-        isActive: true,
-        dataTypes: ['price', 'volume', 'market-cap']
-      },
-      {
-        id: 1,
-        address: 'SP2JXKMSH007NPYAQHKJPQMAQYAD90NQGTVJVQ02B',
-        reliabilityScore: 88,
-        totalResolutions: 23,
-        successfulResolutions: 20,
-        isActive: true,
-        dataTypes: ['weather', 'temperature', 'precipitation']
-      },
-      {
-        id: 2,
-        address: 'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9',
-        reliabilityScore: 72,
-        totalResolutions: 15,
-        successfulResolutions: 11,
-        isActive: false,
-        dataTypes: ['sports', 'scores']
-      }
-    ];
+    const fetchOracleData = async () => {
+      setIsLoading(true);
+      try {
+        const client = new StacksClient({
+          network: contractConfig.network as any,
+          contractAddress: contractConfig.contractAddress,
+          contractName: contractConfig.contractName
+        });
 
-    const mockSubmissions: OracleSubmission[] = [
-      {
-        id: 0,
-        providerId: 0,
-        poolId: 1,
-        dataValue: "98750.50",
-        dataType: "price",
-        confidence: 95,
-        timestamp: Date.now() - 3600000
-      },
-      {
-        id: 1,
-        providerId: 1,
-        poolId: 2,
-        dataValue: "22.5",
-        dataType: "temperature",
-        confidence: 88,
-        timestamp: Date.now() - 7200000
-      },
-      {
-        id: 2,
-        providerId: 0,
-        poolId: 3,
-        dataValue: "1250000000",
-        dataType: "volume",
-        confidence: 92,
-        timestamp: Date.now() - 1800000
-      }
-    ];
+        // Fetch multiple providers (up to 5 for now)
+        const providerPromises = [0, 1, 2].map(id => client.getOracleProvider(id));
+        const providers = await Promise.all(providerPromises);
 
-    setOracleProviders(mockProviders);
-    setOracleSubmissions(mockSubmissions);
-  }, []);
+        const validProviders = providers
+          .filter(p => p !== null)
+          .map(p => ({
+            id: p!.id,
+            address: p!.address,
+            reliabilityScore: p!.reputationScore,
+            totalResolutions: p!.totalSubmissions,
+            successfulResolutions: p!.successfulSubmissions,
+            isActive: p!.isActive && !p!.isBanned,
+            dataTypes: ['aggregated'] // This specific info might need more contract calls
+          }));
+
+        setOracleProviders(validProviders);
+
+        // Fetch latest aggregations for some sample pools
+        const submissionPromises = [1, 2, 3].map(id => client.getLatestAggregation(id));
+        const submissions = await Promise.all(submissionPromises);
+
+        const validSubmissions = submissions
+          .filter(s => s !== null)
+          .map((s, idx) => ({
+            id: idx,
+            providerId: s!.providerId,
+            poolId: s!.poolId,
+            dataValue: s!.value,
+            dataType: 'aggregated',
+            confidence: s!.confidence,
+            timestamp: s!.timestamp
+          }));
+
+        setOracleSubmissions(validSubmissions);
+      } catch (error) {
+        console.error("Error fetching oracle data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOracleData();
+  }, [contractConfig]);
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 8)}...${address.slice(-8)}`;
@@ -116,7 +112,7 @@ export default function OracleManagement() {
           {oracleProviders.filter(p => p.isActive).length} active providers
         </div>
       </div>
-      
+
       <div className="grid gap-4">
         {oracleProviders.map((provider) => (
           <div key={provider.id} className="glass p-6 rounded-xl">
@@ -124,11 +120,10 @@ export default function OracleManagement() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-mono text-sm">#{provider.id}</span>
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    provider.isActive 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-red-500/10 text-red-500'
-                  }`}>
+                  <span className={`px-2 py-1 rounded text-xs ${provider.isActive
+                    ? 'bg-green-500/10 text-green-500'
+                    : 'bg-red-500/10 text-red-500'
+                    }`}>
                     {provider.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -136,7 +131,7 @@ export default function OracleManagement() {
                   {formatAddress(provider.address)}
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <div className={`text-2xl font-bold ${getReliabilityColor(provider.reliabilityScore)}`}>
                   {provider.reliabilityScore}%
@@ -144,7 +139,7 @@ export default function OracleManagement() {
                 <div className="text-xs text-muted-foreground">Reliability</div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <div className="text-sm text-muted-foreground">Total Resolutions</div>
@@ -155,7 +150,7 @@ export default function OracleManagement() {
                 <div className="font-semibold text-green-500">{provider.successfulResolutions}</div>
               </div>
             </div>
-            
+
             <div>
               <div className="text-sm text-muted-foreground mb-2">Supported Data Types</div>
               <div className="flex flex-wrap gap-2">
@@ -180,7 +175,7 @@ export default function OracleManagement() {
           {oracleSubmissions.length} submissions
         </div>
       </div>
-      
+
       <div className="space-y-3">
         {oracleSubmissions.map((submission) => {
           const provider = oracleProviders.find(p => p.id === submission.providerId);
@@ -197,16 +192,16 @@ export default function OracleManagement() {
                       Pool #{submission.poolId}
                     </span>
                   </div>
-                  
+
                   <div className="text-lg font-semibold mb-1">
                     {submission.dataValue}
                   </div>
-                  
+
                   <div className="text-sm text-muted-foreground">
                     by {provider ? formatAddress(provider.address) : 'Unknown'}
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="text-sm font-semibold text-green-500">
                     {submission.confidence}% confidence
@@ -226,7 +221,7 @@ export default function OracleManagement() {
   const renderRegister = () => (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold">Register New Oracle Provider</h3>
-      
+
       <div className="glass p-6 rounded-xl">
         <form className="space-y-4">
           <div>
@@ -239,7 +234,7 @@ export default function OracleManagement() {
               className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-2">
               Supported Data Types
@@ -253,7 +248,7 @@ export default function OracleManagement() {
               ))}
             </div>
           </div>
-          
+
           <button
             type="submit"
             disabled={isLoading}
@@ -263,7 +258,7 @@ export default function OracleManagement() {
           </button>
         </form>
       </div>
-      
+
       <div className="glass p-4 rounded-lg">
         <h4 className="font-semibold mb-2">Requirements</h4>
         <ul className="text-sm text-muted-foreground space-y-1">
@@ -295,11 +290,10 @@ export default function OracleManagement() {
           <button
             key={tab.key}
             onClick={() => setSelectedTab(tab.key as any)}
-            className={`flex-1 px-4 py-2 rounded-md transition-colors ${
-              selectedTab === tab.key
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`flex-1 px-4 py-2 rounded-md transition-colors ${selectedTab === tab.key
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+              }`}
           >
             {tab.label}
           </button>
