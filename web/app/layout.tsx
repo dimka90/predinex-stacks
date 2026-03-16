@@ -4,6 +4,7 @@ import "./globals.css";
 import { StacksProvider } from "./components/StacksProvider";
 import { ToastProvider } from "../providers/ToastProvider";
 import Footer from "./components/Footer";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
