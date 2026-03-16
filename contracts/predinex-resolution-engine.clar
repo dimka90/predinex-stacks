@@ -465,6 +465,12 @@
   )
 )
 
+;; ---------------------------------------------------------
+;; Read-only functions
+;; ---------------------------------------------------------
+
+;; @desc Fetches the complete metadata and status for a specific dispute
+;; @param dispute-id (uint): The identifier of the dispute record
 (define-read-only (get-dispute-details (dispute-id uint))
   (map-get? pool-disputes { dispute-id: dispute-id })
 )
