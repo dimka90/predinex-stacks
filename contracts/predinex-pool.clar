@@ -184,11 +184,12 @@
   )
 )
 
-;; Place a bet on a prediction pool
-;; @param pool-id: The unique identifier of the target pool
-;; @param outcome: The choice (0 for A, 1 for B)
-;; @param amount: STX amount in microstacks
-;; @returns (ok bool) on success, or (err uint) error code
+;; @desc Place a bet on a specific outcome in a pool
+;; @param pool-id (uint): The identifier of the target prediction market
+;; @param outcome (uint): The user's choice (0 for Outcome A, 1 for Outcome B)
+;; @param amount (uint): STX amount in microstacks to be committed
+;; @returns (ok bool): true on successful balance transfer and state update
+;; @returns (err uint): ERR-POOL-NOT-FOUND (u404), ERR-INVALID-OUTCOME (u422), ERR-INVALID-AMOUNT (u400)
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (if (and 
