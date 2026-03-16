@@ -71,12 +71,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StacksProvider>
-          <ToastProvider>
-            {children}
-            <Footer />
-          </ToastProvider>
-        </StacksProvider>
+        <ErrorBoundary>
+          <StacksProvider>
+            <ToastProvider>
+              {children}
+              <Footer />
+            </ToastProvider>
+          </StacksProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
