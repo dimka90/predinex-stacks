@@ -679,7 +679,11 @@
 (define-private (abs-diff (a uint) (b uint))
   (if (>= a b) (- a b) (- b a)))
 
-;; Outlier detection and filtering
+;; @desc Data Cleaning: Identify data points that deviate significantly from the group mean
+;; @param pool-id (uint): The identifier of the pool being resolved
+;; @param submission-ids (list 10 uint): Candidates for outlier analysis
+;; @param threshold-percentage (uint): Deviation limit (e.g., 50 for 50%)
+;; @returns (ok record): List of outlier IDs and the calculated mean
 (define-public (detect-outliers 
   (pool-id uint) 
   (submission-ids (list 10 uint)) 
