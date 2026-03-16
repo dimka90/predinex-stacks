@@ -358,6 +358,9 @@
 ;; Fee management functions (kept for legacy support or future resolution integration)
 ;; ---------------------------------------------------------
 
+;; @desc Internal: Calculate and collect resolution fees for a settled pool
+;; @param pool-id (uint): Target pool unique identifier
+;; @returns (ok uint): Total resolution fee amount collected
 (define-public (collect-resolution-fee (pool-id uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (let (
@@ -390,20 +393,9 @@
   )
 )
 
-(define-private (distribute-fee-to-oracle (provider-id uint) (fee-data { pool-id: uint, fee-amount: uint }))
-  (begin
-    (map-insert oracle-fee-claims
-      { provider-id: provider-id, pool-id: (get pool-id fee-data) }
-      {
-        fee-amount: (get fee-amount fee-data),
-        is-claimed: false,
-        claimed-at: none
-      }
-    )
-    fee-data
-  )
-)
-
+;; @desc Distributes the oracle portion of the resolution fees among contributing providers
+;; @param pool-id (uint): Target pool unique identifier
+;; @param oracle-providers-list (list 5 uint): List of registered provider IDs
 (define-public (distribute-oracle-fees (pool-id uint) (oracle-providers-list (list 5 uint)))
   (match (map-get? resolution-fees { pool-id: pool-id })
     fee-info (let (
@@ -423,6 +415,9 @@
   )
 )
 
+;; @desc External: Allows a registered oracle provider to claim their accrued fees
+;; @param pool-id (uint): Target pool unique identifier
+;; @returns (ok uint): Amount of fees successfully claimed
 (define-public (claim-oracle-fee (pool-id uint))
   (match (get-provider-id-by-address tx-sender)
     provider-id (match (map-get? oracle-fee-claims { provider-id: provider-id, pool-id: pool-id })
