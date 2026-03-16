@@ -4,6 +4,8 @@ import Navbar from "../../components/Navbar";
 import AuthGuard from "../../components/AuthGuard";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Info } from "lucide-react";
+import UserStats from "../../components/UserStats";
+import Leaderboard from "../../components/Leaderboard";
 import CampaignRules from "../../components/CampaignRules";
 import ModuleErrorBoundary from "../../components/ModuleErrorBoundary";
 
@@ -53,10 +55,5 @@ export default function RewardsPage() {
         </div>
       </AuthGuard>
     </main>
-  );
-}
-        </div >
-      </AuthGuard >
-    </main >
   );
 }
