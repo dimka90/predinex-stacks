@@ -36,9 +36,5 @@ async function checkBalance() {
     }
     console.log(`-------------------------------------------\n`);
 }
-    } catch (error) {
-    console.error(`❌ Error checking balance:`, error);
-}
-}
 
 checkBalance();
