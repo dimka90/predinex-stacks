@@ -401,6 +401,11 @@
   )
 )
 
+;; @desc Emergency: Trigger the fallback resolution mechanism for a failed automated settlement
+;; @param pool-id (uint): The identifier of the pool being forced into fallback
+;; @param failure-reason (string-ascii 128): Detailed log of the automation failure
+;; @returns (ok bool): true on successful fallback activation
+;; @returns (err uint): ERR-UNAUTHORIZED (u401), ERR-POOL-SETTLED (u409)
 (define-public (trigger-fallback-resolution (pool-id uint) (failure-reason (string-ascii 128)))
   (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (match (map-get? resolution-configs { pool-id: pool-id })
