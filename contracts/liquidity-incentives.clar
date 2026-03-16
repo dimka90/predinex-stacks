@@ -519,6 +519,11 @@
 )
 
 ;; Claim pending incentive bonus
+;; @desc User-Facing: Claim a pending reward after it has fully vested according to the schedule
+;; @param pool-id (uint): The identifier of the prediction market
+;; @param incentive-type (string-ascii 32): The category of reward (e.g., "early-bird", "volume")
+;; @returns (ok uint): The net amount of microSTX transferred to the user
+;; @returns (err uint): ERR-INCENTIVE-NOT-FOUND (u405), ERR-CLAIM-WINDOW-CLOSED (u413)
 (define-public (claim-incentive (pool-id uint) (incentive-type (string-ascii 32)))
   (let (
     (incentive (unwrap! 
