@@ -572,7 +572,12 @@
 
 (define-data-var aggregation-counter uint u0)
 
-;; Aggregate multiple oracle submissions using weighted consensus
+;; @desc Administrative: Aggregate multiple oracle submissions using weighted consensus
+;; @param pool-id (uint): The identifier of the pool being resolved
+;; @param submission-ids (list 10 uint): Selected submission IDs to include in the average
+;; @param aggregation-method (string-ascii 32): Method used (e.g., "weighted-mean")
+;; @returns (ok record): Aggregation result including result, confidence, and variance
+;; @returns (err uint): ERR-UNAUTHORIZED (u401)
 (define-public (aggregate-oracle-data 
   (pool-id uint) 
   (submission-ids (list 10 uint)) 
