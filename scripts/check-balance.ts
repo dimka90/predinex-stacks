@@ -1,47 +1,44 @@
 import fetch from 'node-fetch';
 
-const WALLET_ADDRESS = process.argv[2] || process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7';
+const ADDRESSES = process.argv.slice(2).length > 0 ? process.argv.slice(2) : [process.env.WALLET_ADDRESS || 'SPENV2J0V4BHRFAZ6FVF97K9ZGQJ0GT19RC3JFN7'];
 
 async function checkBalance() {
-    if (!WALLET_ADDRESS) {
-        console.error("❌ Error: No wallet address provided. Set WALLET_ADDRESS env var or pass as argument.");
-        return;
+    console.log(`💰 Checking balances for Predinex Operators...\n`);
+
+    for (const address of ADDRESSES) {
+        try {
+            console.log(`-------------------------------------------`);
+            console.log(`🔍 Address: ${address}`);
+            const response = await fetch(
+                `https://api.mainnet.hiro.so/v2/accounts/${address}?proof=0`
+            );
+
+            if (!response.ok) {
+                console.error(`❌ Error fetching ${address}: ${response.status} ${response.statusText}`);
+                continue;
+            }
+
+            const data = await response.json() as any;
+
+            console.log(`   Balance: ${data.balance} microSTX (${(parseInt(data.balance) / 1000000).toFixed(6)} STX)`);
+            console.log(`   Nonce: ${data.nonce} | Txs: ${data.tx_count}`);
+
+            if (data.balance === '0') {
+                console.log(`   ⚠️  WARNING: Zero balance! Funding required.`);
+            } else {
+                const balanceSTX = parseInt(data.balance) / 1000000;
+                const estimatedTxs = Math.floor(balanceSTX / 0.1);
+                console.log(`   ✅ Sufficient for ~${estimatedTxs} standard transactions.`);
+            }
+        } catch (error) {
+            console.error(`   ❌ Error checking ${address}:`, error);
+        }
     }
-    console.log(`💰 Checking balance for: ${WALLET_ADDRESS}\n`);
-
-    try {
-        const response = await fetch(
-            `https://api.mainnet.hiro.so/v2/accounts/${WALLET_ADDRESS}?proof=0`
-        );
-
-        if (!response.ok) {
-            console.error(`❌ Error: ${response.status} ${response.statusText}`);
-            const text = await response.text();
-            console.error(text);
-            return;
-        }
-
-        const data = await response.json() as any;
-
-        console.log(`📊 Account Information:`);
-        console.log(`   Address: ${data.address}`);
-        console.log(`   Balance: ${data.balance} microSTX (${(parseInt(data.balance) / 1000000).toFixed(6)} STX)`);
-        console.log(`   Locked: ${data.locked} microSTX`);
-        console.log(`   Nonce: ${data.nonce}`);
-        console.log(`   Transaction Count: ${data.tx_count}`);
-
-        if (data.balance === '0') {
-            console.log(`\n⚠️  WARNING: Your balance is 0! You need STX to pay for transactions.`);
-            console.log(`   Get testnet STX from: https://faucet.stacks.org/`);
-            console.log(`   Or get mainnet STX from an exchange.`);
-        } else {
-            const balanceSTX = parseInt(data.balance) / 1000000;
-            const estimatedTxs = Math.floor(balanceSTX / 0.1); // Assuming ~0.1 STX per tx
-            console.log(`\n✅ You have enough balance for approximately ${estimatedTxs} transactions`);
-        }
+    console.log(`-------------------------------------------\n`);
+}
     } catch (error) {
-        console.error(`❌ Error checking balance:`, error);
-    }
+    console.error(`❌ Error checking balance:`, error);
+}
 }
 
 checkBalance();
