@@ -148,6 +148,16 @@
 
 ;; Public Functions
 
+;; @desc Administrative: Configure the resolution parameters for a specific prediction pool
+;; @param pool-id (uint): The identifier of the pool being configured
+;; @param oracle-sources (list 5 uint): List of trusted oracle provider IDs
+;; @param resolution-criteria (string-ascii 512): Human-readable logic for outcome declaration
+;; @param criteria-type (string-ascii 32): Data category (e.g., "PRICE", "EVENT_OUTCOME")
+;; @param threshold-value (optional uint): Quantitative threshold for numeric resolutions
+;; @param logical-operator (string-ascii 8): "AND" or "OR" for multi-source logic
+;; @param retry-attempts (uint): Maximum automated retry attempts on data failure
+;; @returns (ok bool): true on successful configuration
+;; @returns (err uint): ERR-UNAUTHORIZED (u401), ERR-RESOLUTION-ALREADY-CONFIGURED (u439)
 (define-public (configure-pool-resolution 
   (pool-id uint) 
   (oracle-sources (list 5 uint)) 
