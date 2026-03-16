@@ -46,6 +46,18 @@ export const metadata: Metadata = {
     maximumScale: 1,
   },
   category: "finance",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  keywords: ["Stacks", "Bitcoin", "Prediction Market", "DeFi", "Clarity", "Crypto", "Betting"],
 };
 
 export default function RootLayout({
