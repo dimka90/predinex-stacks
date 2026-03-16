@@ -774,6 +774,10 @@
     last-attempt: uint
   })
 
+;; @desc Resilience: Add a failed or pending submission to the retry queue
+;; @param submission-data (string-ascii 512): Encoded submission meta-data for re-simulation
+;; @param max-retries (uint): Maximum attempts before permanent rejection
+;; @returns (ok uint): Retry ID on successful queue entry
 (define-public (add-to-retry-queue (submission-data (string-ascii 512)) (max-retries uint))
   (let ((retry-id (var-get oracle-submission-counter)))
     (begin
