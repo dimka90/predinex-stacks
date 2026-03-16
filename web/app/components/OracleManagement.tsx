@@ -1,16 +1,18 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { StacksClient } from 'predinex-stacks-sdk';
-import { CONTRACT_ADDRESS, CONTRACT_NAME, DEFAULT_NETWORK } from '../lib/constants'; // Adjusting based on grep later
+import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../../lib/constants'; // Adjusting based on grep later
 
-// types already defined above in interfaces
-id: number;
-address: string;
-reliabilityScore: number;
-totalResolutions: number;
-successfulResolutions: number;
-isActive: boolean;
-dataTypes: string[];
+interface OracleProvider {
+  // types already defined above in interfaces
+  id: number;
+  address: string;
+  reliabilityScore: number;
+  totalResolutions: number;
+  successfulResolutions: number;
+  isActive: boolean;
+  dataTypes: string[];
 }
 
 interface OracleSubmission {
@@ -22,6 +24,8 @@ interface OracleSubmission {
   confidence: number;
   timestamp: number;
 }
+
+const DEFAULT_NETWORK = 'mainnet'; // Fallback if not in constants
 
 export default function OracleManagement() {
   const [oracleProviders, setOracleProviders] = useState<OracleProvider[]>([]);
