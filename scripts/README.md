@@ -11,4 +11,13 @@ Most scripts can be executed using `ts-node`. Ensure you have your environment v
 npx ts-node scripts/health-check.ts
 ```
 
+## 🛠️ Deployment Utilities
+
+These scripts handle the complex orchestration of deploying Predinex smart contracts.
+
+- **`deploy.ts`**: Standard entry point for contract deployments.
+- **`deploy-reliable.ts`**: Enhanced deployment script with robust error handling and retry logic.
+- **`deploy-dependencies.sh`**: Bash orchestrator for environment setup and multi-contract ordering.
+- **`verify-deployment.ts`**: Post-deployment verification to ensure on-chain state matches local configuration.
+
 ---
