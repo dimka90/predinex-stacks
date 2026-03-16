@@ -427,7 +427,10 @@
   )
 )
 
-;; Batch submission for efficiency
+;; @desc High-Throughput: Submit multiple data points in a single atomical transaction
+;; @param submissions (list 10): List of submission records with pool-id, value, type, etc.
+;; @returns (ok (list uint)): List of assigned submission IDs
+;; @returns (err uint): ERR-CIRCUIT-BREAKER-ACTIVE (u459), ERR-ORACLE-INACTIVE (u431)
 (define-public (submit-batch-oracle-data 
   (submissions (list 10 {pool-id: uint, data-value: (string-ascii 256), 
                         data-type: (string-ascii 32), confidence-score: uint,
