@@ -250,7 +250,13 @@
 ;; [NEW] Oracle Registry
 (define-data-var total-oracles-tracked uint u0)
 
-;; Initialize incentive configuration for a pool
+;; ---------------------------------------------------------
+;; Public Functions
+;; ---------------------------------------------------------
+
+;; @desc Administrative: Activate and configure the incentive engine for a new pool
+;; @param pool-id (uint): The identifier of the pool from the core contract
+;; @returns (ok uint): The pool-id on successful activation
 (define-public (initialize-pool-incentives (pool-id uint))
   (begin
     (asserts! (or (is-eq tx-sender CONTRACT-OWNER) (is-eq contract-caller (var-get authorized-contract))) ERR-UNAUTHORIZED)
@@ -276,7 +282,11 @@
   )
 )
 
-;; Record a bet and calculate early bird bonus
+;; @desc Data Collection: Record a new bet and determine eligibility for early-bird multipliers
+;; @param pool-id (uint): The identifier of the prediction market
+;; @param user (principal): The wallet address of the bettor
+;; @param bet-amount (uint): The amount of microSTX committed to the pool
+;; @returns (ok uint): The calculated bonus amount (if any) or 0
 (define-public (record-bet-and-calculate-early-bird (pool-id uint) (user principal) (bet-amount uint))
   (let (
     (config (unwrap! (map-get? incentive-configs { pool-id: pool-id }) ERR-POOL-NOT-FOUND))
