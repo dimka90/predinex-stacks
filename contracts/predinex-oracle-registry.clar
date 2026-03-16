@@ -737,10 +737,18 @@
   )
     (if (> total-weight u0) (/ weighted-sum total-weight) u0)))
 
+;; ---------------------------------------------------------
 ;; Read-only functions for aggregation results
+;; ---------------------------------------------------------
+
+;; @desc Fetches a specific historical aggregation result
+;; @param pool-id (uint): The pool identifier
+;; @param aggregation-id (uint): The specific aggregation sequence ID
 (define-read-only (get-aggregation-result (pool-id uint) (aggregation-id uint))
   (map-get? aggregation-results { pool-id: pool-id, aggregation-id: aggregation-id }))
 
+;; @desc Retrieves the most recent successful aggregation for a pool
+;; @param pool-id (uint): The pool identifier
 (define-read-only (get-latest-aggregation (pool-id uint))
   (let ((latest-id (- (var-get aggregation-counter) u1)))
     (map-get? aggregation-results { pool-id: pool-id, aggregation-id: latest-id })))
