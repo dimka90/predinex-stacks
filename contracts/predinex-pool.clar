@@ -110,15 +110,18 @@
   (/ (* total-balance FEE-PERCENT) u100)
 )
 
+;; ---------------------------------------------------------
 ;; Public Functions
+;; ---------------------------------------------------------
 
-;; Create a new prediction pool
-;; @param title: The title of the market (max 256 chars)
-;; @param description: Full description of the market (max 512 chars)
-;; @param outcome-a: Name of outcome A (max 128 chars)
-;; @param outcome-b: Name of outcome B (max 128 chars)
-;; @param duration: Length of betting period in blocks
-;; @returns (ok uint) pool-id on success, or (err uint) error code
+;; @desc Creates a new prediction pool with specified parameters
+;; @param title (string-ascii 256): Short descriptive title for the market
+;; @param description (string-ascii 512): Comprehensive details about the prediction event
+;; @param outcome-a (string-ascii 128): Label for choice A
+;; @param outcome-b (string-ascii 128): Label for choice B
+;; @param duration (uint): Market duration in block height (approx. 10 mins per block)
+;; @returns (ok uint): The auto-incremented pool ID on success
+;; @returns (err uint): ERR-INVALID-TITLE (u420) if validation fails
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
   (let ((pool-id (var-get pool-counter)))
     (if (and 
