@@ -209,6 +209,10 @@
   )
 )
 
+;; @desc Automated: Execute the settlement script based on configured oracle data
+;; @param pool-id (uint): The identifier of the pool to resolve
+;; @returns (ok uint): The winning outcome index (0 or 1)
+;; @returns (err uint): ERR-AUTOMATED-RESOLUTION-FAILED (u440), ERR-POOL-NOT-EXPIRED (u413)
 (define-public (attempt-automated-resolution (pool-id uint))
   (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (match (map-get? resolution-configs { pool-id: pool-id })
