@@ -577,7 +577,9 @@
   )
 )
 
-;; Deposit funds into contract for incentive distribution
+;; @desc Administrative: Deposit STX into the contract to fund the incentive pool
+;; @param amount (uint): The amount of microSTX to deposit
+;; @returns (ok uint): Total amount deposited on success
 (define-public (deposit-incentive-funds (amount uint))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
@@ -590,28 +592,11 @@
   )
 )
 
-;; [NEW] Protocol Fee Rebate
-(define-public (claim-fee-rebate (pool-id uint))
-  (let ((tier (default-to { tier: TIER-BRONZE, multiplier: u1, total-volume: u0 } (map-get? user-tiers { user: tx-sender }))))
-    (asserts! (>= (get tier tier) TIER-GOLD) ERR-TIER-NOT-MET)
-    ;; Logic to calculate and transfer rebate (placeholder for internal balance update)
-    (ok true)
-  )
-)
-
-;; [NEW] Emergency User Exit
-(define-public (emergency-burn-withdrawal (pool-id uint) (incentive-type (string-ascii 32)))
-  (let ((incentive (unwrap! (map-get? user-incentives { pool-id: pool-id, user: tx-sender, incentive-type: incentive-type }) ERR-INCENTIVE-NOT-FOUND)))
-    (asserts! (var-get emergency-mode) ERR-UNAUTHORIZED)
-    ;; Allow withdrawal with 50% penalty during emergency
-    (let ((withdrawal-amount (/ (get amount incentive) u2)))
-      (map-set user-incentives { pool-id: pool-id, user: tx-sender, incentive-type: incentive-type } (merge incentive { status: "claimed" }))
-      (ok withdrawal-amount)
-    )
-  )
-)
-
-;; [NEW] Batch Distribution
+;; @desc Efficiency: Distribute rewards to multiple users in a single atomic transaction
+;; @param pool-id (uint): The target market identifier
+;; @param users (list 100 principal): Participating wallet addresses
+;; @param amounts (list 100 uint): Respective microSTX reward amounts
+;; @returns (ok bool): true on successful batch commitment
 (define-public (batch-distribute-rewards (pool-id uint) (users (list 100 principal)) (amounts (list 100 uint)))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
@@ -621,7 +606,9 @@
 )
 
 
-;; Withdraw unclaimed incentives (owner only)
+;; @desc Maintenance: Withdraw unclaimed incentives back to the contract owner
+;; @param amount (uint): Total microSTX to withdraw
+;; @returns (ok uint): Net withdrawal amount on success
 (define-public (withdraw-unclaimed-incentives (amount uint))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
