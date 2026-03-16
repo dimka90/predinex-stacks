@@ -510,7 +510,12 @@
         (ok true))
       (err ERR-INVALID-RESOLUTION-CRITERIA)))
 
-;; Enhanced resolution attempt
+;; @desc Resolution Engine: Trigger an enhanced resolution cycle using aggregated oracle data
+;; @param pool-id (uint): The identifier of the pool to resolve
+;; @param require-consensus (bool): If true, variance checks must pass in the registry
+;; @param min-confidence-threshold (uint): Minimum acceptable aggregated confidence (1-100)
+;; @returns (ok uint): The wining outcome from the weighted consensus
+;; @returns (err uint): ERR-CONSENSUS-NOT-REACHED (u465), ERR-CONFIDENCE-TOO-LOW (u466)
 (define-public (attempt-enhanced-resolution 
   (pool-id uint) 
   (require-consensus bool) 
@@ -526,15 +531,10 @@
                (err ERR-DEADLINE-MISSED))
     (err ERR-RESOLUTION-CONFIG-NOT-FOUND)))
 
-;; Security monitoring
-(define-map security-monitoring
-  { pool-id: uint }
-  {
-    suspicious-activity: bool,
-    last-check: uint,
-    threat-level: uint
-  })
-
+;; @desc Security: Flag a pool for suspicious activity and increase the threat level
+;; @param pool-id (uint): The identifier of the flagged pool
+;; @param threat-level (uint): severity scale (1-5)
+;; @returns (ok bool): true on successful alert trigger
 (define-public (trigger-security-alert (pool-id uint) (threat-level uint))
   (begin
     (map-set security-monitoring { pool-id: pool-id }
