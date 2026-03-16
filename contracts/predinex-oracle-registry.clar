@@ -140,19 +140,30 @@
   bool
 )
 
+;; ---------------------------------------------------------
 ;; Enhanced Read-only helpers
+;; ---------------------------------------------------------
+
+;; @desc Checks if an address belongs to the system administrative group
+;; @param user (principal): The address to audit
 (define-read-only (is-admin (user principal))
   (default-to false (map-get? admins { admin: user }))
 )
 
+;; @desc Resolves a provider's wallet address to their unique integer ID
+;; @param provider-address (principal): The wallet address to lookup
 (define-read-only (get-provider-id-by-address (provider-address principal))
   (map-get? oracle-address-to-id { provider-address: provider-address })
 )
 
+;; @desc Fetches the complete extended profile for a registered oracle provider
+;; @param provider-id (uint): The unique identifier assigned at registration
 (define-read-only (get-enhanced-provider-details (provider-id uint))
   (map-get? enhanced-oracle-providers { provider-id: provider-id })
 )
 
+;; @desc Provides a legacy-compatible object with core provider performance metrics
+;; @param provider-id (uint): The unique identifier assigned at registration
 (define-read-only (get-provider-details (provider-id uint))
   ;; Backward compatibility function
   (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
