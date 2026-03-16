@@ -7,31 +7,33 @@
 
 ;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED u401)
-(define-constant ERR-RESOLUTION-CONFIG-NOT-FOUND u436)
-(define-constant ERR-INVALID-RESOLUTION-CRITERIA u437)
-(define-constant ERR-INSUFFICIENT-ORACLE-SOURCES u438)
-(define-constant ERR-RESOLUTION-ALREADY-CONFIGURED u439)
-(define-constant ERR-AUTOMATED-RESOLUTION-FAILED u440)
-(define-constant ERR-DISPUTE-NOT-FOUND u441)
-(define-constant ERR-DISPUTE-WINDOW-CLOSED u442)
-(define-constant ERR-INSUFFICIENT-DISPUTE-BOND u443)
-(define-constant ERR-ALREADY-VOTED u444)
-(define-constant ERR-INVALID-DISPUTE_REASON u446)
-(define-constant ERR-FALLBACK-NOT-TRIGGERED u447)
-(define-constant ERR-MANUAL-SETTLEMENT-DISABLED u448)
-(define-constant ERR-POOL-NOT-EXPIRED u413)
-(define-constant ERR-POOL-SETTLED u409)
-(define-constant ERR-POOL-NOT-FOUND u404)
 
-;; Enhanced Resolution Engine Errors
-(define-constant ERR-INVALID-ORACLE-COUNT u460)
-(define-constant ERR-INVALID-REPUTATION-THRESHOLD u461)
-(define-constant ERR-REGEX-VALIDATION-FAILED u462)
-(define-constant ERR-INSUFFICIENT-QUALIFIED-ORACLES u463)
-(define-constant ERR-DEADLINE-MISSED u464)
-(define-constant ERR-CONSENSUS-NOT-REACHED u465)
-(define-constant ERR-CONFIDENCE-TOO-LOW u466)
+;; Standard Error Codes (Resolution & Dispute Layer)
+(define-constant ERR-UNAUTHORIZED u401)                      ;; Operation attempted by a non-authorized principal
+(define-constant ERR-RESOLUTION-CONFIG-NOT-FOUND u436)       ;; Market resolution parameters not configured
+(define-constant ERR-INVALID-RESOLUTION-CRITERIA u437)       ;; Provided criteria fails validation or schema
+(define-constant ERR-INSUFFICIENT-ORACLE-SOURCES u438)       ;; Required oracle count not met for this configuration
+(define-constant ERR-RESOLUTION-ALREADY-CONFIGURED u439)     ;; Configuration failed: resolution already set for this pool
+(define-constant ERR-AUTOMATED-RESOLUTION-FAILED u440)       ;; Automated settlement script execution returned an error
+(define-constant ERR-DISPUTE-NOT-FOUND u441)                 ;; The specified dispute ID does not exist
+(define-constant ERR-DISPUTE-WINDOW-CLOSED u442)             ;; Action failed: dispute period has expired
+(define-constant ERR-INSUFFICIENT-DISPUTE-BOND u443)         ;; Disputer has not provided the required STX bond
+(define-constant ERR-ALREADY-VOTED u444)                     ;; Principal has already cast a vote for this dispute
+(define-constant ERR-INVALID-DISPUTE_REASON u446)            ;; Dispute reason validation failed (length or content)
+(define-constant ERR-FALLBACK-NOT-TRIGGERED u447)            ;; Manual fallback attempted before automated failure
+(define-constant ERR-MANUAL-SETTLEMENT-DISABLED u448)        ;; Manual resolution rejected: condition not met
+(define-constant ERR-POOL-NOT-EXPIRED u413)                  ;; Settlement aborted: pool block height expiry not reached
+(define-constant ERR-POOL-SETTLED u409)                      ;; Settlement aborted: pool already has a declared winner
+(define-constant ERR-POOL-NOT-FOUND u404)                    ;; Pool identifier lookup failed
+
+;; Advanced Resolution and Security Errors
+(define-constant ERR-INVALID-ORACLE-COUNT u460)              ;; Config error: oracle count out of bounds (1-10)
+(define-constant ERR-INVALID-REPUTATION-THRESHOLD u461)      ;; Config error: reputation limit out of bounds (0-1000)
+(define-constant ERR-REGEX-VALIDATION-FAILED u462)           ;; Dynamic validation: data does not match regex rules
+(define-constant ERR-INSUFFICIENT-QUALIFIED-ORACLES u463)    ;; Resolution failed: too few oracles meet reputation threshold
+(define-constant ERR-DEADLINE-MISSED u464)                   ;; Submission rejected: beyond oracle submission deadline
+(define-constant ERR-CONSENSUS-NOT-REACHED u465)             ;; Aggregation failed: oracle variance exceeds threshold
+(define-constant ERR-CONFIDENCE-TOO-LOW u466)                ;; Settlement rejected: aggregated confidence below threshold
 
 (define-constant RESOLUTION-FEE-PERCENT u5)
 (define-constant DISPUTE-BOND-PERCENT u5)
