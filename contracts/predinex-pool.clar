@@ -243,10 +243,11 @@
   )
 )
 
-;; Settle a prediction pool and declare a winner
-;; @param pool-id: The unique identifier of the pool
-;; @param winning-outcome: The result (0 or 1)
-;; @returns (ok bool) on success, or (err uint) error code
+;; @desc Settle a prediction pool and declare the definitive winner
+;; @param pool-id (uint): The identifier of the pool to be resolved
+;; @param winning-outcome (uint): The winning index (0 or 1)
+;; @returns (ok bool): true on successful fee distribution and state settlement
+;; @returns (err uint): ERR-UNAUTHORIZED (u401), ERR-POOL-SETTLED (u409), ERR-INVALID-OUTCOME (u422)
 (define-public (settle-pool (pool-id uint) (winning-outcome uint))
   (match (map-get? pools { pool-id: pool-id })
     pool (if (or 
