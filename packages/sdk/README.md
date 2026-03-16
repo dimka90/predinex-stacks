@@ -1,4 +1,4 @@
-# @predinex/sdk
+# predinex-stacks-sdk
 
 The official TypeScript SDK for interacting with the Predinex prediction market protocol on the Stacks blockchain.
 
@@ -12,17 +12,17 @@ The official TypeScript SDK for interacting with the Predinex prediction market 
 ## Installation
 
 ```bash
-npm install @predinex/sdk
+npm install predinex-stacks-sdk
 # or
-yarn add @predinex/sdk
+yarn add predinex-stacks-sdk
 # or
-pnpm add @predinex/sdk
+pnpm add predinex-stacks-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { StacksClient } from "@predinex/sdk";
+import { StacksClient } from "predinex-stacks-sdk";
 
 const client = new StacksClient({
   network: 'mainnet',
