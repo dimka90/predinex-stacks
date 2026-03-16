@@ -269,6 +269,12 @@
 )
 
 
+;; @desc External: Initiate a formal dispute for a settled prediction pool
+;; @param pool-id (uint): The identifier of the resolved pool to challenge
+;; @param dispute-reason (string-ascii 512): Detailed justification for the dispute
+;; @param evidence-hash (optional buff 32): Hash of supporting off-chain data/proofs
+;; @returns (ok uint): Assinged dispute ID on success
+;; @returns (err uint): ERR-INSUFFICIENT-DISPUTE-BOND (u443), ERR-POOL-NOT-FOUND (u404)
 (define-public (create-dispute (pool-id uint) (dispute-reason (string-ascii 512)) (evidence-hash (optional (buff 32))))
   (match (contract-call? .predinex-pool get-pool-details pool-id)
     pool (if (get settled pool)
