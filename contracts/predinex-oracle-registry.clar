@@ -707,7 +707,9 @@
   (let ((deviation (abs-diff (get data-value submission) mean)))
     (> (* deviation u100) (* mean threshold))))
 
-;; Confidence score aggregation
+;; @desc Data Analysis: Aggregate individual confidence scores from a set of submissions
+;; @param submission-ids (list 10 uint): Target submission identifiers
+;; @returns (ok record): average-confidence, weighted-confidence, and total count
 (define-public (aggregate-confidence-scores (submission-ids (list 10 uint)))
   (let (
     (submissions-data (map get-submission-for-aggregation submission-ids))
