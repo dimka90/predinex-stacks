@@ -787,7 +787,11 @@
         })
       (ok retry-id))))
 
-;; Enhanced validation for data deviation
+;; @desc Statistical Validation: Check if new data deviates significantly from historical averages
+;; @param new-data (uint): The incoming data point
+;; @param historical-average (uint): The baseline average for comparison
+;; @param threshold-percentage (uint): Allowed deviation (e.g., 20 for 20%)
+;; @returns (ok bool): true if within threshold, false if deviation is too high
 (define-public (validate-data-deviation (new-data uint) (historical-average uint) (threshold-percentage uint))
   (let ((deviation (abs-diff new-data historical-average))
         (threshold (/ (* historical-average threshold-percentage) u100)))
