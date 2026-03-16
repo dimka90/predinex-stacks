@@ -8,7 +8,7 @@ import {
     STACKS_TESTNET,
     StacksNetwork
 } from "@stacks/network";
-import { PoolData, StacksClientConfig, MarketStats } from "./types";
+import { PoolData, MarketStats, StacksClientConfig, OracleProvider, OracleSubmission } from './types';
 
 export class StacksClient {
     private network: StacksNetwork;
@@ -121,5 +121,62 @@ export class StacksClient {
         }
 
         return pools;
+    }
+
+    async getOracleProvider(providerId: number): Promise<OracleProvider | null> {
+        try {
+            const result = await fetchCallReadOnlyFunction({
+                contractAddress: this.contractAddress,
+                contractName: 'predinex-oracle-registry', // Assuming default registry name
+                functionName: 'get-provider-details',
+                functionArgs: [uintCV(providerId)],
+                senderAddress: this.senderAddress,
+                network: this.network,
+            });
+
+            const value = cvToValue(result, true);
+            if (!value) return null;
+
+            return {
+                id: providerId,
+                address: value.address,
+                reputationScore: Number(value['reputation-score']),
+                totalSubmissions: Number(value['total-submissions']),
+                successfulSubmissions: Number(value['successful-submissions']),
+                isActive: value['is-active'],
+                isBanned: value['is-banned'],
+                activationHeight: Number(value['activation-height']),
+            };
+        } catch (e) {
+            console.error(`Failed to fetch oracle provider ${providerId}`, e);
+            return null;
+        }
+    }
+
+    async getLatestAggregation(poolId: number): Promise<OracleSubmission | null> {
+        try {
+            const result = await fetchCallReadOnlyFunction({
+                contractAddress: this.contractAddress,
+                contractName: 'predinex-oracle-registry',
+                functionName: 'get-latest-aggregation',
+                functionArgs: [uintCV(poolId)],
+                senderAddress: this.senderAddress,
+                network: this.network,
+            });
+
+            const value = cvToValue(result, true);
+            if (!value) return null;
+
+            return {
+                poolId,
+                providerId: 0, // Aggregated results might not have a single provider ID
+                value: value.value,
+                confidence: Number(value['confidence-score']),
+                timestamp: Number(value.timestamp),
+            };
+        } catch (e) {
+            console.error(`Failed to fetch latest aggregation for pool ${poolId}`, e);
+            return null;
+        }
     }
 }

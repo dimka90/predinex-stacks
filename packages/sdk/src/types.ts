@@ -28,3 +28,22 @@ export interface StacksClientConfig {
 }
 
 export type MarketStatus = 'active' | 'settled' | 'expired';
+
+export interface OracleProvider {
+    id: number;
+    address: string;
+    reputationScore: number;
+    totalSubmissions: number;
+    successfulSubmissions: number;
+    isActive: boolean;
+    isBanned: boolean;
+    activationHeight: number;
+}
+
+export interface OracleSubmission {
+    poolId: number;
+    providerId: number;
+    value: string;
+    confidence: number;
+    timestamp: number;
+}
