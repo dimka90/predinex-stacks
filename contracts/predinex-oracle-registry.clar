@@ -471,7 +471,11 @@
         (err ERR-ORACLE-NOT-FOUND))
       (err ERR-UNAUTHORIZED)))
 
-;; Stake slashing mechanism
+;; @desc Administrative: Slash a provider's locked stake for malicious behavior or invalid data
+;; @param provider-id (uint): The identifier of the provider to penalize
+;; @param reason (string-ascii 128): Descriptive reason for the penalty (logged on-chain)
+;; @returns (ok uint): Amount of STX slashed and removed from the stake
+;; @returns (err uint): ERR-UNAUTHORIZED (u401), ERR-ORACLE-NOT-FOUND (u430)
 (define-public (slash-provider-stake (provider-id uint) (reason (string-ascii 128)))
   (if (or (is-eq tx-sender CONTRACT-OWNER) (is-admin tx-sender))
       (match (map-get? enhanced-oracle-providers { provider-id: provider-id })
