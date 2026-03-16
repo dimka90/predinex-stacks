@@ -5,6 +5,7 @@ import AuthGuard from "../../components/AuthGuard";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Info } from "lucide-react";
 import CampaignRules from "../../components/CampaignRules";
+import ModuleErrorBoundary from "../../components/ModuleErrorBoundary";
 
 export default function RewardsPage() {
   return (
@@ -24,10 +25,14 @@ export default function RewardsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div className="lg:col-span-2">
-              <Leaderboard />
+              <ModuleErrorBoundary moduleName="Leaderboard">
+                <Leaderboard />
+              </ModuleErrorBoundary>
             </div>
             <div className="lg:col-span-1">
-              <CampaignRules />
+              <ModuleErrorBoundary moduleName="Campaign Guidelines">
+                <CampaignRules />
+              </ModuleErrorBoundary>
             </div>
           </div>
 
