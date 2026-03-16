@@ -1,5 +1,5 @@
 {
-    "name": "@predinex/sdk",
+    "name": "predinex-stacks-sdk",
     "version": "0.1.0",
     "description": "Core SDK for Predinex Stacks interaction",
     "main": "./dist/index.js",
