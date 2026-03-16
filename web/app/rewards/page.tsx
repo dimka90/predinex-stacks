@@ -4,12 +4,21 @@ import Navbar from "../../components/Navbar";
 import AuthGuard from "../../components/AuthGuard";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../components/ui/accordion";
 import { Info } from "lucide-react";
+import { useState, useEffect } from "react";
 import UserStats from "../../components/UserStats";
 import Leaderboard from "../../components/Leaderboard";
 import CampaignRules from "../../components/CampaignRules";
 import ModuleErrorBoundary from "../../components/ModuleErrorBoundary";
+import RewardCardSkeleton from "../../components/RewardCardSkeleton";
 
 export default function RewardsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -28,7 +37,7 @@ export default function RewardsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div className="lg:col-span-2">
               <ModuleErrorBoundary moduleName="Leaderboard">
-                <Leaderboard />
+                {isLoading ? <RewardCardSkeleton /> : <Leaderboard />}
               </ModuleErrorBoundary>
             </div>
             <div className="lg:col-span-1">
