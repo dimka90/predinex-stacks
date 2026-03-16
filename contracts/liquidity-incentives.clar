@@ -2,22 +2,24 @@
 ;; Manages on-chain tracking and distribution of incentive bonuses
 ;; Rewards early bettors, volume contributors, and loyal participants
 
-;; Constants
+;; Constants & Errors
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-UNAUTHORIZED (err u401))
-(define-constant ERR-INVALID-AMOUNT (err u400))
-(define-constant ERR-POOL-NOT-FOUND (err u404))
-(define-constant ERR-INCENTIVE-NOT-FOUND (err u405))
-(define-constant ERR-ALREADY-CLAIMED (err u410))
-(define-constant ERR-INSUFFICIENT-BALANCE (err u424))
-(define-constant ERR-INVALID-CONFIG (err u422))
-(define-constant ERR-CLAIM-WINDOW-CLOSED (err u413))
-(define-constant ERR-INVALID-POOL-STATE (err u414))
-(define-constant ERR-INCENTIVE-DISABLED (err u415))
-(define-constant ERR-MINIMUM-BET-NOT-MET (err u405))
-(define-constant ERR-MAX-CLAIMS-REACHED (err u406))
-(define-constant ERR-LEADERBOARD-UPDATE-FAILED (err u407))
-(define-constant ERR-VESTING-NOT-MET (err u408))
+
+;; Standard Error Codes (Incentive & Rewards Layer)
+(define-constant ERR-UNAUTHORIZED (err u401))         ;; Operation attempted by a non-authorized principal
+(define-constant ERR-INVALID-AMOUNT (err u400))       ;; Provided value is zero or exceeds logical bounds
+(define-constant ERR-POOL-NOT-FOUND (err u404))       ;; Target pool identifier does not exist in the registry
+(define-constant ERR-INCENTIVE-NOT-FOUND (err u405))   ;; No active incentive record for the specified parameters
+(define-constant ERR-ALREADY-CLAIMED (err u410))       ;; User has already retrieved rewards for this cycle
+(define-constant ERR-INSUFFICIENT-BALANCE (err u424))  ;; Reward distribution failed: contract balance too low
+(define-constant ERR-INVALID-CONFIG (err u422))        ;; Pool incentive parameters are invalid or missing
+(define-constant ERR-CLAIM-WINDOW-CLOSED (err u413))   ;; Reward claim attempted after the deadline
+(define-constant ERR-INVALID-POOL-STATE (err u414))    ;; Action rejected: pool must be in a specific status
+(define-constant ERR-INCENTIVE-DISABLED (err u415))    ;; Specific incentive type is currently inactive
+(define-constant ERR-MINIMUM-BET-NOT-MET (err u405))   ;; Participation too low to qualify for rewards
+(define-constant ERR-MAX-CLAIMS-REACHED (err u406))    ;; Global or user limit on reward claims hit
+(define-constant ERR-LEADERBOARD-UPDATE-FAILED (err u407)) ;; State update: leaderboard sorting error
+(define-constant ERR-VESTING-NOT-MET (err u408))       ;; Token unlocking condition (time/block) not yet passed
 
 ;; Incentive configuration constants
 (define-constant EARLY-BIRD-BONUS-PERCENT u5) ;; 5% bonus for first bettors
