@@ -361,6 +361,10 @@
   )
 )
 
+;; @desc Administrative/Community: Finalize an active dispute and execute the bond transfer
+;; @param dispute-id (uint): The identifier of the dispute to be resolved
+;; @returns (ok bool): true if dispute was upheld and bond returned, false otherwise
+;; @returns (err uint): ERR-DISPUTE-NOT-FOUND (u441), ERR-DISPUTE-WINDOW-CLOSED (u442)
 (define-public (resolve-dispute (dispute-id uint))
   (match (map-get? pool-disputes { dispute-id: dispute-id })
     dispute (if (and 
