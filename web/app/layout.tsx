@@ -40,6 +40,12 @@ export const metadata: Metadata = {
     description: "Predict the future. Win on Bitcoin.",
     images: ["/og-image.png"],
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  category: "finance",
 };
 
 export default function RootLayout({
