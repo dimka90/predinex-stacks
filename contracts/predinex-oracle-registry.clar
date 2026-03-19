@@ -854,3 +854,6 @@
           (err ERR-ORACLE-NOT-FOUND))
         (err ERR-ORACLE-NOT-FOUND))
       (err ERR-UNAUTHORIZED)))
+
+;; Track oracle submission timestamps for rate limiting
+(define-map oracle-last-submission principal uint)
