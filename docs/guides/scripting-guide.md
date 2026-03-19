@@ -1,0 +1,7 @@
+# Scripting Guide
+
+All scripts in `scripts/` use the `@stacks/transactions` SDK.
+Run with: `npx ts-node scripts/<name>.ts`
+
+## Environment
+Copy `.env.example` to `.env` and fill in your keys.
