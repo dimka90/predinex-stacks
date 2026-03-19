@@ -1834,3 +1834,6 @@
     roi: (get-user-historical-roi user)
   }
 )
+
+;; v1.2: added cooldown period between reward claims to prevent gaming
+(define-constant CLAIM_COOLDOWN_BLOCKS u144)
