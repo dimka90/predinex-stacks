@@ -9,3 +9,8 @@
 - `web/app/` - App Router pages and layouts
 - `web/components/` - shared UI components
 - `web/app/lib/` - utilities, hooks, constants
+
+## Custom Hooks
+- `useDebounce` - debounce rapidly changing values
+- `useLocalStorage` - persist state in localStorage
+- `useContractCall` - manage contract transaction state
