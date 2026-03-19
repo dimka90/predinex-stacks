@@ -11,3 +11,10 @@ describe("formatBPS", () => {
     expect(formatBPS(100)).toBe("1.00%");
   });
 });
+
+describe("formatBlocksToTime", () => {
+  it("returns minutes for small block counts", () => {
+    const { formatBlocksToTime } = require("../web/app/lib/format-utils");
+    expect(formatBlocksToTime(5)).toBe("50m");
+  });
+});
