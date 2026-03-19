@@ -122,11 +122,16 @@ stateDiagram-v2
 - **Create Prediction Pools**: Anyone creating a pool can define the title, description, and two outcomes.
 - **Binary Betting**: Users can bet STX on one of two outcomes (Outcome A or Outcome B).
 - **Automated Bookkeeping**: The contract tracks total bets for each side and individual user positions.
-- [x] **Liquidity Incentives**: Advanced rewards system including Early Bird, Volume, Referral, and Loyalty bonuses.
-- [x] **Reward Leaderboard**: Real-time tracking of top incentive earners per pool.
-- [x] **Dynamic Bonus Rates**: Pool-specific bonus configurations for flexible incentive management.
-- [x] **Vesting Schedule**: Enforced 1-week vesting period for all incentive claims to ensure ecosystem stability.
-- **Settlement**: The pool creator can settle the market, determining the winning outcome.
+- **🆕 Automated Resolution**: Markets can be settled automatically using oracle data feeds.
+- **🆕 Oracle System**: Decentralized oracle providers submit external data for market resolution.
+- **🆕 Dispute Mechanism**: Community-driven dispute resolution for contested automated settlements.
+- **🆕 Fee Distribution**: Automatic fee distribution to oracle providers and platform.
+- **🆕 Fallback Resolution**: Manual settlement when automated systems fail.
+- **🆕 Liquidity Incentives**: Advanced rewards system including Early Bird, Volume, Referral, and Loyalty bonuses.
+- **🆕 Reward Leaderboard**: Real-time tracking of top incentive earners per pool.
+- **🆕 Dynamic Bonus Rates**: Pool-specific bonus configurations for flexible incentive management.
+- **🆕 Vesting Schedule**: Enforced 1-week vesting period for all incentive claims to ensure ecosystem stability.
+- **Settlement**: The pool creator can settle the market, determining the winning outcome (functionality for claiming winnings would be the logical next step).
 - **Transparency**: All pool data, bets, and results are publicly verifiable on the Stacks blockchain.
 
 ## 🛠 Prerequisites
@@ -289,19 +294,13 @@ To ensure Predinex becomes the premier destination for prediction markets on Bit
 - ✅ Integration with Stacks Blockchain API for real-time data.
 - ✅ Automated Resolution Engine and Oracle Registry.
 
-### Phase 2: Enhanced User Experience (COMPLETED)
-- ✅ Real on-chain data integration for the frontend (Oracle Management & Leaderboard).
-- ✅ Professional Oracle Feeder system bridging real BTC prices.
-- ✅ Mobile-first responsive design refinements.
-- ✅ Wallet integration with Hiro, Leather, and Xverse.
+### Phase 2: Enhanced User Experience (IN PROGRESS)
+- 🔄 Real on-chain data integration for the frontend (replacing mocks).
+- 🔄 Professional Oracle Feeder system bridging real BTC prices.
+- ⏳ Mobile-first responsive design refinements.
+- ⏳ Wallet integration with Hiro and Leather wallets.
 
-### Phase 3: Metric Optimization & SDK (IN PROGRESS)
-- ✅ **SDK Extraction**: Launched `predinex-stacks-sdk` on NPM.
-- ✅ **NPM Documentation**: Type-safe client for institutional integration.
-- 🔄 **Mainnet Interaction**: Generating transaction volume for Builder Rewards metrics.
-- ⏳ **Community Growth**: Onboarding the first wave of community oracles.
-
-### Phase 4: Ecosystem Expansion (Q2 2026)
+### Phase 3: Ecosystem Expansion (Q2 2026)
 - 📅 Integration with Stacks Nakamoto upgrade features.
 - 📅 Decentralized dispute resolution UI for community participation.
 - 📅 Multi-token support for prediction pools (sBTC, ALTI).
