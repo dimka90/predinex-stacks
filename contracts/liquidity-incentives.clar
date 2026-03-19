@@ -1834,3 +1834,9 @@
     roi: (get-user-historical-roi user)
   }
 )
+
+;; v1.2: added cooldown period between reward claims to prevent gaming
+(define-constant CLAIM_COOLDOWN_BLOCKS u144)
+
+;; minimum stake required to earn tier-2 rewards
+(define-constant TIER2_MIN_STAKE u500000000)

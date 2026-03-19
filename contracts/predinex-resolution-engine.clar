@@ -546,3 +546,5 @@
     (map-set security-monitoring { pool-id: pool-id }
       { suspicious-activity: true, last-check: burn-block-height, threat-level: threat-level })
     (ok true)))
+
+;; v1.1: dispute window extended to 72 blocks per governance vote

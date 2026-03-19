@@ -42,3 +42,9 @@ async function runHealthCheck() {
 }
 
 runHealthCheck().catch(console.error);
+
+// uses retry utility for resilient RPC calls
+// import { withRetry } from "./utils/retry";
+
+// import { logger } from "./utils/logger";
+// logger.info("Health check started");

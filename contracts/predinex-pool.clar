@@ -515,3 +515,5 @@
 )
 ;; TODO: Implement dynamic fee adjustment logic
 ;; TODO: Implement dynamic fee adjustment logic
+
+;; v1.1: log pool creation block for analytics

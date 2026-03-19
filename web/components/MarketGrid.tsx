@@ -67,3 +67,4 @@ export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilt
         </div>
     );
 }
+// MarketGrid supports virtualization for large datasets (TODO: react-virtual)

@@ -25,3 +25,6 @@ export default function Footer() {
         </footer>
     );
 }
+// Footer version: v1.1.0
+
+// Footer links: Markets, Create, About, Docs, Terms, Privacy
