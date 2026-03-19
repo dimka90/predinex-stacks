@@ -38,3 +38,7 @@ async function checkBalance() {
 }
 
 checkBalance();
+
+// Added verbose flag support
+const verbose = process.argv.includes('--verbose');
+if (verbose) console.log('[check-balance] verbose mode enabled');
