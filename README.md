@@ -339,3 +339,9 @@ This project is licensed under the ISC License.
 ### Project Status
 ✅ **Institutional Grade**: Successfully delivered 66+ granular improvements across smart contracts, frontend, and developer tooling.
 ✅ **Metric Optimized**: Successfully published to NPM and integrated on-chain Oracle management.
+
+## Recent Updates (v1.2)
+- Added oracle rate limiting and deregistration notice period
+- New frontend utilities: formatting, analytics, custom hooks
+- Expanded test coverage for constants, dates, and formats
+- Comprehensive architecture and scripting documentation
