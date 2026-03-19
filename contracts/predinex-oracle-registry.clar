@@ -857,3 +857,6 @@
 
 ;; Track oracle submission timestamps for rate limiting
 (define-map oracle-last-submission principal uint)
+
+;; deregistration requires 48-block notice period
+(define-constant DEREGISTER_NOTICE_BLOCKS u48)
