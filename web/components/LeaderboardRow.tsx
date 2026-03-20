@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
-import RankBadge from "../RankBadge";
-import { Contributor } from "../../lib/types/user";
+import RankBadge from "./RankBadge";
+import { Contributor } from "../lib/types/user";
 
 interface LeaderboardRowProps {
     contributor: Contributor;
@@ -11,8 +11,8 @@ export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) 
     return (
         <div
             className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 border group ${isCurrentUser
-                    ? "bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] scale-[1.02]"
-                    : "bg-muted/20 border-transparent hover:bg-muted/40 hover:border-primary/20 hover:scale-[1.01]"
+                ? "bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] scale-[1.02]"
+                : "bg-muted/20 border-transparent hover:bg-muted/40 hover:border-primary/20 hover:scale-[1.01]"
                 }`}
         >
             <div className="flex items-center gap-4">
