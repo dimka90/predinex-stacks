@@ -32,7 +32,19 @@ function StatItem({ label, value, icon, trend }: StatItemProps) {
     );
 }
 
-export default function UserStats() {
+interface UserStatsProps {
+    points?: string | number;
+    rank?: string;
+    activity?: string;
+    impact?: string;
+}
+
+export default function UserStats({
+    points = "12450",
+    rank = "#42",
+    activity = "89%",
+    impact = "High"
+}: UserStatsProps) {
     return (
         <div className="glass-panel rounded-2xl p-8 h-full relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-500" />
@@ -47,24 +59,24 @@ export default function UserStats() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <StatItem
                     label="Total Points"
-                    value="12450"
+                    value={points}
                     icon={<Trophy className="h-4 w-4" />}
                     trend="+12%"
                 />
                 <StatItem
                     label="Rank"
-                    value="#42"
+                    value={rank}
                     icon={<Users className="h-4 w-4" />}
                 />
                 <StatItem
                     label="Activity"
-                    value="89%"
+                    value={activity}
                     icon={<Activity className="h-4 w-4" />}
                     trend="+5%"
                 />
                 <StatItem
                     label="Impact"
-                    value="High"
+                    value={impact}
                     icon={<TrendingUp className="h-4 w-4" />}
                 />
             </div>
