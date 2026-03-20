@@ -9,7 +9,7 @@ export interface UseMarketDiscoveryReturn {
   filters: MarketFilters;
   pagination: { currentPage: number; totalPages: number };
   setSearch: (search: string) => void;
-  setStatusFilter: (status: string) => void;
+  setStatusFilter: (status: MarketStatus | 'all') => void;
   setSortBy: (sortBy: string) => void;
   setIsVerifiedOnly: (isVerified: boolean) => void;
   setCategory: (category: string) => void;
