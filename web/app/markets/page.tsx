@@ -21,6 +21,7 @@ export default function MarketsPage() {
     setStatusFilter,
     setSortBy,
     setIsVerifiedOnly,
+    setCategory,
     setPage,
     retry,
     filteredMarkets
@@ -36,13 +37,15 @@ export default function MarketsPage() {
     };
 
     filteredMarkets.forEach(market => {
-      counts[market.status]++;
+      if (counts[market.status] !== undefined) {
+        counts[market.status]++;
+      }
     });
 
     return counts;
   }, [filteredMarkets]);
 
-  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly;
+  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly || filters.category !== 'All';
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -88,6 +91,8 @@ export default function MarketsPage() {
                 counts={filterCounts}
                 isVerifiedOnly={filters.isVerifiedOnly}
                 onVerifiedChange={setIsVerifiedOnly}
+                selectedCategory={filters.category}
+                onCategoryChange={setCategory}
               />
             </div>
 

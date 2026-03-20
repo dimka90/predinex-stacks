@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Pool, getMarkets } from '../stacks-api';
+import { MarketFilters } from '../types/market';
 
 export function useMarketDiscovery() {
   const [allMarkets, setAllMarkets] = useState<Pool[]>([]);
@@ -11,6 +12,7 @@ export function useMarketDiscovery() {
   const [status, setStatus] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [isVerifiedOnly, setIsVerifiedOnly] = useState(false);
+  const [category, setCategory] = useState('All');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -36,8 +38,11 @@ export function useMarketDiscovery() {
       // For now, let's assume markets with even IDs or some specific ones are "verified" in mock
       result = result.filter((_, idx) => idx % 2 === 0);
     }
+    if (category !== 'All') {
+      result = result.filter(m => m.category === category);
+    }
     return result;
-  }, [allMarkets, search, status, isVerifiedOnly]);
+  }, [allMarkets, search, status, isVerifiedOnly, category]);
 
   const ITEMS_PER_PAGE = 6;
   const totalPages = Math.ceil(filteredMarkets.length / ITEMS_PER_PAGE);
@@ -51,12 +56,13 @@ export function useMarketDiscovery() {
     paginatedMarkets,
     isLoading,
     error,
-    filters: { search, status, sortBy, isVerifiedOnly },
+    filters: { search, status, sortBy, isVerifiedOnly, category },
     pagination: { currentPage: page, totalPages },
     setSearch,
     setStatusFilter: setStatus,
     setSortBy,
     setIsVerifiedOnly,
+    setCategory,
     setPage,
     retry: () => window.location.reload(),
     filteredMarkets
