@@ -1,15 +1,23 @@
 import { TrendingUp, Users, Activity, BarChart3, Trophy } from "lucide-react";
 import { formatPoints } from "../lib/utils/formatters";
 import UserTierBadge from "./UserTierBadge";
+import { useMetrics } from "../lib/hooks/useMetrics";
 
 interface StatItemProps {
     label: string;
     value: string | number;
     icon: React.ReactNode;
     trend?: string;
+    isLoading?: boolean;
 }
 
-function StatItem({ label, value, icon, trend }: StatItemProps) {
+function StatItem({ label, value, icon, trend, isLoading }: StatItemProps) {
+    if (isLoading) return (
+        <div className="flex flex-col gap-2 p-5 bg-muted/10 backdrop-blur-sm rounded-xl border border-border/50 animate-pulse">
+            <div className="h-2 w-12 bg-muted rounded mb-2" />
+            <div className="h-8 w-24 bg-muted rounded" />
+        </div>
+    );
     const formattedValue = label.toLowerCase().includes('points') ? formatPoints(value) : value;
     return (
         <div className="flex flex-col gap-2 p-5 bg-muted/10 backdrop-blur-sm rounded-xl hover:bg-muted/20 transition-all duration-300 border border-border/50 hover:border-primary/30 group">
@@ -32,19 +40,9 @@ function StatItem({ label, value, icon, trend }: StatItemProps) {
     );
 }
 
-interface UserStatsProps {
-    points?: string | number;
-    rank?: string;
-    activity?: string;
-    impact?: string;
-}
+export default function UserStats() {
+    const { metrics, isLoading } = useMetrics();
 
-export default function UserStats({
-    points = "12450",
-    rank = "#42",
-    activity = "89%",
-    impact = "High"
-}: UserStatsProps) {
     return (
         <div className="glass-panel rounded-2xl p-8 h-full relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-500" />
@@ -59,34 +57,42 @@ export default function UserStats({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <StatItem
                     label="Total Points"
-                    value={points}
+                    value={metrics.points}
                     icon={<Trophy className="h-4 w-4" />}
                     trend="+12%"
+                    isLoading={isLoading}
                 />
                 <StatItem
                     label="Rank"
-                    value={rank}
+                    value={metrics.rank}
                     icon={<Users className="h-4 w-4" />}
+                    isLoading={isLoading}
                 />
                 <StatItem
                     label="Activity"
-                    value={activity}
+                    value={metrics.activity}
                     icon={<Activity className="h-4 w-4" />}
                     trend="+5%"
+                    isLoading={isLoading}
                 />
                 <StatItem
                     label="Impact"
-                    value={impact}
+                    value={metrics.impact}
                     icon={<TrendingUp className="h-4 w-4" />}
+                    isLoading={isLoading}
                 />
             </div>
 
-            <UserTierBadge
-                tier="Institutional Tier"
-                progress={75}
-                pointsToNext="2,550"
-                nextTier="Whale Tier"
-            />
+            {isLoading ? (
+                <div className="h-32 w-full bg-muted/10 rounded-xl animate-pulse" />
+            ) : (
+                <UserTierBadge
+                    tier={metrics.tier}
+                    progress={metrics.progress}
+                    pointsToNext={metrics.pointsToNext}
+                    nextTier={metrics.nextTier}
+                />
+            )}
         </div>
     );
 }

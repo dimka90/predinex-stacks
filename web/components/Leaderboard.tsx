@@ -1,17 +1,11 @@
 import { Trophy } from "lucide-react";
 import { memo } from "react";
 import LeaderboardRow from "./LeaderboardRow";
-import { Contributor } from "../lib/types/user";
-
-const DEFAULT_CONTRIBUTORS: Contributor[] = [
-  { rank: 1, name: "Satoshi.stx", points: "15,420", avatarColor: "bg-yellow-500/20" },
-  { rank: 2, name: "Marvin.stx", points: "12,100", avatarColor: "bg-gray-400/20" },
-  { rank: 3, name: "StacksEnthusiast.stx", points: "9,850", avatarColor: "bg-orange-400/20" },
-  { rank: 4, name: "Builder.btc", points: "7,200", avatarColor: "bg-primary/20" },
-  { rank: 5, name: "Dimka.stx", points: "6,500", avatarColor: "bg-primary/20", isCurrentUser: true },
-];
+import { useLeaderboard } from "../lib/hooks/useLeaderboard";
 
 const Leaderboard = memo(function Leaderboard() {
+  const { contributors, isLoading } = useLeaderboard();
+
   return (
     <div className="glass-panel rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
@@ -28,10 +22,17 @@ const Leaderboard = memo(function Leaderboard() {
           </span>
         </div>
       </div>
+
       <div className="space-y-3">
-        {DEFAULT_CONTRIBUTORS.map((c) => (
-          <LeaderboardRow key={c.rank} contributor={c} />
-        ))}
+        {isLoading ? (
+          [1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-20 w-full bg-muted/10 rounded-lg animate-pulse" />
+          ))
+        ) : (
+          contributors.map((c) => (
+            <LeaderboardRow key={c.rank} contributor={c} />
+          ))
+        )}
       </div>
     </div>
   );
