@@ -49,10 +49,13 @@ export default function MarketsPage() {
 
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Prediction Markets</h1>
-          <p className="text-muted-foreground">
-            Discover and participate in decentralized prediction markets on Stacks
+        <div className="mb-10 relative">
+          <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full blur-sm opacity-50" />
+          <h1 className="text-4xl font-black mb-3 bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent tracking-tighter">
+            Prediction Markets
+          </h1>
+          <p className="text-muted-foreground text-lg font-medium max-w-2xl leading-relaxed">
+            Discover, analyze, and participate in decentralized prediction markets powered by Stacks.
           </p>
         </div>
 
