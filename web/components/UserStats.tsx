@@ -1,4 +1,6 @@
-import { TrendingUp, Users, Activity, BarChart3, Star, Trophy } from "lucide-react";
+import { TrendingUp, Users, Activity, BarChart3, Trophy } from "lucide-react";
+import { formatPoints } from "../lib/utils/formatters";
+import UserTierBadge from "./UserTierBadge";
 
 interface StatItemProps {
     label: string;
@@ -8,6 +10,7 @@ interface StatItemProps {
 }
 
 function StatItem({ label, value, icon, trend }: StatItemProps) {
+    const formattedValue = label.toLowerCase().includes('points') ? formatPoints(value) : value;
     return (
         <div className="flex flex-col gap-2 p-5 bg-muted/10 backdrop-blur-sm rounded-xl hover:bg-muted/20 transition-all duration-300 border border-border/50 hover:border-primary/30 group">
             <div className="flex items-center justify-between">
@@ -17,7 +20,7 @@ function StatItem({ label, value, icon, trend }: StatItemProps) {
                 </div>
             </div>
             <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black tracking-tight">{value}</span>
+                <span className="text-3xl font-black tracking-tight">{formattedValue}</span>
                 {trend && (
                     <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">
                         <Activity className="h-2 w-2" />
@@ -41,10 +44,10 @@ export default function UserStats() {
                 Performance Metrics
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <StatItem
                     label="Total Points"
-                    value="12,450"
+                    value="12450"
                     icon={<Trophy className="h-4 w-4" />}
                     trend="+12%"
                 />
@@ -66,30 +69,12 @@ export default function UserStats() {
                 />
             </div>
 
-            <div className="mt-8 p-6 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 relative">
-                <div className="flex justify-between items-end mb-3">
-                    <div>
-                        <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">Current Level</p>
-                        <p className="text-lg text-primary font-black">Institutional Tier</p>
-                    </div>
-                    <p className="text-xs font-bold text-primary">75% Complete</p>
-                </div>
-
-                <div className="w-full bg-muted/50 rounded-full h-3 p-0.5 overflow-hidden">
-                    <div
-                        className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
-                        style={{ width: '75%' }}
-                    />
-                </div>
-
-                <div className="flex justify-between items-center mt-3">
-                    <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                        Next: Whale Tier
-                    </p>
-                    <p className="text-[10px] text-muted-foreground font-bold italic">2,550 pts to go</p>
-                </div>
-            </div>
+            <UserTierBadge
+                tier="Institutional Tier"
+                progress={75}
+                pointsToNext="2,550"
+                nextTier="Whale Tier"
+            />
         </div>
     );
 }
