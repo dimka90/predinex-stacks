@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, Rocket } from 'lucide-react';
 import { useWalletConnection } from '../lib/hooks/useWalletConnection';
+import { NAV_LINKS } from '../lib/constants/navigation';
 
 export default function Navbar() {
   const { isConnected, connect } = useWalletConnection();
@@ -21,9 +22,15 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-10 items-center">
-          <Link href="/markets" className="text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5">Markets</Link>
-          <Link href="/create" className="text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5">Create</Link>
-          <Link href="/rewards" className="text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5">Rewards</Link>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5"
+            >
+              {link.label}
+            </Link>
+          ))}
           <button
             onClick={connect}
             className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 border border-primary/50"
@@ -46,9 +53,16 @@ export default function Navbar() {
       {/* Mobile Menu Content */}
       <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="flex flex-col p-6 gap-4">
-          <Link href="/markets" onClick={() => setIsOpen(false)} className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">Markets</Link>
-          <Link href="/create" onClick={() => setIsOpen(false)} className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">Create</Link>
-          <Link href="/rewards" onClick={() => setIsOpen(false)} className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">Rewards</Link>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+            >
+              {link.label}
+            </Link>
+          ))}
           <button
             onClick={() => { connect(); setIsOpen(false); }}
             className="mt-2 w-full p-4 bg-primary text-primary-foreground rounded-xl font-black text-center shadow-lg shadow-primary/20"
