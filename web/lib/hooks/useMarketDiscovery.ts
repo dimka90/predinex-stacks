@@ -2,7 +2,23 @@ import { useState, useEffect, useMemo } from 'react';
 import { Pool, getMarkets } from '../stacks-api';
 import { MarketFilters } from '../types/market';
 
-export function useMarketDiscovery() {
+export interface UseMarketDiscoveryReturn {
+  paginatedMarkets: Pool[];
+  isLoading: boolean;
+  error: string | null;
+  filters: MarketFilters;
+  pagination: { currentPage: number; totalPages: number };
+  setSearch: (search: string) => void;
+  setStatusFilter: (status: string) => void;
+  setSortBy: (sortBy: string) => void;
+  setIsVerifiedOnly: (isVerified: boolean) => void;
+  setCategory: (category: string) => void;
+  setPage: (page: number) => void;
+  retry: () => void;
+  filteredMarkets: Pool[];
+}
+
+export function useMarketDiscovery(): UseMarketDiscoveryReturn {
   const [allMarkets, setAllMarkets] = useState<Pool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +57,22 @@ export function useMarketDiscovery() {
     if (category !== 'All') {
       result = result.filter(m => m.category === category);
     }
-    return result;
-  }, [allMarkets, search, status, isVerifiedOnly, category]);
+
+    // Sort
+    const sorted = [...result].sort((a, b) => {
+      if (sortBy === 'newest') return b.id - a.id;
+      if (sortBy === 'ending_soon') return a.expiry - b.expiry;
+      if (sortBy === 'highest_volume') {
+        const volA = a.totalA + a.totalB;
+        const volB = b.totalA + b.totalB;
+        return volB - volA;
+      }
+      if (sortBy === 'liquidity') return b.totalA - a.totalA;
+      return 0;
+    });
+
+    return sorted;
+  }, [allMarkets, search, status, isVerifiedOnly, category, sortBy]);
 
   const ITEMS_PER_PAGE = 6;
   const totalPages = Math.ceil(filteredMarkets.length / ITEMS_PER_PAGE);
