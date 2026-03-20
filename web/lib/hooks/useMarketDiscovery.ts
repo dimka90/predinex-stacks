@@ -10,6 +10,7 @@ export function useMarketDiscovery() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [isVerifiedOnly, setIsVerifiedOnly] = useState(false);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -31,8 +32,12 @@ export function useMarketDiscovery() {
     if (status !== 'all') {
       result = result.filter(m => m.status === status);
     }
+    if (isVerifiedOnly) {
+      // For now, let's assume markets with even IDs or some specific ones are "verified" in mock
+      result = result.filter((_, idx) => idx % 2 === 0);
+    }
     return result;
-  }, [allMarkets, search, status]);
+  }, [allMarkets, search, status, isVerifiedOnly]);
 
   const ITEMS_PER_PAGE = 6;
   const totalPages = Math.ceil(filteredMarkets.length / ITEMS_PER_PAGE);
@@ -46,11 +51,12 @@ export function useMarketDiscovery() {
     paginatedMarkets,
     isLoading,
     error,
-    filters: { search, status, sortBy },
+    filters: { search, status, sortBy, isVerifiedOnly },
     pagination: { currentPage: page, totalPages },
     setSearch,
     setStatusFilter: setStatus,
     setSortBy,
+    setIsVerifiedOnly,
     setPage,
     retry: () => window.location.reload(),
     filteredMarkets

@@ -18,4 +18,5 @@ export interface MarketFilters {
     status: MarketStatus | 'all';
     sortBy: string;
     category: string | 'all';
+    isVerifiedOnly: boolean;
 }

@@ -20,6 +20,7 @@ export default function MarketsPage() {
     setSearch,
     setStatusFilter,
     setSortBy,
+    setIsVerifiedOnly,
     setPage,
     retry,
     filteredMarkets
@@ -41,7 +42,7 @@ export default function MarketsPage() {
     return counts;
   }, [filteredMarkets]);
 
-  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all';
+  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -85,6 +86,8 @@ export default function MarketsPage() {
                 selectedStatus={filters.status}
                 onStatusChange={setStatusFilter}
                 counts={filterCounts}
+                isVerifiedOnly={filters.isVerifiedOnly}
+                onVerifiedChange={setIsVerifiedOnly}
               />
             </div>
 
