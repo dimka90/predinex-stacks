@@ -20,7 +20,7 @@ export default function FilterControls({
     selectedCategory,
     onCategoryChange
 }: FilterControlsProps) {
-    const statuses = ['all', 'active', 'settled', 'expired'];
+    const statuses = ['all', 'active', 'settled', 'expired'] as const;
     const categories = ['all', 'Sports', 'Politics', 'Crypto', 'Tech'];
 
     return (
