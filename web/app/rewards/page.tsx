@@ -25,9 +25,19 @@ export default function RewardsPage() {
       <AuthGuard>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div className="lg:col-span-1 glass-panel p-8 rounded-2xl flex flex-col justify-center">
-              <h1 className="text-4xl font-extrabold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Rewards</h1>
-              <p className="text-muted-foreground">Monitor your performance, rank and earnings</p>
+            <div className="lg:col-span-1 glass-panel p-10 rounded-3xl flex flex-col justify-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-purple-400 opacity-50" />
+              <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent animate-gradient-x tracking-tighter">
+                Rewards
+              </h1>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                Monitor your performance, track your rank, and analyze your ecosystem earnings in real-time.
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary/60 uppercase tracking-widest">
+                <div className="h-px flex-1 bg-primary/20" />
+                Updated Live
+                <div className="h-px flex-1 bg-primary/20" />
+              </div>
             </div>
             <div className="lg:col-span-2">
               <UserStats />
