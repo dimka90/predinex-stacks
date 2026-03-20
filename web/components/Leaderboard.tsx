@@ -22,9 +22,16 @@ const Leaderboard = memo(function Leaderboard() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Trophy className="h-6 w-6 text-yellow-500" />
-          <h2 className="text-2xl font-bold">Top Contributors</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Top Contributors</h2>
         </div>
-        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">Updated Hourly</span>
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md cursor-help border border-border/50 hover:bg-muted transition-colors"
+            title="Leaderboard ranks are updated every 60 minutes based on on-chain activity and GitHub contributions."
+          >
+            Updated Hourly
+          </span>
+        </div>
       </div>
       <div className="space-y-3">
         {DEFAULT_CONTRIBUTORS.map((c) => {
@@ -33,8 +40,8 @@ const Leaderboard = memo(function Leaderboard() {
             <div
               key={c.rank}
               className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 border group ${isCurrentUser
-                  ? "bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] scale-[1.02]"
-                  : "bg-muted/20 border-transparent hover:bg-muted/40 hover:border-primary/20 hover:scale-[1.01]"
+                ? "bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] scale-[1.02]"
+                : "bg-muted/20 border-transparent hover:bg-muted/40 hover:border-primary/20 hover:scale-[1.01]"
                 }`}
             >
               <div className="flex items-center gap-4">
