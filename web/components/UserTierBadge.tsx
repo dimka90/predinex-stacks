@@ -1,3 +1,5 @@
+import { Star } from "lucide-react";
+
 interface UserTierBadgeProps {
     tier: string;
     progress: number;
@@ -24,7 +26,8 @@ export default function UserTierBadge({ tier, progress, pointsToNext, nextTier }
             </div>
 
             <div className="flex justify-between items-center mt-3">
-                <p className="text-[10px] text-muted-foreground font-medium">
+                <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
                     Next: {nextTier}
                 </p>
                 <p className="text-[10px] text-muted-foreground font-bold italic">{pointsToNext} pts to go</p>
