@@ -7,7 +7,7 @@ import ClaimWinningsButton from './ClaimWinningsButton';
 export default function MarketCard({ market }: { market: Pool }) {
     // In a real app, we would check if the user has a winning bet.
     const canClaim = market.status === 'settled';
-    const isVerified = true; // Hardcoded for now for Phase 3 visual polish
+    const isVerified = market.isVerified;
 
     return (
         <div className="group block h-full rounded-3xl relative">

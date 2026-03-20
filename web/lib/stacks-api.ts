@@ -25,6 +25,7 @@ export interface Pool {
   settled: boolean;
   winningOutcome?: number;
   status: 'active' | 'settled' | 'expired';
+  isVerified: boolean;
 }
 
 function parsePoolCV(poolCV: any, id: number): Pool {
@@ -55,7 +56,8 @@ function parsePoolCV(poolCV: any, id: number): Pool {
     expiry: expiry,
     settled: settled,
     winningOutcome: winningOutcome,
-    status: status
+    status: status,
+    isVerified: id % 2 === 0
   };
 }
 
