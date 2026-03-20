@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Pool, getMarkets } from '../stacks-api';
-import { MarketFilters } from '../types/market';
+import { MarketFilters, MarketStatus } from '../types/market';
 
 export interface UseMarketDiscoveryReturn {
   paginatedMarkets: Pool[];
