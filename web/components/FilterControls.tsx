@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { MarketStatus } from "../lib/types/market";
 
 export interface FilterControlsProps {
     selectedStatus: string;
