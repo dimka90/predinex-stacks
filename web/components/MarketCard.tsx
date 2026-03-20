@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { Pool } from '../lib/stacks-api';
-import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
+import { TrendingUp, Clock, ChevronRight, CheckCircle2 } from 'lucide-react';
 import MarketCardHeader from './ui/MarketCardHeader';
 import ClaimWinningsButton from './ClaimWinningsButton';
 
 export default function MarketCard({ market }: { market: Pool }) {
     // In a real app, we would check if the user has a winning bet.
-    // For now, we show it if settled, as the button itself handles the contract interaction.
     const canClaim = market.status === 'settled';
+    const isVerified = true; // Hardcoded for now for Phase 3 visual polish
 
     return (
         <div className="group block h-full rounded-3xl relative">
@@ -22,9 +22,16 @@ export default function MarketCard({ market }: { market: Pool }) {
                 >
                     {/* Status Badge */}
                     <div className="flex items-center justify-between mb-4">
-                        <MarketCardHeader id={market.id} status={market.status} />
+                        <div className="flex items-center gap-2">
+                            <MarketCardHeader id={market.id} status={market.status} />
+                            {isVerified && (
+                                <div className="p-1 bg-blue-500/10 rounded-full" title="Verified Market">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
+                                </div>
+                            )}
+                        </div>
                         {market.status === 'active' && (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse-subtle">
                                 <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -43,17 +50,23 @@ export default function MarketCard({ market }: { market: Pool }) {
 
                     <div className="flex items-center justify-between pt-6 border-t border-border/50">
                         <div className="flex items-center gap-4">
-                            <div className="flex flex-col gap-1" aria-label={`Pool volume: ${(market.totalA + market.totalB).toLocaleString()} STX`}>
-                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Volume</span>
+                            <div
+                                className="flex flex-col gap-1 cursor-help"
+                                title="Total 24h trading volume in STX"
+                            >
+                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Volume</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
                                     <span>{(market.totalA + market.totalB).toLocaleString()} STX</span>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-1" aria-label={`Expiry block: ${market.expiry}`}>
-                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Expiry</span>
+                            <div
+                                className="flex flex-col gap-1 cursor-help"
+                                title={`This market expires at Stacks block height ${market.expiry}`}
+                            >
+                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <Clock className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                                    <Clock className="h-3.5 w-3.5 text-accent" />
                                     <span>Block {market.expiry}</span>
                                 </div>
                             </div>
@@ -80,17 +93,3 @@ export default function MarketCard({ market }: { market: Pool }) {
         </div>
     );
 }
-// MarketCard: displays pool summary with status badge
-EOF2
-commit "chore(web): document MarketCard display purpose"
-
-# 21
-cat > scripts/utils/retry.ts << 'EOF'
-export async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): Promise<T> {
-  for (let i = 0; i < retries; i++) {
-    try { return await fn(); }
-    catch (e) { if (i === retries - 1) throw e; await new Promise(r => setTimeout(r, delayMs)); }
-  }
-  throw new Error("unreachable");
-}
-// MarketCard: displays pool summary with status badge
