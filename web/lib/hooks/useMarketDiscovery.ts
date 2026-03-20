@@ -25,7 +25,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryReturn {
 
   // Filters
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('all');
+  const [status, setStatus] = useState<MarketStatus | 'all'>('all');
   const [sortBy, setSortBy] = useState('newest');
   const [isVerifiedOnly, setIsVerifiedOnly] = useState(false);
   const [category, setCategory] = useState('All');
