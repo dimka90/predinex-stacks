@@ -7,6 +7,7 @@ import { getPool, Pool } from "../../lib/stacks-api";
 import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
+import { truncateAddress } from "../../lib/utils";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -151,7 +152,7 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                     {/* Right Column: Betting Section */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-32">
-                            <BettingSection pool={pool} poolId={poolId} />
+                            <BettingSection pool={pool as any} poolId={poolId} />
 
                             <div className="mt-6 p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4">Risk Warning</h4>
