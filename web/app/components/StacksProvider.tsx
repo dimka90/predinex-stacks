@@ -11,7 +11,6 @@
 import { AppConfig, UserSession } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { connectWallet, WalletType } from '../lib/wallet-connector';
-import { UserData } from '../lib/stacks-api';
 import WalletModal from './WalletModal';
 import { useToast } from '../../providers/ToastProvider';
 
