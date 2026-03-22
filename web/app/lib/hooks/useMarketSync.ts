@@ -1,9 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getMarkets, Pool } from '../lib/stacks-api';
-import { processMarketData } from '../lib/market-utils';
-import { ProcessedMarket, MarketFilters } from '../lib/market-types';
+import { getMarkets, Pool } from '../stacks-api';
+import { processMarketData } from '../market-utils';
+import { ProcessedMarket, MarketFilters } from '../market-types';
 import { useState, useMemo } from 'react';
 
 export function useMarketSync(filters: MarketFilters) {

@@ -9,7 +9,8 @@ import SortControls from "../components/SortControls";
 import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
-import { XCircle } from 'lucide-react';
+import { useRealTimeStats } from "../lib/hooks/useRealTimeStats";
+import { XCircle, Trophy, TrendingUp, Users } from 'lucide-react';
 
 export default function MarketsPage() {
   const {

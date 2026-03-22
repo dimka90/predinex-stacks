@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getPoolCount, getTotalVolume } from '../lib/stacks-api';
+import { getPoolCount, getTotalVolume } from '../stacks-api';
 import { useState, useEffect } from 'react';
 
 export function useRealTimeStats() {
@@ -30,7 +30,7 @@ export function useRealTimeStats() {
     return {
         stats: {
             poolCount: poolCount || 0,
-            totalVolume: (totalVolume || 0) / 1_000_000, // Convert from microSTX
+            totalVolume: (Number(totalVolume) || 0) / 1_000_000, // Convert from microSTX
             activeUsers,
         },
         isLoading: loadingPools || loadingVolume,
