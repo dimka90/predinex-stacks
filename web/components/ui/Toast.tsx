@@ -10,13 +10,6 @@ interface ToastProps {
     onClose: () => void;
 }
 
-/**
- * Toast - Ephemeral notification component
- * @param message The notification message
- * @param type The type of notification (success, error, info)
- * @param duration How long to show the toast in ms
- * @param onClose Callback when toast is closed
- */
 export default function Toast({
     message,
     type = 'info',
@@ -28,7 +21,7 @@ export default function Toast({
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsVisible(false);
-            setTimeout(onClose, 300); // Wait for fade-out animation
+            setTimeout(onClose, 300);
         }, duration);
 
         return () => clearTimeout(timer);
@@ -37,27 +30,28 @@ export default function Toast({
     const icons = {
         success: <CheckCircle className="w-5 h-5 text-green-500" />,
         error: <AlertCircle className="w-5 h-5 text-red-500" />,
-        info: <Info className="w-5 h-5 text-blue-500" />,
+        info: <Info className="w-5 h-5 text-primary" />,
     };
 
     const bgClasses = {
-        success: 'bg-green-500/10 border-green-500/20',
-        error: 'bg-red-500/10 border-red-500/20',
-        info: 'bg-blue-500/10 border-blue-500/20',
+        success: 'bg-green-500/10 border-green-500/20 text-green-500',
+        error: 'bg-red-500/10 border-red-500/20 text-red-500',
+        info: 'bg-primary/10 border-primary/20 text-primary font-bold',
     };
 
     return (
-        <div className={`fixed bottom-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border glass shadow-2xl transition-all duration-300 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'} ${bgClasses[type]}`}>
-            {icons[type]}
-            <p className="text-sm font-medium">{message}</p>
+        <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-300 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'} ${bgClasses[type]} min-w-[300px]`}>
+            <div className="shrink-0">{icons[type]}</div>
+            <p className="text-sm font-bold tracking-tight flex-1">{message}</p>
             <button
                 onClick={() => {
                     setIsVisible(false);
                     setTimeout(onClose, 300);
                 }}
-                className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-black/10 rounded-full transition-colors ml-4"
+                aria-label="Close"
             >
-                <X className="w-4 h-4 text-muted-foreground" />
+                <X className="w-4 h-4 opacity-70" />
             </button>
         </div>
     );

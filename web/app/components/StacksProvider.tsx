@@ -11,7 +11,9 @@
 import { AppConfig, UserSession } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { connectWallet, WalletType } from '../lib/wallet-connector';
+import { UserData } from '../lib/stacks-api';
 import WalletModal from './WalletModal';
+import { useToast } from '../../providers/ToastProvider';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -45,10 +47,11 @@ const StacksContext = createContext<StacksContextValue>({} as any);
  * StacksProvider is the root context provider for Stacks-related functionality.
  * It initializes the authentication session, handles sign-ins, and provides
  * a unified interface for wallet interactions to the rest of the application.
- * 
+ *
  * @param children - The React components to be wrapped by the provider
  */
-export function StacksProvider({ children }: { children: ReactNode }) {
+export function StacksProvider({ children }: { children: React.ReactNode }) {
+    const { showToast } = useToast();
     // State for storing authenticated user data (profile, addresses, etc.)
     const [userData, setUserData] = useState<any>(null);
     // Tracks initial session verification to prevent flickers or unauthorized access
@@ -150,7 +153,7 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         if (address) {
             try {
                 await navigator.clipboard.writeText(address);
-                // We could trigger a toast here if we have a global toast system
+                showToast('Wallet address copied to clipboard!', 'success');
             } catch (err) {
                 console.error('Failed to copy address:', err);
             }
