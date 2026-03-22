@@ -307,59 +307,61 @@
     (asserts! (not (var-get contract-paused)) ERR-INVALID-POOL-STATE)
     
     ;; Update bet tracking with enhanced metrics
-    (begin
-      (update-user-tier user bet-amount)
-      (map-set pool-bet-tracking
-        { pool-id: pool-id, user: user }
-        {
-          bet-count: new-bet-count,
-          total-bet-amount: new-total-amount,
-          first-bet-at: (get first-bet-at bet-tracking),
-          last-bet-at: burn-block-height,
-          consecutive-bets: (+ (get consecutive-bets bet-tracking) u1),
-          highest-bet: new-highest,
-          average-bet: new-average,
-          claims-count: (get claims-count bet-tracking)
-        }
-      )
+    (let (
+      (updated-tier (update-user-tier user bet-amount))
     )
-    
-    ;; Calculate early bird bonus if eligible
-    (if (and (get early-bird-enabled config) (<= new-bet-count EARLY-BIRD-THRESHOLD))
-      (let (
-        (base-early-bird (calculate-enhanced-early-bird-bonus pool-id bet-amount new-bet-count))
-        (tier-info (default-to { tier: TIER-BRONZE, multiplier: u1, total-volume: u0 } (map-get? user-tiers { user: user })))
-        (tier-multiplier (get multiplier tier-info))
-        (stake-multiplier (calculate-staking-multiplier user))
-        (final-bonus (* (* base-early-bird tier-multiplier) stake-multiplier))
-      )
-        (if (and (> final-bonus u0) (validate-global-spend final-bonus))
-          (begin
-            (record-spend final-bonus)
-            (update-global-leaderboard user final-bonus)
-            (update-reputation user 10)
-            (map-set user-incentives
-              { pool-id: pool-id, user: user, incentive-type: "early-bird" }
-              {
-                amount: final-bonus,
-                status: "pending",
-                earned-at: burn-block-height,
-                claimed-at: none,
-                claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
-                bonus-multiplier: (* tier-multiplier stake-multiplier),
-                streak-count: (get consecutive-bets bet-tracking),
-                is-premium: (>= tier-multiplier u2)
-              }
+      (begin
+        (map-set pool-bet-tracking
+          { pool-id: pool-id, user: user }
+          {
+            bet-count: new-bet-count,
+            total-bet-amount: new-total-amount,
+            first-bet-at: (get first-bet-at bet-tracking),
+            last-bet-at: burn-block-height,
+            consecutive-bets: (+ (get consecutive-bets bet-tracking) u1),
+            highest-bet: new-highest,
+            average-bet: new-average,
+            claims-count: (get claims-count bet-tracking)
+          }
+        )
+      
+        ;; Calculate early bird bonus if eligible
+        (if (and (get early-bird-enabled config) (<= new-bet-count EARLY-BIRD-THRESHOLD))
+          (let (
+            (base-early-bird (calculate-enhanced-early-bird-bonus pool-id bet-amount new-bet-count))
+            (tier-multiplier (get multiplier updated-tier))
+            (stake-multiplier (calculate-staking-multiplier user))
+            (final-bonus (* (* base-early-bird tier-multiplier) stake-multiplier))
+          )
+            (if (and (> final-bonus u0) (validate-global-spend final-bonus))
+              (begin
+                (record-spend final-bonus)
+                (update-global-leaderboard user final-bonus)
+                (update-reputation user 10)
+                (map-set user-incentives
+                  { pool-id: pool-id, user: user, incentive-type: "early-bird" }
+                  {
+                    amount: final-bonus,
+                    status: "pending",
+                    earned-at: burn-block-height,
+                    claimed-at: none,
+                    claim-deadline: (+ burn-block-height CLAIM-WINDOW-BLOCKS),
+                    bonus-multiplier: (* tier-multiplier stake-multiplier),
+                    streak-count: (get consecutive-bets bet-tracking),
+                    is-premium: (>= tier-multiplier u2)
+                  }
+                )
+                
+                (update-user-leaderboard-entry pool-id user final-bonus)
+                (update-enhanced-pool-stats pool-id "early-bird" final-bonus)
+                (ok final-bonus)
+              )
+              (ok u0)
             )
-            
-            (update-user-leaderboard-entry pool-id user final-bonus)
-            (update-enhanced-pool-stats pool-id "early-bird" final-bonus)
-            (ok final-bonus)
           )
           (ok u0)
         )
       )
-      (ok u0)
     )
   )
 )
@@ -783,8 +785,10 @@
     (new-multiplier (if (is-eq new-tier TIER-PLATINUM) u4
                       (if (is-eq new-tier TIER-GOLD) u3
                         (if (is-eq new-tier TIER-SILVER) u2 u1))))
+    (new-data { tier: new-tier, multiplier: new-multiplier, total-volume: new-volume })
   )
-    (map-set user-tiers { user: user } { tier: new-tier, multiplier: new-multiplier, total-volume: new-volume })
+    (map-set user-tiers { user: user } new-data)
+    new-data
   )
 )
 
