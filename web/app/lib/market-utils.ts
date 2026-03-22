@@ -84,7 +84,9 @@ export function processMarketData(pool: PoolData, currentBlockHeight: number): P
     status,
     timeRemaining,
     createdAt: pool.createdAt,
-    creator: pool.creator
+    creator: pool.creator,
+    isVerified: pool.poolId % 2 === 0, // Mock verification
+    category: ['Sports', 'Politics', 'Crypto', 'Tech'][pool.poolId % 4] || 'General' // Mock category
   };
 }
 

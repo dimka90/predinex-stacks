@@ -29,6 +29,8 @@ export interface ProcessedMarket {
   timeRemaining: number | null;
   createdAt: number;
   creator: string;
+  isVerified: boolean;
+  category: string;
 }
 
 export interface MarketFilters {
