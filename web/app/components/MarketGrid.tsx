@@ -4,6 +4,7 @@ import { RefreshCw, AlertCircle, Search } from 'lucide-react';
 import { useState } from 'react';
 import MarketCard from './MarketCard';
 import PoolDetailsModal from './PoolDetailsModal';
+import SkeletonLoader from './SkeletonLoader';
 import { ProcessedMarket } from '../lib/market-types';
 
 interface MarketGridProps {
@@ -33,13 +34,8 @@ export default function MarketGrid({
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-20">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-muted-foreground">Loading markets...</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <SkeletonLoader variant="market" count={6} />
       </div>
     );
   }

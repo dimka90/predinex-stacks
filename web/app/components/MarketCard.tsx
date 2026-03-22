@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info } from 'lucide-react';
+import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info, Share2 } from 'lucide-react';
 import { ProcessedMarket } from '../lib/market-types';
 import { formatSTXAmount, formatTimeRemaining } from '../lib/market-utils';
+import ShareMarketButton from './ShareMarketButton';
 
 interface MarketCardProps {
   market: ProcessedMarket;
@@ -71,82 +72,71 @@ export default function MarketCard({ market, onShowDetails }: MarketCardProps) {
             <span className="text-xs font-mono text-muted-foreground">
               #POOL-{market.poolId}
             </span>
-            <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${getStatusColor(market.status)}`}>
-              {getStatusIcon(market.status)}
-              {getStatusText(market.status)}
-            </span>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onShowDetails?.();
-              }}
-              className="p-1.5 rounded-lg bg-muted/50 hover:bg-primary hover:text-white transition-all ml-2"
-              title="View Details"
+            title="View Details"
             >
-              <Info className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Title and Description */}
-          <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-            {market.title}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-6 line-clamp-3">
-            {market.description}
-          </p>
+            <Info className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Market Info */}
-        <div className="space-y-4">
-          {/* Outcomes */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-400">{market.outcomeA}</span>
-                <span className="text-xs text-muted-foreground">({market.oddsA}%)</span>
-              </div>
-              <span className="text-muted-foreground text-xs">vs</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">({market.oddsB}%)</span>
-                <span className="font-medium text-red-400">{market.outcomeB}</span>
-              </div>
-            </div>
+        {/* Title and Description */}
+        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+          {market.title}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-6 line-clamp-3">
+          {market.description}
+        </p>
+      </div>
 
-            {/* Odds visualization bar */}
-            <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
-              <div className="h-full flex">
-                <div
-                  className="bg-green-400 transition-all duration-300"
-                  style={{ width: `${market.oddsA}%` }}
-                />
-                <div
-                  className="bg-red-400 transition-all duration-300"
-                  style={{ width: `${market.oddsB}%` }}
-                />
-              </div>
+      {/* Market Info */}
+      <div className="space-y-4">
+        {/* Outcomes */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-sm p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-green-400">{market.outcomeA}</span>
+              <span className="text-xs text-muted-foreground">({market.oddsA}%)</span>
+            </div>
+            <span className="text-muted-foreground text-xs">vs</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">({market.oddsB}%)</span>
+              <span className="font-medium text-red-400">{market.outcomeB}</span>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <TrendingUp className="w-4 h-4" />
-              <span>{formatSTXAmount(market.totalVolume)}</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>{getTimeDisplay()}</span>
+          {/* Odds visualization bar */}
+          <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
+            <div className="h-full flex">
+              <div
+                className="bg-green-400 transition-all duration-300"
+                style={{ width: `${market.oddsA}%` }}
+              />
+              <div
+                className="bg-red-400 transition-all duration-300"
+                style={{ width: `${market.oddsB}%` }}
+              />
             </div>
           </div>
+        </div>
 
-          {/* Creator info */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t border-muted/20">
-            <Users className="w-3 h-3" />
-            <span>Created by {market.creator.slice(0, 8)}...{market.creator.slice(-4)}</span>
+        {/* Stats */}
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <TrendingUp className="w-4 h-4" />
+            <span>{formatSTXAmount(market.totalVolume)}</span>
           </div>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>{getTimeDisplay()}</span>
+          </div>
+        </div>
+
+        {/* Creator info */}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t border-muted/20">
+          <Users className="w-3 h-3" />
+          <span>Created by {market.creator.slice(0, 8)}...{market.creator.slice(-4)}</span>
         </div>
       </div>
-    </Link>
+    </div>
+    </Link >
   );
 }
