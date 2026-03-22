@@ -1,7 +1,7 @@
 'use client';
 
 import Navbar from "../components/Navbar";
-import { Rocket, ShieldAtSign, Zap, Globe, Cpu, Coins } from "lucide-react";
+import { Rocket, ShieldCheck, Zap, Globe, Cpu, Coins } from "lucide-react";
 
 export default function AboutPage() {
     return (
@@ -24,7 +24,7 @@ export default function AboutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
                     <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 hover:border-primary/20 transition-all duration-500">
                         <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-8 border border-primary/20">
-                            <ShieldAtSign size={28} />
+                            <ShieldCheck size={28} />
                         </div>
                         <h3 className="text-2xl font-black mb-4 tracking-tight">Bitcoin Security</h3>
                         <p className="text-muted-foreground leading-relaxed">
