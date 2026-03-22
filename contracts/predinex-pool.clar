@@ -136,7 +136,7 @@
           (> (len description) u0) (<= (len description) u512)
           (> (len outcome-a) u0) (<= (len outcome-a) u128)
           (> (len outcome-b) u0) (<= (len outcome-b) u128)
-          (> duration u0)
+          (> duration u0) (<= duration u14400)
         )
         (begin
           (map-insert pools
