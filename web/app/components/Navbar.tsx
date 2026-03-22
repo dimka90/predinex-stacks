@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X, Wallet } from "lucide-react";
+import { LogOut, Menu, X, Wallet, Sun, Moon } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
+import DarkModeToggle from "./ui/DarkModeToggle";
 import { truncateAddress } from "../lib/utils";
 import { ICON_CLASS } from "../lib/constants";
 
@@ -55,6 +56,7 @@ export default function Navbar() {
 
                     {/* User Info & Connect Button - Desktop */}
                     <div className="hidden md:flex items-center gap-4">
+                        <DarkModeToggle />
                         {userData ? (
                             <div className="flex items-center gap-3">
                                 <button
@@ -83,6 +85,7 @@ export default function Navbar() {
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center gap-4">
+                        <DarkModeToggle />
                         <AppKitButton />
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
