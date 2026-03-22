@@ -10,19 +10,21 @@ interface UseMarketDiscoveryState {
   allMarkets: ProcessedMarket[];
   filteredMarkets: ProcessedMarket[];
   paginatedMarkets: ProcessedMarket[];
-  
+
   // Loading states
   isLoading: boolean;
   error: string | null;
-  
+
   // Filters and pagination
   filters: MarketFilters;
   pagination: PaginationState;
-  
+
   // Actions
   setSearch: (search: string) => void;
   setStatusFilter: (status: MarketFilters['status']) => void;
   setSortBy: (sortBy: MarketFilters['sortBy']) => void;
+  setIsVerifiedOnly: (isVerifiedOnly: boolean) => void;
+  setCategory: (category: string) => void;
   setPage: (page: number) => void;
   retry: () => void;
 }
@@ -34,14 +36,16 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
   const [allMarkets, setAllMarkets] = useState<ProcessedMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filter state
   const [filters, setFilters] = useState<MarketFilters>({
     search: '',
     status: 'all',
-    sortBy: 'newest'
+    sortBy: 'newest',
+    isVerifiedOnly: false,
+    category: 'All'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -50,14 +54,14 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const poolsData = await fetchAllPools();
       const currentBlockHeight = getCurrentBlockHeight();
-      
-      const processedMarkets = poolsData.map(pool => 
+
+      const processedMarkets = poolsData.map(pool =>
         processMarketData(pool, currentBlockHeight)
       );
-      
+
       setAllMarkets(processedMarkets);
     } catch (err) {
       console.error('Failed to fetch markets:', err);
@@ -79,7 +83,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     // Apply search filter
     if (filters.search.trim()) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(market => 
+      filtered = filtered.filter(market =>
         market.title.toLowerCase().includes(searchLower) ||
         market.description.toLowerCase().includes(searchLower)
       );
@@ -88,6 +92,24 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     // Apply status filter
     if (filters.status !== 'all') {
       filtered = filtered.filter(market => market.status === filters.status);
+    }
+
+    // Apply category filter (if implemented on ProcessedMarket, otherwise ignore for now)
+    if (filters.category !== 'All') {
+      // Assuming market.category exists or will be added. 
+      // For now, let's keep it placeholder-ready or filter by title keywords.
+      const catLower = filters.category.toLowerCase();
+      filtered = filtered.filter(market =>
+        market.title.toLowerCase().includes(catLower) ||
+        market.description.toLowerCase().includes(catLower)
+      );
+    }
+
+    // Apply verification filter
+    if (filters.isVerifiedOnly) {
+      // In a real app, this would check a verification flag. 
+      // For demonstration, let's say all markets with > 100 STX volume are "verified".
+      filtered = filtered.filter(market => market.totalVolume > 100);
     }
 
     // Apply sorting
@@ -103,13 +125,13 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
           // Active markets first, sorted by time remaining
           if (a.status === 'active' && b.status !== 'active') return -1;
           if (b.status === 'active' && a.status !== 'active') return 1;
-          
+
           if (a.status === 'active' && b.status === 'active') {
             const aTime = a.timeRemaining ?? Infinity;
             const bTime = b.timeRemaining ?? Infinity;
             return aTime - bTime;
           }
-          
+
           // For non-active markets, sort by creation time
           return b.createdAt - a.createdAt;
         });
@@ -123,7 +145,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
   const pagination = useMemo((): PaginationState => {
     const totalItems = filteredMarkets.length;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    
+
     return {
       currentPage,
       itemsPerPage: ITEMS_PER_PAGE,
@@ -142,7 +164,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters.search, filters.status, filters.sortBy]);
+  }, [filters.search, filters.status, filters.sortBy, filters.isVerifiedOnly, filters.category]);
 
   // Action handlers
   const setSearch = useCallback((search: string) => {
@@ -155,6 +177,14 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
 
   const setSortBy = useCallback((sortBy: MarketFilters['sortBy']) => {
     setFilters(prev => ({ ...prev, sortBy }));
+  }, []);
+
+  const setIsVerifiedOnly = useCallback((isVerifiedOnly: boolean) => {
+    setFilters(prev => ({ ...prev, isVerifiedOnly }));
+  }, []);
+
+  const setCategory = useCallback((category: string) => {
+    setFilters(prev => ({ ...prev, category }));
   }, []);
 
   const setPage = useCallback((page: number) => {
@@ -172,19 +202,21 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     allMarkets,
     filteredMarkets,
     paginatedMarkets,
-    
+
     // Loading states
     isLoading,
     error,
-    
+
     // Filters and pagination
     filters,
     pagination,
-    
+
     // Actions
     setSearch,
     setStatusFilter,
     setSortBy,
+    setIsVerifiedOnly,
+    setCategory,
     setPage,
     retry
   };
