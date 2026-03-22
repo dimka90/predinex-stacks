@@ -18,6 +18,8 @@ interface FilterControlsProps {
   onCategoryChange?: (category: string) => void;
   isMyBetsOnly?: boolean;
   onMyBetsChange?: (myBets: boolean) => void;
+  selectedSort?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 interface FilterOption {
@@ -63,7 +65,9 @@ export default function FilterControls({
   selectedCategory = 'All',
   onCategoryChange,
   isMyBetsOnly = false,
-  onMyBetsChange
+  onMyBetsChange,
+  selectedSort = 'newest',
+  onSortChange
 }: FilterControlsProps) {
   const categories = ['All', 'Crypto', 'Sports', 'Politics', 'Tech', 'Culture'];
 
@@ -189,6 +193,22 @@ export default function FilterControls({
             </div>
             <span className="text-sm font-bold">My Bets Only</span>
           </button>
+        </div>
+      </div>
+
+      {/* Sorting Row */}
+      <div className="flex justify-end gap-4">
+        <div className="flex items-center gap-3 bg-muted/20 px-4 py-2 rounded-xl border border-border/10">
+          <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">Sort By:</label>
+          <select
+            value={selectedSort}
+            onChange={(e) => onSortChange?.(e.target.value as SortOption)}
+            className="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer outline-none"
+          >
+            <option value="newest">Newest</option>
+            <option value="volume">Volume</option>
+            <option value="ending-soon">Ending Soon</option>
+          </select>
         </div>
       </div>
     </div>

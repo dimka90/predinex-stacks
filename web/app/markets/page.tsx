@@ -116,6 +116,8 @@ export default function MarketsPage() {
                 onCategoryChange={setCategory}
                 isMyBetsOnly={filters.isMyBetsOnly}
                 onMyBetsChange={setIsMyBetsOnly}
+                selectedSort={filters.sortBy}
+                onSortChange={setSortBy}
               />
             </div>
 
