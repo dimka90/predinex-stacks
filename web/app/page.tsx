@@ -1,3 +1,5 @@
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 import { TrendingUp, Clock, BarChart3, Zap } from "lucide-react";
 import MarketCardHeader from "../components/ui/MarketCardHeader";
 import ActivityFeed from "./components/ActivityFeed";
