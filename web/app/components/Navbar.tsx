@@ -6,6 +6,7 @@ import { LogOut, Menu, X, Wallet, Sun, Moon } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 import DarkModeToggle from "./ui/DarkModeToggle";
+import LanguageSelector from "./ui/LanguageSelector";
 import { truncateAddress } from "../lib/utils";
 import { ICON_CLASS } from "../lib/constants";
 
@@ -56,6 +57,7 @@ export default function Navbar() {
 
                     {/* User Info & Connect Button - Desktop */}
                     <div className="hidden md:flex items-center gap-4">
+                        <LanguageSelector />
                         <DarkModeToggle />
                         {userData ? (
                             <div className="flex items-center gap-3">

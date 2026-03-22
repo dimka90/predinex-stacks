@@ -2,10 +2,12 @@
 
 import { memo } from 'react';
 import {
-    Trophy, Target, PlusCircle, Zap,
-    ExternalLink, RefreshCw, TrendingUp, Clock
+    Trophy, Target, PlusCircle, Zap, Clock,
+    ExternalLink, RefreshCw, TrendingUp, ArrowRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { ActivityItem } from '../lib/stacks-api';
+import { formatDistanceToNow } from 'date-fns';
 
 // --- Helpers ---
 
