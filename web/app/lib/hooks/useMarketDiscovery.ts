@@ -5,6 +5,7 @@ import { PoolData, ProcessedMarket, MarketFilters, PaginationState } from '../ma
 import { useStacks } from '../../components/StacksProvider';
 import { fetchAllPools } from '../enhanced-stacks-api';
 import { processMarketData, getCurrentBlockHeight } from '../market-utils';
+import { useMarketSync } from './useMarketSync';
 
 interface UseMarketDiscoveryState {
   // Data
@@ -186,10 +187,6 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
       setCurrentPage(page);
     }
   }, [pagination.totalPages]);
-
-  const retry = useCallback(() => {
-    fetchMarkets();
-  }, [fetchMarkets]);
 
   return {
     // Data
