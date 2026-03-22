@@ -12,6 +12,10 @@ interface FilterControlsProps {
     settled: number;
     expired: number;
   };
+  isVerifiedOnly?: boolean;
+  onVerifiedChange?: (verified: boolean) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 interface FilterOption {
@@ -48,11 +52,28 @@ const filterOptions: FilterOption[] = [
   }
 ];
 
-export default function FilterControls({ 
-  selectedStatus, 
-  onStatusChange, 
-  counts 
+export default function FilterControls({
+  selectedStatus,
+  onStatusChange,
+  counts,
 }: FilterControlsProps) {
+  // The user's edit implies replacing the props with destructuring from useMarketDiscovery.
+  // This means the component will directly manage its state via the hook, rather than receiving props.
+  // I'm interpreting the user's "Code Edit" as the primary instruction for the component's signature.
+  const {
+    setSearch,
+    setStatusFilter: setStatusFilterFromHook, // Renamed to avoid conflict with onStatusChange prop
+    setSortBy,
+    setIsVerifiedOnly,
+    setCategory,
+    setPage,
+    retry,
+    filteredMarkets,
+    isVerifiedOnly, // Get current state from hook
+    selectedCategory, // Get current state from hook
+  } = useMarketDiscovery();
+
+  const categories = ['All', 'Crypto', 'Sports', 'Politics', 'Tech', 'Culture'];
   const getFilterColor = (status: StatusFilter, isSelected: boolean) => {
     if (!isSelected) {
       return 'text-muted-foreground hover:text-foreground border-muted/30 hover:border-muted/50';
@@ -78,62 +99,34 @@ export default function FilterControls({
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-foreground">Filter by Status</h3>
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {filterOptions.map((option) => {
-          const isSelected = selectedStatus === option.value;
-          const count = getCount(option.value);
-          
-          return (
-            <button
-              key={option.value}
-              onClick={() => onStatusChange(option.value)}
-              className={`
-                flex flex-col items-center gap-2 p-3 rounded-lg border transition-all duration-200
-                ${getFilterColor(option.value, isSelected)}
-                hover:scale-105 active:scale-95
-              `}
-              title={option.description}
-            >
-              <div className="flex items-center gap-2">
-                {option.icon}
-                <span className="text-sm font-medium">{option.label}</span>
-              </div>
-              
-              {counts && (
-                <span className="text-xs opacity-75">
-                  {count} market{count !== 1 ? 's' : ''}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-foreground">Filter by Status</h3>
 
-      {/* Mobile-friendly horizontal scroll version */}
-      <div className="md:hidden">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {filterOptions.map((option) => {
             const isSelected = selectedStatus === option.value;
             const count = getCount(option.value);
-            
+
             return (
               <button
                 key={option.value}
                 onClick={() => onStatusChange(option.value)}
                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 whitespace-nowrap
+                  flex flex-col items-center gap-2 p-3 rounded-lg border transition-all duration-200
                   ${getFilterColor(option.value, isSelected)}
+                  hover:scale-105 active:scale-95
                 `}
                 title={option.description}
               >
-                {option.icon}
-                <span className="text-sm font-medium">{option.label}</span>
+                <div className="flex items-center gap-2">
+                  {option.icon}
+                  <span className="text-sm font-medium">{option.label}</span>
+                </div>
+
                 {counts && (
-                  <span className="text-xs opacity-75 ml-1">
-                    ({count})
+                  <span className="text-xs opacity-75">
+                    {count} market{count !== 1 ? 's' : ''}
                   </span>
                 )}
               </button>
@@ -141,6 +134,52 @@ export default function FilterControls({
           })}
         </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-muted/20">
+        {/* Category Filter */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">Category</label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => onCategoryChange?.(cat)}
+                className={`
+                  px-4 py-1.5 rounded-full text-xs font-bold transition-all border
+                  ${selectedCategory === cat
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-muted/30 border-muted/50 text-muted-foreground hover:border-muted'
+                  }
+                `}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Verification Toggle */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">Verification</label>
+          <button
+            onClick={() => onVerifiedChange?.(!isVerifiedOnly)}
+            className={`
+              flex items-center gap-3 w-full p-3 rounded-xl border transition-all
+              ${isVerifiedOnly
+                ? 'bg-accent/10 border-accent/50 text-accent'
+                : 'bg-muted/30 border-muted/50 text-muted-foreground'
+              }
+            `}
+          >
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${isVerifiedOnly ? 'bg-accent' : 'bg-muted'}`}>
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isVerifiedOnly ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-bold">Show Verified Only</span>
+          </button>
+        </div>
+      </div>
     </div>
+  );
+}
   );
 }
