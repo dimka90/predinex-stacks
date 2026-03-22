@@ -48,6 +48,16 @@ export function calculateTimeRemaining(expiry: number, currentBlockHeight: numbe
   return expiry - currentBlockHeight;
 }
 
+export function formatProtocolDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 /**
  * Transforms raw smart contract data into a processed format ready for UI consumption.
  * Encapsulates logic for odds, status, and time remaining calculations.
