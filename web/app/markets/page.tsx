@@ -9,6 +9,8 @@ import SortControls from "../components/SortControls";
 import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
+import { XCircle, RefreshCcw } from 'lucide-react';
+import { useCallback } from 'react';
 
 export default function MarketsPage() {
   const {
@@ -18,14 +20,18 @@ export default function MarketsPage() {
     filters,
     pagination,
     setSearch,
-    setStatusFilter,
-    setSortBy,
-    setIsVerifiedOnly,
     setCategory,
     setPage,
     retry,
     filteredMarkets
   } = useMarketDiscovery();
+
+  const clearFilters = useCallback(() => {
+    setSearch('');
+    setStatusFilter('all');
+    setCategory('All');
+    setIsVerifiedOnly(false);
+  }, [setSearch, setStatusFilter, setCategory, setIsVerifiedOnly]);
 
   // Calculate filter counts for display
   const filterCounts = useMemo(() => {
@@ -72,13 +78,24 @@ export default function MarketsPage() {
 
         {/* Controls */}
         <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-transparent md:border-border/10">
-          {/* Search */}
-          <div className="max-w-2xl">
-            <SearchBar
-              value={filters.search}
-              onChange={setSearch}
-              placeholder="Search markets by title or description..."
-            />
+          {/* Search and Clear */}
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 max-w-2xl w-full">
+              <SearchBar
+                value={filters.search}
+                onChange={setSearch}
+                placeholder="Search markets by title or description..."
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-6 py-3 bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border/50 transition-all animate-in fade-in slide-in-from-left-2"
+              >
+                <XCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Clear Filters</span>
+              </button>
+            )}
           </div>
 
           {/* Filters and Sort */}
