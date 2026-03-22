@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Activity, BarChart3, Trophy } from "lucide-react";
+import { TrendingUp, Users, Activity, BarChart3, Trophy, Zap } from "lucide-react";
 import { formatPoints } from "../lib/utils/formatters";
 import UserTierBadge from "./UserTierBadge";
 import { useMetrics } from "../lib/hooks/useMetrics";
@@ -79,6 +79,13 @@ export default function UserStats() {
                     label="Impact"
                     value={metrics.impact}
                     icon={<TrendingUp className="h-4 w-4" />}
+                    isLoading={isLoading}
+                />
+                <StatItem
+                    label="Staking Rewards"
+                    value={metrics.stakingRewards}
+                    icon={<Zap className="h-4 w-4" />}
+                    trend="+8%"
                     isLoading={isLoading}
                 />
             </div>

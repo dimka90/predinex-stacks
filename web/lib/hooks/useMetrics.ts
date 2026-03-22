@@ -9,7 +9,8 @@ export function useMetrics() {
         tier: "Institutional Tier",
         progress: 75,
         pointsToNext: "2,550",
-        nextTier: "Whale Tier"
+        nextTier: "Whale Tier",
+        stakingRewards: "1,240.50 STX"
     });
 
     const [isLoading, setIsLoading] = useState(true);
