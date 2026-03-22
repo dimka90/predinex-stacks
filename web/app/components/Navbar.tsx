@@ -107,48 +107,57 @@ export default function Navbar() {
 
             {/* Mobile Menu Content */}
             {isMenuOpen && (
-                onClick = {() => setIsMenuOpen(false)}
+                <div className="md:hidden glass-panel border-t border-white/5 animate-in slide-in-from-top-4 duration-300">
+                    <div className="px-4 pt-4 pb-6 space-y-2">
+                        <Link
+                            href="/markets"
+                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
                         >
-            Create
-        </Link>
-                        {
-        userData && (
-            <Link
-                href="/activity"
-                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-            >
-                Activity
-            </Link>
-        )
-    }
-    {
-        userData && (
-            <>
-                <Link
-                    href="/dashboard"
-                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                >
-                    Dashboard
-                </Link>
-                <button
-                    onClick={() => {
-                        signOut();
-                        setIsMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-base font-medium text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                >
-                    Sign Out
-                </button>
-            </>
-        )
-    }
-                    </div >
-                </div >
-            )
+                            Markets
+                        </Link>
+                        <Link
+                            href="/activity"
+                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Activity
+                        </Link>
+                        <Link
+                            href="/rankings"
+                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Rankings
+                        </Link>
+                        <Link
+                            href="/about"
+                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            About
+                        </Link>
+
+                        {userData && (
+                            <div className="pt-4 border-t border-white/5 space-y-2">
+                                <button
+                                    onClick={() => {
+                                        signOut();
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+                                >
+                                    Sign Out
+                                    <LogOut size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </nav>
+    );
 }
-        </nav >
     );
 }
 // Generic navigation bar for all pages
