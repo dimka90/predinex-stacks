@@ -16,13 +16,9 @@ export default function MarketsPage() {
     paginatedMarkets,
     isLoading,
     error,
-    filters,
-    pagination,
-    setSearch,
-    setStatusFilter,
-    setSortBy,
     setIsVerifiedOnly,
     setCategory,
+    setIsMyBetsOnly,
     setPage,
     retry,
     filteredMarkets
@@ -33,7 +29,8 @@ export default function MarketsPage() {
     setStatusFilter('all');
     setCategory('All');
     setIsVerifiedOnly(false);
-  }, [setSearch, setStatusFilter, setCategory, setIsVerifiedOnly]);
+    setIsMyBetsOnly(false);
+  }, [setSearch, setStatusFilter, setCategory, setIsVerifiedOnly, setIsMyBetsOnly]);
 
   // Calculate filter counts for display
   const filterCounts = useMemo(() => {
@@ -53,7 +50,7 @@ export default function MarketsPage() {
     return counts;
   }, [filteredMarkets]);
 
-  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly || filters.category !== 'All';
+  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly || filters.category !== 'All' || filters.isMyBetsOnly;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -112,6 +109,8 @@ export default function MarketsPage() {
                 onVerifiedChange={setIsVerifiedOnly}
                 selectedCategory={filters.category}
                 onCategoryChange={setCategory}
+                isMyBetsOnly={filters.isMyBetsOnly}
+                onMyBetsChange={setIsMyBetsOnly}
               />
             </div>
 

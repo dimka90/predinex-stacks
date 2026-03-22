@@ -16,6 +16,8 @@ interface FilterControlsProps {
   onVerifiedChange?: (verified: boolean) => void;
   selectedCategory?: string;
   onCategoryChange?: (category: string) => void;
+  isMyBetsOnly?: boolean;
+  onMyBetsChange?: (myBets: boolean) => void;
 }
 
 interface FilterOption {
@@ -59,7 +61,9 @@ export default function FilterControls({
   isVerifiedOnly = false,
   onVerifiedChange,
   selectedCategory = 'All',
-  onCategoryChange
+  onCategoryChange,
+  isMyBetsOnly = false,
+  onMyBetsChange
 }: FilterControlsProps) {
   const categories = ['All', 'Crypto', 'Sports', 'Politics', 'Tech', 'Culture'];
 
@@ -124,7 +128,7 @@ export default function FilterControls({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-muted/20">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-muted/20">
         {/* Category Filter */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-foreground">Category</label>
@@ -163,7 +167,27 @@ export default function FilterControls({
             <div className={`w-10 h-5 rounded-full relative transition-colors ${isVerifiedOnly ? 'bg-accent' : 'bg-muted'}`}>
               <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isVerifiedOnly ? 'left-6' : 'left-1'}`} />
             </div>
-            <span className="text-sm font-bold">Show Verified Only</span>
+            <span className="text-sm font-bold">Show Verified</span>
+          </button>
+        </div>
+
+        {/* My Bets Toggle */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">My Positions</label>
+          <button
+            onClick={() => onMyBetsChange?.(!isMyBetsOnly)}
+            className={`
+              flex items-center gap-3 w-full p-3 rounded-xl border transition-all
+              ${isMyBetsOnly
+                ? 'bg-primary/10 border-primary/50 text-primary'
+                : 'bg-muted/30 border-muted/50 text-muted-foreground'
+              }
+            `}
+          >
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${isMyBetsOnly ? 'bg-primary' : 'bg-muted'}`}>
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isMyBetsOnly ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-bold">My Bets Only</span>
           </button>
         </div>
       </div>
