@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle, Clock, XCircle, Grid3X3 } from 'lucide-react';
-import { StatusFilter } from '../lib/market-types';
+import { StatusFilter, SortOption } from '../lib/market-types';
 
 interface FilterControlsProps {
   selectedStatus: StatusFilter;
