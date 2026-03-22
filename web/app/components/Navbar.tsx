@@ -9,14 +9,14 @@ import { truncateAddress } from "../lib/utils";
 import { ICON_CLASS } from "../lib/constants";
 
 export default function Navbar() {
-    const { userData, signOut } = useStacks();
+    const { userData, signOut, copyAddress } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
     const [copied, setCopied] = useState(false);
 
-    const handleCopyAddress = () => {
+    const handleCopyAddress = async () => {
         if (stxAddress) {
-            navigator.clipboard.writeText(stxAddress);
+            await copyAddress();
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
