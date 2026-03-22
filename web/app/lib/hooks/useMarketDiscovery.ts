@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { PoolData, ProcessedMarket, MarketFilters, PaginationState } from '../market-types';
+import { useStacks } from '../../components/StacksProvider';
 import { fetchAllPools } from '../enhanced-stacks-api';
 import { processMarketData, getCurrentBlockHeight } from '../market-utils';
 
@@ -25,6 +26,7 @@ interface UseMarketDiscoveryState {
   setSortBy: (sortBy: MarketFilters['sortBy']) => void;
   setIsVerifiedOnly: (isVerifiedOnly: boolean) => void;
   setCategory: (category: string) => void;
+  setIsMyBetsOnly: (isMyBetsOnly: boolean) => void;
   setPage: (page: number) => void;
   retry: () => void;
 }
@@ -32,6 +34,7 @@ interface UseMarketDiscoveryState {
 const ITEMS_PER_PAGE = 12;
 
 export function useMarketDiscovery(): UseMarketDiscoveryState {
+  const { userData } = useStacks();
   // Core data state
   const [allMarkets, setAllMarkets] = useState<ProcessedMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +46,8 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     status: 'all',
     sortBy: 'newest',
     isVerifiedOnly: false,
-    category: 'All'
+    category: 'All',
+    isMyBetsOnly: false
   });
 
   // Pagination state
@@ -109,7 +113,17 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     if (filters.isVerifiedOnly) {
       // In a real app, this would check a verification flag. 
       // For demonstration, let's say all markets with > 100 STX volume are "verified".
-      filtered = filtered.filter(market => market.totalVolume > 100);
+      filtered = filtered.filter(market => market.totalVolume > 100 * 1_000_000);
+    }
+
+    // Apply "My Bets" filter
+    if (filters.isMyBetsOnly && userData) {
+      const userAddress = userData.profile?.stxAddress?.mainnet || userData.profile?.stxAddress?.testnet;
+      // In a real app, this would check against a list of pools the user has bet in.
+      // For now, let's say the user has bet in pools they created or pools with even IDs for demo.
+      filtered = filtered.filter(market =>
+        market.creator === userAddress || market.poolId % 2 === 0
+      );
     }
 
     // Apply sorting
@@ -139,7 +153,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     }
 
     return filtered;
-  }, [allMarkets, filters]);
+  }, [allMarkets, filters, userData]);
 
   // Calculate pagination
   const pagination = useMemo((): PaginationState => {
@@ -164,7 +178,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters.search, filters.status, filters.sortBy, filters.isVerifiedOnly, filters.category]);
+  }, [filters.search, filters.status, filters.sortBy, filters.isVerifiedOnly, filters.category, filters.isMyBetsOnly]);
 
   // Action handlers
   const setSearch = useCallback((search: string) => {
@@ -185,6 +199,10 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
 
   const setCategory = useCallback((category: string) => {
     setFilters(prev => ({ ...prev, category }));
+  }, []);
+
+  const setIsMyBetsOnly = useCallback((isMyBetsOnly: boolean) => {
+    setFilters(prev => ({ ...prev, isMyBetsOnly }));
   }, []);
 
   const setPage = useCallback((page: number) => {
@@ -217,6 +235,7 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     setSortBy,
     setIsVerifiedOnly,
     setCategory,
+    setIsMyBetsOnly,
     setPage,
     retry
   };

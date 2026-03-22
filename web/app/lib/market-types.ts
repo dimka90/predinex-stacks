@@ -37,6 +37,7 @@ export interface MarketFilters {
   sortBy: 'volume' | 'newest' | 'ending-soon';
   isVerifiedOnly: boolean;
   category: string;
+  isMyBetsOnly: boolean;
 }
 
 export interface PaginationState {
