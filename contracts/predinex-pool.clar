@@ -92,6 +92,7 @@
 ;; State Variables
 (define-data-var pool-counter uint u1)
 (define-data-var total-volume uint u0)
+(define-data-var total-staked uint u0)
 (define-data-var authorized-resolution-engine principal tx-sender)
 (define-data-var is-paused bool false)
 
@@ -240,6 +241,7 @@
                    )
 
                    (var-set total-volume (+ (var-get total-volume) amount))
+                   (var-set total-staked (+ (var-get total-staked) amount))
                    (print { event: "place-bet", pool-id: pool-id, user: tx-sender, outcome: outcome, amount: amount })
                    (ok true)
                  )
@@ -276,6 +278,7 @@
                              { pool-id: pool-id }
                              (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
                            )
+                           (var-set total-staked (- (var-get total-staked) fee))
                            (print { event: "settle-pool", pool-id: pool-id, winning-outcome: winning-outcome, settled-at: burn-block-height })
                            (ok true)
                          )
@@ -319,6 +322,7 @@
                         (match (as-contract (stx-transfer? base-share tx-sender user))
                           success (begin
                             (map-set claims { pool-id: pool-id, user: tx-sender } true)
+                            (var-set total-staked (- (var-get total-staked) base-share))
                             (print { event: "claim-winnings", pool-id: pool-id, user: user, amount: base-share })
                             (ok base-share)
                           )
@@ -506,6 +510,11 @@
 ;; @desc Returns the cumulative trading volume across all Predinex pools
 (define-read-only (get-total-volume)
   (ok (var-get total-volume))
+)
+
+;; @desc Returns the current amount of STX locked (staked) in all pools
+(define-read-only (get-total-staked)
+  (ok (var-get total-staked))
 )
 
 ;; @desc Checks if a user has already successfully claimed their share of a winning pool
