@@ -12,6 +12,7 @@ import { AppConfig, UserSession } from '@stacks/connect';
 import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { connectWallet, WalletType } from '../lib/wallet-connector';
 import WalletModal from './WalletModal';
+import { useToast } from '../../providers/ToastProvider';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -35,6 +36,8 @@ interface StacksContextValue {
     openWalletModal: () => void;
     /** Loading state during authentication initialization */
     isLoading: boolean;
+    /** Function to copy the current user address to clipboard */
+    copyAddress: () => Promise<void>;
 }
 
 const StacksContext = createContext<StacksContextValue>({} as any);
@@ -43,10 +46,11 @@ const StacksContext = createContext<StacksContextValue>({} as any);
  * StacksProvider is the root context provider for Stacks-related functionality.
  * It initializes the authentication session, handles sign-ins, and provides
  * a unified interface for wallet interactions to the rest of the application.
- * 
+ *
  * @param children - The React components to be wrapped by the provider
  */
-export function StacksProvider({ children }: { children: ReactNode }) {
+export function StacksProvider({ children }: { children: React.ReactNode }) {
+    const { showToast } = useToast();
     // State for storing authenticated user data (profile, addresses, etc.)
     const [userData, setUserData] = useState<any>(null);
     // Tracks initial session verification to prevent flickers or unauthorized access
@@ -138,6 +142,23 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         openWalletModal();
     }, [openWalletModal]);
 
+    /**
+     * copyAddress
+     * Copies the current user's Stacks address to the clipboard.
+     * Uses the browser's Clipboard API.
+     */
+    const copyAddress = useCallback(async () => {
+        const address = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet;
+        if (address) {
+            try {
+                await navigator.clipboard.writeText(address);
+                showToast('Wallet address copied to clipboard!', 'success');
+            } catch (err) {
+                console.error('Failed to copy address:', err);
+            }
+        }
+    }, [userData]);
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -150,7 +171,16 @@ export function StacksProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <StacksContext.Provider value={{ userSession, userData, setUserData, signOut, authenticate, openWalletModal, isLoading }}>
+        <StacksContext.Provider value={{
+            userSession,
+            userData,
+            setUserData,
+            signOut,
+            authenticate,
+            openWalletModal,
+            isLoading,
+            copyAddress
+        }}>
             <WalletModal
                 isOpen={isWalletModalOpen}
                 onClose={() => setIsWalletModalOpen(false)}

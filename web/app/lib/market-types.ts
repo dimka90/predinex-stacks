@@ -29,12 +29,17 @@ export interface ProcessedMarket {
   timeRemaining: number | null;
   createdAt: number;
   creator: string;
+  isVerified: boolean;
+  category: string;
 }
 
 export interface MarketFilters {
   search: string;
   status: 'all' | 'active' | 'settled' | 'expired';
   sortBy: 'volume' | 'newest' | 'ending-soon';
+  isVerifiedOnly: boolean;
+  category: string;
+  isMyBetsOnly: boolean;
 }
 
 export interface PaginationState {

@@ -3,7 +3,7 @@ import { fetchCallReadOnlyFunction, cvToValue, uintCV, principalCV, ClarityValue
 import { CONTRACT_ADDRESS, CONTRACT_NAME, DEFAULT_NETWORK, NETWORK_CONFIG } from "./constants";
 
 // Use network based on environment
-const network: StacksNetwork = DEFAULT_NETWORK === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
+const network: StacksNetwork = (DEFAULT_NETWORK as string) === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
 
 export interface Pool {
     id: number;
@@ -82,6 +82,38 @@ export async function fetchActivePools(): Promise<Pool[]> {
         if (pool) pools.push(pool);
     }
     return pools;
+}
+
+/**
+ * High-level function to fetch markets with optional filtering by status.
+ * @param filter 'active' | 'settled' | ''
+ */
+export async function getMarkets(filter: string = ''): Promise<Pool[]> {
+    const pools = await fetchActivePools();
+
+    if (filter === 'active') return pools.filter(p => !p.settled);
+    if (filter === 'settled') return pools.filter(p => p.settled);
+
+    return pools;
+}
+
+export async function getTotalVolume(): Promise<number> {
+    try {
+        const result = await fetchCallReadOnlyFunction({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'get-total-volume',
+            functionArgs: [],
+            senderAddress: CONTRACT_ADDRESS,
+            network,
+        });
+
+        const value = cvToValue(result);
+        return Number(value);
+    } catch (e) {
+        console.error("Failed to fetch total volume", e);
+        return 0;
+    }
 }
 
 export interface UserBetData {

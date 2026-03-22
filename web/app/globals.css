@@ -1,52 +1,29 @@
 @import "tailwindcss";
 
 :root {
-    /* Elegant Color Palette */
     --background: #050505;
     --foreground: #fafafa;
     --primary: #8b5cf6;
-    --primary-foreground: #ffffff;
+    --accent: #22d3ee;
     --muted: #121212;
     --muted-foreground: #a3a3a3;
-    --accent: #22d3ee;
     --border: #1e1e1e;
 
-    /* Transitions */
-    --transition-fast: 150ms;
-    --transition-base: 300ms;
-    --transition-slow: 500ms;
-
-    /* Typography Scale */
-    --font-xs: 0.75rem;
-    --font-sm: 0.875rem;
-    --font-base: 1rem;
-    --font-lg: 1.125rem;
-    --font-xl: 1.25rem;
-    --font-2xl: 1.5rem;
-    --font-3xl: 1.875rem;
-    --font-4xl: 2.25rem;
-    --font-5xl: 3rem;
+    /* Primary RGB for shadows */
+    --primary-rgb: 139, 92, 246;
 }
 
-@theme inline {
+@theme {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
+    --color-accent: var(--accent);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
     --color-border: var(--border);
 
-    --font-size-xs: var(--font-xs);
-    --font-size-sm: var(--font-sm);
-    --font-size-base: var(--font-base);
-    --font-size-lg: var(--font-lg);
-    --font-size-xl: var(--font-xl);
-    --font-size-2xl: var(--font-2xl);
-    --font-size-3xl: var(--font-3xl);
-    --font-size-4xl: var(--font-4xl);
-    --font-size-5xl: var(--font-5xl);
+    --animate-float: float 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    --animate-pulse-subtle: pulse-subtle 4s ease-in-out infinite;
 }
 
 body {
@@ -67,24 +44,106 @@ body {
 }
 
 .glass-panel {
-    @apply bg-background/60 backdrop-blur-xl border border-border;
+    @apply bg-background/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-light {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+.glass-panel:hover {
+    @apply border-primary/30 bg-background/80;
+    box-shadow: 0 20px 40px -20px rgba(var(--primary-rgb), 0.3);
 }
 
-.glass-dark {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.glass-reflection {
+    position: relative;
+    overflow: hidden;
 }
 
-/* Dynamic Glows */
-.glow-text {
-    text-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.1);
+.glass-reflection::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.03) 30%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0.03) 70%,
+            transparent 100%);
+    transform: rotate(-45deg);
+    pointer-events: none;
+    transition: all 0.6s ease;
+}
+
+.glass-reflection:hover::after {
+    left: 100%;
+    top: 100%;
+}
+
+/* Shimmer Effect */
+.shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.03) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+/* Modern Animations */
+@keyframes bounce-subtle {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.animate-bounce-subtle {
+    animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+}
+
+@keyframes pulse-subtle {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+}
+
+.animate-pulse-subtle {
+    animation: pulse-subtle 4s ease-in-out infinite;
 }
 
 /* Sophisticated Animations */
@@ -110,11 +169,11 @@ body {
 
     0%,
     100% {
-        box-shadow: 0 0 5px rgba(34, 211, 238, 0.2);
+        box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.2);
     }
 
     50% {
-        box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+        box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.4);
     }
 }
 
@@ -147,5 +206,5 @@ body {
 
 .hover-lift:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px -10px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 12px 24px -10px rgba(var(--primary-rgb), 0.3);
 }

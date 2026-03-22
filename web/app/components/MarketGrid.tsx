@@ -1,7 +1,10 @@
 'use client';
 
 import { RefreshCw, AlertCircle, Search } from 'lucide-react';
+import { useState } from 'react';
 import MarketCard from './MarketCard';
+import PoolDetailsModal from './PoolDetailsModal';
+import SkeletonLoader from './SkeletonLoader';
 import { ProcessedMarket } from '../lib/market-types';
 
 interface MarketGridProps {
@@ -13,24 +16,26 @@ interface MarketGridProps {
   hasFilters?: boolean;
 }
 
-export default function MarketGrid({ 
-  markets, 
-  isLoading, 
-  error, 
+export default function MarketGrid({
+  markets,
+  isLoading,
+  error,
   onRetry,
   searchQuery = '',
   hasFilters = false
 }: MarketGridProps) {
+  const [selectedMarket, setSelectedMarket] = useState<ProcessedMarket | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleShowDetails = (market: ProcessedMarket) => {
+    setSelectedMarket(market);
+    setIsModalOpen(true);
+  };
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-20">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-muted-foreground">Loading markets...</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <SkeletonLoader variant="market" count={6} />
       </div>
     );
   }
@@ -102,7 +107,7 @@ export default function MarketGrid({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">No Results Found</h3>
               <p className="text-muted-foreground">
-                {searchQuery 
+                {searchQuery
                   ? `No markets match "${searchQuery}". Try adjusting your search terms or filters.`
                   : 'No markets match your current filters. Try adjusting your filter criteria.'
                 }
@@ -144,9 +149,19 @@ export default function MarketGrid({
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {markets.map((market) => (
-          <MarketCard key={market.poolId} market={market} />
+          <MarketCard
+            key={market.poolId}
+            market={market}
+            onShowDetails={() => handleShowDetails(market)}
+          />
         ))}
       </div>
+
+      <PoolDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        market={selectedMarket}
+      />
     </div>
   );
 }

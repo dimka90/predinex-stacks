@@ -48,6 +48,16 @@ export function calculateTimeRemaining(expiry: number, currentBlockHeight: numbe
   return expiry - currentBlockHeight;
 }
 
+export function formatProtocolDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 /**
  * Transforms raw smart contract data into a processed format ready for UI consumption.
  * Encapsulates logic for odds, status, and time remaining calculations.
@@ -74,7 +84,9 @@ export function processMarketData(pool: PoolData, currentBlockHeight: number): P
     status,
     timeRemaining,
     createdAt: pool.createdAt,
-    creator: pool.creator
+    creator: pool.creator,
+    isVerified: pool.poolId % 2 === 0, // Mock verification
+    category: ['Sports', 'Politics', 'Crypto', 'Tech'][pool.poolId % 4] || 'General' // Mock category
   };
 }
 

@@ -1,9 +1,15 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import { TrendingUp, Clock, BarChart3 } from "lucide-react";
+import { TrendingUp, Clock, BarChart3, Zap } from "lucide-react";
 import MarketCardHeader from "../components/ui/MarketCardHeader";
+import ActivityFeed from "./components/ActivityFeed";
+import { useActivities } from "./lib/hooks/useActivities";
+import { useStacks } from "./components/StacksProvider";
 
 export default function Home() {
+  const { userData } = useStacks();
+  const { activities, isLoading, error, refresh } = useActivities(3); // Show 3 latest items
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/20 animate-in fade-in duration-700">
       <Navbar />
@@ -70,6 +76,42 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {/* Activity Feed Section */}
+        {userData && (
+          <div className="mt-32 p-10 glass-panel relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+              <div className="lg:col-span-1">
+                <div className="p-3 rounded-2xl bg-primary w-fit text-white mb-6">
+                  <Zap size={24} />
+                </div>
+                <h2 className="text-3xl font-black mb-4">Live Activity</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  Real-time protocol interactions. Track every bet, pool creation, and settlement across the Predinex ecosystem.
+                </p>
+                <div className="mt-8 flex items-center gap-4 text-sm font-bold opacity-60">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted" />
+                    ))}
+                  </div>
+                  <span>Joined by 1,200+ Predictors</span>
+                </div>
+              </div>
+              <div className="lg:col-span-2">
+                <ActivityFeed
+                  activities={activities}
+                  isLoading={isLoading}
+                  error={error}
+                  onRefresh={refresh}
+                  limit={3}
+                  showHeader={false}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Call to Action */}
         <div className="text-center mt-20 p-12 glass-panel">

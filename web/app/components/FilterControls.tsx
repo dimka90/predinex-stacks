@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle, Clock, XCircle, Grid3X3 } from 'lucide-react';
-import { StatusFilter } from '../lib/market-types';
+import { StatusFilter, SortOption } from '../lib/market-types';
 
 interface FilterControlsProps {
   selectedStatus: StatusFilter;
@@ -12,6 +12,14 @@ interface FilterControlsProps {
     settled: number;
     expired: number;
   };
+  isVerifiedOnly?: boolean;
+  onVerifiedChange?: (verified: boolean) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
+  isMyBetsOnly?: boolean;
+  onMyBetsChange?: (myBets: boolean) => void;
+  selectedSort?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 interface FilterOption {
@@ -48,11 +56,21 @@ const filterOptions: FilterOption[] = [
   }
 ];
 
-export default function FilterControls({ 
-  selectedStatus, 
-  onStatusChange, 
-  counts 
+export default function FilterControls({
+  selectedStatus,
+  onStatusChange,
+  counts,
+  isVerifiedOnly = false,
+  onVerifiedChange,
+  selectedCategory = 'All',
+  onCategoryChange,
+  isMyBetsOnly = false,
+  onMyBetsChange,
+  selectedSort = 'newest',
+  onSortChange
 }: FilterControlsProps) {
+  const categories = ['All', 'Crypto', 'Sports', 'Politics', 'Tech', 'Culture'];
+
   const getFilterColor = (status: StatusFilter, isSelected: boolean) => {
     if (!isSelected) {
       return 'text-muted-foreground hover:text-foreground border-muted/30 hover:border-muted/50';
@@ -78,67 +96,119 @@ export default function FilterControls({
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-foreground">Filter by Status</h3>
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {filterOptions.map((option) => {
-          const isSelected = selectedStatus === option.value;
-          const count = getCount(option.value);
-          
-          return (
-            <button
-              key={option.value}
-              onClick={() => onStatusChange(option.value)}
-              className={`
-                flex flex-col items-center gap-2 p-3 rounded-lg border transition-all duration-200
-                ${getFilterColor(option.value, isSelected)}
-                hover:scale-105 active:scale-95
-              `}
-              title={option.description}
-            >
-              <div className="flex items-center gap-2">
-                {option.icon}
-                <span className="text-sm font-medium">{option.label}</span>
-              </div>
-              
-              {counts && (
-                <span className="text-xs opacity-75">
-                  {count} market{count !== 1 ? 's' : ''}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-foreground">Filter by Status</h3>
 
-      {/* Mobile-friendly horizontal scroll version */}
-      <div className="md:hidden">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {filterOptions.map((option) => {
             const isSelected = selectedStatus === option.value;
             const count = getCount(option.value);
-            
+
             return (
               <button
                 key={option.value}
                 onClick={() => onStatusChange(option.value)}
                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 whitespace-nowrap
+                  flex flex-col items-center gap-2 p-3 rounded-lg border transition-all duration-200
                   ${getFilterColor(option.value, isSelected)}
+                  hover:scale-105 active:scale-95
                 `}
                 title={option.description}
               >
-                {option.icon}
-                <span className="text-sm font-medium">{option.label}</span>
+                <div className="flex items-center gap-2">
+                  {option.icon}
+                  <span className="text-sm font-medium">{option.label}</span>
+                </div>
+
                 {counts && (
-                  <span className="text-xs opacity-75 ml-1">
-                    ({count})
+                  <span className="text-xs opacity-75">
+                    {count} market{count !== 1 ? 's' : ''}
                   </span>
                 )}
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-muted/20">
+        {/* Category Filter */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">Category</label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => onCategoryChange?.(cat)}
+                className={`
+                  px-4 py-1.5 rounded-full text-xs font-bold transition-all border
+                  ${selectedCategory === cat
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-muted/30 border-muted/50 text-muted-foreground hover:border-muted'
+                  }
+                `}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Verification Toggle */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">Verification</label>
+          <button
+            onClick={() => onVerifiedChange?.(!isVerifiedOnly)}
+            className={`
+              flex items-center gap-3 w-full p-3 rounded-xl border transition-all
+              ${isVerifiedOnly
+                ? 'bg-accent/10 border-accent/50 text-accent'
+                : 'bg-muted/30 border-muted/50 text-muted-foreground'
+              }
+            `}
+          >
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${isVerifiedOnly ? 'bg-accent' : 'bg-muted'}`}>
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isVerifiedOnly ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-bold">Show Verified</span>
+          </button>
+        </div>
+
+        {/* My Bets Toggle */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground">My Positions</label>
+          <button
+            onClick={() => onMyBetsChange?.(!isMyBetsOnly)}
+            className={`
+              flex items-center gap-3 w-full p-3 rounded-xl border transition-all
+              ${isMyBetsOnly
+                ? 'bg-primary/10 border-primary/50 text-primary'
+                : 'bg-muted/30 border-muted/50 text-muted-foreground'
+              }
+            `}
+          >
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${isMyBetsOnly ? 'bg-primary' : 'bg-muted'}`}>
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isMyBetsOnly ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-bold">My Bets Only</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Sorting Row */}
+      <div className="flex justify-end gap-4">
+        <div className="flex items-center gap-3 bg-muted/20 px-4 py-2 rounded-xl border border-border/10">
+          <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">Sort By:</label>
+          <select
+            value={selectedSort}
+            onChange={(e) => onSortChange?.(e.target.value as SortOption)}
+            className="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer outline-none"
+          >
+            <option value="newest">Newest</option>
+            <option value="volume">Volume</option>
+            <option value="ending-soon">Ending Soon</option>
+          </select>
         </div>
       </div>
     </div>

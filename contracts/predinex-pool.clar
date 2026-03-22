@@ -92,12 +92,18 @@
 ;; State Variables
 (define-data-var pool-counter uint u1)
 (define-data-var total-volume uint u0)
+(define-data-var total-staked uint u0)
 (define-data-var authorized-resolution-engine principal tx-sender)
+(define-data-var is-paused bool false)
 
 ;; Private Helpers
 
 (define-private (is-admin (user principal))
   (or (is-eq user CONTRACT-OWNER) (default-to false (map-get? admins { admin: user })))
+)
+
+(define-private (is-contract-owner (user principal))
+  (is-eq user CONTRACT-OWNER)
 )
 
 ;; Registry Helper
@@ -123,13 +129,15 @@
 ;; @returns (ok uint): The auto-incremented pool ID on success
 ;; @returns (err uint): ERR-INVALID-TITLE (u420) if validation fails
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
-  (let ((pool-id (var-get pool-counter)))
+  (begin
+    (asserts! (not (var-get is-paused)) (err u503))
+    (let ((pool-id (var-get pool-counter)))
     (if (and 
           (> (len title) u0) (<= (len title) u256)
           (> (len description) u0) (<= (len description) u512)
           (> (len outcome-a) u0) (<= (len outcome-a) u128)
           (> (len outcome-b) u0) (<= (len outcome-b) u128)
-          (> duration u0)
+          (> duration u0) (<= duration u14400)
         )
         (begin
           (map-insert pools
@@ -191,7 +199,9 @@
 ;; @returns (ok bool): true on successful balance transfer and state update
 ;; @returns (err uint): ERR-POOL-NOT-FOUND (u404), ERR-INVALID-OUTCOME (u422), ERR-INVALID-AMOUNT (u400)
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
-  (match (map-get? pools { pool-id: pool-id })
+  (begin
+    (asserts! (not (var-get is-paused)) (err u503))
+    (match (map-get? pools { pool-id: pool-id })
     pool (if (and 
                (not (get settled pool))
                (or (is-eq outcome u0) (is-eq outcome u1))
@@ -231,6 +241,7 @@
                    )
 
                    (var-set total-volume (+ (var-get total-volume) amount))
+                   (var-set total-staked (+ (var-get total-staked) amount))
                    (print { event: "place-bet", pool-id: pool-id, user: tx-sender, outcome: outcome, amount: amount })
                    (ok true)
                  )
@@ -267,6 +278,7 @@
                              { pool-id: pool-id }
                              (merge pool { settled: true, winning-outcome: (some winning-outcome), settled-at: (some burn-block-height) })
                            )
+                           (var-set total-staked (- (var-get total-staked) fee))
                            (print { event: "settle-pool", pool-id: pool-id, winning-outcome: winning-outcome, settled-at: burn-block-height })
                            (ok true)
                          )
@@ -310,6 +322,7 @@
                         (match (as-contract (stx-transfer? base-share tx-sender user))
                           success (begin
                             (map-set claims { pool-id: pool-id, user: tx-sender } true)
+                            (var-set total-staked (- (var-get total-staked) base-share))
                             (print { event: "claim-winnings", pool-id: pool-id, user: user, amount: base-share })
                             (ok base-share)
                           )
@@ -339,6 +352,7 @@
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
     (map-set admins { admin: admin } status)
+    (print { event: "set-admin", admin: admin, status: status, actor: tx-sender })
     (ok true)
   )
 )
@@ -350,6 +364,18 @@
   (begin
     (asserts! (is-admin tx-sender) (err ERR-UNAUTHORIZED))
     (var-set authorized-resolution-engine engine)
+    (print { event: "set-authorized-resolution-engine", engine: engine, actor: tx-sender })
+    (ok true)
+  )
+)
+
+;; @desc Administrative: Toggle the paused state of the contract
+;; @param status (bool): true to pause, false to unpause
+(define-public (toggle-pause (status bool))
+  (begin
+    (asserts! (is-contract-owner tx-sender) (err ERR-UNAUTHORIZED))
+    (var-set is-paused status)
+    (print { event: "toggle-pause", status: status, actor: tx-sender })
     (ok true)
   )
 )
@@ -486,6 +512,11 @@
   (ok (var-get total-volume))
 )
 
+;; @desc Returns the current amount of STX locked (staked) in all pools
+(define-read-only (get-total-staked)
+  (ok (var-get total-staked))
+)
+
 ;; @desc Checks if a user has already successfully claimed their share of a winning pool
 ;; @param pool-id (uint): Target pool unique identifier
 ;; @param user (principal): The address to check
@@ -513,6 +544,12 @@
       )
   )
 )
+
+;; @desc Returns the current semantic version of the contract
+(define-read-only (get-version)
+  (ok "1.1.0")
+)
+
 ;; TODO: Implement dynamic fee adjustment logic
 ;; TODO: Implement dynamic fee adjustment logic
 

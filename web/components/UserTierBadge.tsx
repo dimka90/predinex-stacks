@@ -1,22 +1,37 @@
-import React from 'react';
+import { Star } from "lucide-react";
 
-interface TierBadgeProps {
-    tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+interface UserTierBadgeProps {
+    tier: string;
+    progress: number;
+    pointsToNext: string;
+    nextTier: string;
 }
 
-const UserTierBadge = ({ tier }: TierBadgeProps) => {
-    const styles = {
-        Bronze: 'bg-orange-900/20 text-orange-500 border-orange-900/50',
-        Silver: 'bg-slate-300/10 text-slate-400 border-slate-300/20',
-        Gold: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-        Platinum: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-    };
-
+export default function UserTierBadge({ tier, progress, pointsToNext, nextTier }: UserTierBadgeProps) {
     return (
-        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[tier]}`}>
-            {tier} Status
-        </span>
-    );
-};
+        <div className="p-6 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 relative">
+            <div className="flex justify-between items-end mb-3">
+                <div>
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">Current Level</p>
+                    <p className="text-lg text-primary font-black">{tier}</p>
+                </div>
+                <p className="text-xs font-bold text-primary">{progress}% Complete</p>
+            </div>
 
-export default UserTierBadge;
+            <div className="w-full bg-muted/50 rounded-full h-3 p-0.5 overflow-hidden">
+                <div
+                    className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
+                    style={{ width: `${progress}%` }}
+                />
+            </div>
+
+            <div className="flex justify-between items-center mt-3">
+                <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                    Next: {nextTier}
+                </p>
+                <p className="text-[10px] text-muted-foreground font-bold italic">{pointsToNext} pts to go</p>
+            </div>
+        </div>
+    );
+}

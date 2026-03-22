@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import Navbar from "../components/Navbar";
 import { StatsCard } from '@/components/ui/StatsCard';
 import SearchBar from "../components/SearchBar";
@@ -9,39 +9,40 @@ import SortControls from "../components/SortControls";
 import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
+import { useRealTimeStats } from "../lib/hooks/useRealTimeStats";
+import { XCircle, Trophy, TrendingUp, Users } from 'lucide-react';
 
 export default function MarketsPage() {
   const {
     paginatedMarkets,
-    isLoading,
+    isLoading: isMarketLoading,
     error,
     filters,
     pagination,
     setSearch,
     setStatusFilter,
     setSortBy,
+    setIsVerifiedOnly,
+    setCategory,
+    setIsMyBetsOnly,
     setPage,
     retry,
     filteredMarkets
   } = useMarketDiscovery();
 
-  // Calculate filter counts for display
-  const filterCounts = useMemo(() => {
-    const counts = {
-      all: filteredMarkets.length,
-      active: 0,
-      settled: 0,
-      expired: 0
-    };
+  const { stats, isLoading: isStatsLoading } = useRealTimeStats();
 
-    filteredMarkets.forEach(market => {
-      counts[market.status]++;
-    });
+  const clearFilters = useCallback(() => {
+    setSearch('');
+    setStatusFilter('all');
+    setCategory('All');
+    setIsVerifiedOnly(false);
+    setIsMyBetsOnly(false);
+  }, [setSearch, setStatusFilter, setCategory, setIsVerifiedOnly, setIsMyBetsOnly]);
 
-    return counts;
-  }, [filteredMarkets]);
+  const isLoading = isMarketLoading || isStatsLoading;
 
-  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all';
+  const hasActiveFilters = filters.search.trim() !== '' || filters.status !== 'all' || filters.isVerifiedOnly || filters.category !== 'All' || filters.isMyBetsOnly;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -49,29 +50,59 @@ export default function MarketsPage() {
 
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Prediction Markets</h1>
-          <p className="text-muted-foreground">
-            Discover and participate in decentralized prediction markets on Stacks
+        <div className="mb-10 relative">
+          <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full blur-sm opacity-50" />
+          <h1 className="text-4xl font-black mb-3 bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent tracking-tighter">
+            Prediction Markets
+          </h1>
+          <p className="text-muted-foreground text-lg font-medium max-w-2xl leading-relaxed">
+            Discover, analyze, and participate in decentralized prediction markets powered by Stacks.
           </p>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <StatsCard title="Total Markets" value={filterCounts.all} />
-          <StatsCard title="Active" value={filterCounts.active} />
-          <StatsCard title="Settled" value={filterCounts.settled} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <StatsCard
+            title="Total Markets"
+            value={stats.poolCount}
+            icon={Trophy}
+            color="primary"
+          />
+          <StatsCard
+            title="Total Volume"
+            value={`${stats.totalVolume.toLocaleString()} STX`}
+            icon={TrendingUp}
+            color="success"
+            trend="+12%"
+          />
+          <StatsCard
+            title="Active Predictors"
+            value={stats.activeUsers}
+            icon={Users}
+            color="accent"
+          />
         </div>
 
         {/* Controls */}
-        <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-transparent md:border-border/10">
-          {/* Search */}
-          <div className="max-w-2xl">
-            <SearchBar
-              value={filters.search}
-              onChange={setSearch}
-              placeholder="Search markets by title or description..."
-            />
+        <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-white/5 mx-[-1rem] px-[1rem] md:mx-0 md:px-0">
+          {/* Search and Clear */}
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 max-w-2xl w-full">
+              <SearchBar
+                value={filters.search}
+                onChange={setSearch}
+                placeholder="Search markets by title or description..."
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground rounded-xl border border-white/5 transition-all animate-in fade-in slide-in-from-left-2"
+              >
+                <XCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Clear Filters</span>
+              </button>
+            )}
           </div>
 
           {/* Filters and Sort */}
@@ -81,15 +112,18 @@ export default function MarketsPage() {
               <FilterControls
                 selectedStatus={filters.status}
                 onStatusChange={setStatusFilter}
-                counts={filterCounts}
-              />
-            </div>
-
-            {/* Sort Controls */}
-            <div className="lg:w-64">
-              <SortControls
-                selectedSort={filters.sortBy}
-                onSortChange={setSortBy}
+                counts={{
+                  all: filteredMarkets.length,
+                  active: filteredMarkets.filter(m => m.status === 'active').length,
+                  settled: filteredMarkets.filter(m => m.status === 'settled').length,
+                  expired: filteredMarkets.filter(m => m.status === 'expired').length,
+                }}
+                isVerifiedOnly={filters.isVerifiedOnly}
+                onVerifiedChange={setIsVerifiedOnly}
+                selectedCategory={filters.category}
+                onCategoryChange={setCategory}
+                isMyBetsOnly={filters.isMyBetsOnly}
+                onMyBetsChange={setIsMyBetsOnly}
               />
             </div>
           </div>
@@ -98,7 +132,7 @@ export default function MarketsPage() {
         {/* Markets Grid */}
         <MarketGrid
           markets={paginatedMarkets}
-          isLoading={isLoading}
+          isLoading={isMarketLoading}
           error={error}
           onRetry={retry}
           searchQuery={filters.search}
@@ -106,7 +140,7 @@ export default function MarketsPage() {
         />
 
         {/* Pagination */}
-        {!isLoading && !error && paginatedMarkets.length > 0 && (
+        {!isMarketLoading && !error && paginatedMarkets.length > 0 && (
           <Pagination
             pagination={pagination}
             onPageChange={setPage}

@@ -2,23 +2,17 @@
 
 import { memo } from 'react';
 import {
-    Trophy, Target, PlusCircle, Zap,
-    ExternalLink, RefreshCw, TrendingUp, Clock
+    Trophy, Target, PlusCircle, Zap, Clock,
+    ExternalLink, RefreshCw, TrendingUp, ArrowRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { ActivityItem } from '../lib/stacks-api';
+import { formatDistanceToNow } from 'date-fns';
 
 // --- Helpers ---
 
 function timeAgo(timestamp: number): string {
-    const seconds = Math.floor(Date.now() / 1000) - timestamp;
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}d ago`;
-    return new Date(timestamp * 1000).toLocaleDateString();
+    return formatDistanceToNow(new Date(timestamp * 1000), { addSuffix: true });
 }
 
 function formatMicroSTX(micro: number): string {
