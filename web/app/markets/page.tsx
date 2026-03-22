@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import Navbar from "../components/Navbar";
 import { StatsCard } from '@/components/ui/StatsCard';
 import SearchBar from "../components/SearchBar";
@@ -9,8 +9,7 @@ import SortControls from "../components/SortControls";
 import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
-import { XCircle, RefreshCcw } from 'lucide-react';
-import { useCallback } from 'react';
+import { XCircle } from 'lucide-react';
 
 export default function MarketsPage() {
   const {
@@ -20,6 +19,9 @@ export default function MarketsPage() {
     filters,
     pagination,
     setSearch,
+    setStatusFilter,
+    setSortBy,
+    setIsVerifiedOnly,
     setCategory,
     setPage,
     retry,

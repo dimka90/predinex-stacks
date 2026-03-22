@@ -56,24 +56,13 @@ export default function FilterControls({
   selectedStatus,
   onStatusChange,
   counts,
+  isVerifiedOnly = false,
+  onVerifiedChange,
+  selectedCategory = 'All',
+  onCategoryChange
 }: FilterControlsProps) {
-  // The user's edit implies replacing the props with destructuring from useMarketDiscovery.
-  // This means the component will directly manage its state via the hook, rather than receiving props.
-  // I'm interpreting the user's "Code Edit" as the primary instruction for the component's signature.
-  const {
-    setSearch,
-    setStatusFilter: setStatusFilterFromHook, // Renamed to avoid conflict with onStatusChange prop
-    setSortBy,
-    setIsVerifiedOnly,
-    setCategory,
-    setPage,
-    retry,
-    filteredMarkets,
-    isVerifiedOnly, // Get current state from hook
-    selectedCategory, // Get current state from hook
-  } = useMarketDiscovery();
-
   const categories = ['All', 'Crypto', 'Sports', 'Politics', 'Tech', 'Culture'];
+
   const getFilterColor = (status: StatusFilter, isSelected: boolean) => {
     if (!isSelected) {
       return 'text-muted-foreground hover:text-foreground border-muted/30 hover:border-muted/50';
@@ -179,7 +168,5 @@ export default function FilterControls({
         </div>
       </div>
     </div>
-  );
-}
   );
 }
