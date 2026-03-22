@@ -348,6 +348,7 @@
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
     (map-set admins { admin: admin } status)
+    (print { event: "set-admin", admin: admin, status: status, actor: tx-sender })
     (ok true)
   )
 )
@@ -359,6 +360,7 @@
   (begin
     (asserts! (is-admin tx-sender) (err ERR-UNAUTHORIZED))
     (var-set authorized-resolution-engine engine)
+    (print { event: "set-authorized-resolution-engine", engine: engine, actor: tx-sender })
     (ok true)
   )
 )
