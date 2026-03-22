@@ -100,6 +100,10 @@
   (or (is-eq user CONTRACT-OWNER) (default-to false (map-get? admins { admin: user })))
 )
 
+(define-private (is-contract-owner (user principal))
+  (is-eq user CONTRACT-OWNER)
+)
+
 ;; Registry Helper
 (define-private (get-provider-id-by-address (provider-address principal))
   (contract-call? .predinex-oracle-registry get-provider-id-by-address provider-address)
