@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X, Wallet, Sun, Moon } from "lucide-react";
+import { LogOut, Menu, X, Wallet, Sun, Moon, Bell } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 import DarkModeToggle from "./ui/DarkModeToggle";
@@ -13,6 +13,7 @@ import { ICON_CLASS } from "../lib/constants";
 export default function Navbar() {
     const { userData, signOut, copyAddress } = useStacks();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [notifications, setNotifications] = useState(3); // Mock notifications
     const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
     const [copied, setCopied] = useState(false);
 
@@ -40,8 +41,14 @@ export default function Navbar() {
                         <Link href="/markets" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View all markets">
                             Markets
                         </Link>
-                        <Link href="/activity" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View activity feed">
+                        <Link href="/activity" className="relative group text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View activity feed">
                             Activity
+                            {notifications > 0 && (
+                                <span className="absolute -top-1 -right-2 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                </span>
+                            )}
                         </Link>
                         <Link href="/rankings" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View rankings">
                             Rankings
@@ -77,7 +84,16 @@ export default function Navbar() {
                                 </button>
                             </div>
                         ) : (
-                            <AppKitButton />
+                            <>
+                                {/* Notifications */}
+                                <button className="relative p-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                                    <Bell size={18} />
+                                    {notifications > 0 && (
+                                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background" />
+                                    )}
+                                </button>
+                                <AppKitButton />
+                            </>
                         )}
                     </div>
 
