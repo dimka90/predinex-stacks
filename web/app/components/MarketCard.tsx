@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, TrendingUp, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info } from 'lucide-react';
 import { ProcessedMarket } from '../lib/market-types';
 import { formatSTXAmount, formatTimeRemaining } from '../lib/market-utils';
 
 interface MarketCardProps {
   market: ProcessedMarket;
+  onShowDetails?: () => void;
 }
 
-export default function MarketCard({ market }: MarketCardProps) {
+export default function MarketCard({ market, onShowDetails }: MarketCardProps) {
   const getStatusColor = (status: ProcessedMarket['status']) => {
     switch (status) {
       case 'active':
@@ -74,6 +75,17 @@ export default function MarketCard({ market }: MarketCardProps) {
               {getStatusIcon(market.status)}
               {getStatusText(market.status)}
             </span>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onShowDetails?.();
+              }}
+              className="p-1.5 rounded-lg bg-muted/50 hover:bg-primary hover:text-white transition-all ml-2"
+              title="View Details"
+            >
+              <Info className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Title and Description */}
@@ -104,11 +116,11 @@ export default function MarketCard({ market }: MarketCardProps) {
             {/* Odds visualization bar */}
             <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
               <div className="h-full flex">
-                <div 
+                <div
                   className="bg-green-400 transition-all duration-300"
                   style={{ width: `${market.oddsA}%` }}
                 />
-                <div 
+                <div
                   className="bg-red-400 transition-all duration-300"
                   style={{ width: `${market.oddsB}%` }}
                 />
