@@ -1,4 +1,5 @@
 export const STX_DECIMALS = 6;
+export const STX_MICRO = 1_000_000;
 export const MAX_BET_AMOUNT = 1_000_000_000; // 1000 STX in micro
 export const MIN_BET_AMOUNT = 1_000_000;     // 1 STX in micro
 export const PROTOCOL_FEE_BPS = 100;         // 1%
