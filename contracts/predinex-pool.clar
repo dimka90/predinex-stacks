@@ -513,6 +513,12 @@
       )
   )
 )
+
+;; @desc Returns the current semantic version of the contract
+(define-read-only (get-version)
+  (ok "1.1.0")
+)
+
 ;; TODO: Implement dynamic fee adjustment logic
 ;; TODO: Implement dynamic fee adjustment logic
 
