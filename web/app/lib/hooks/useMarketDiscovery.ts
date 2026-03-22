@@ -35,11 +35,6 @@ const ITEMS_PER_PAGE = 12;
 
 export function useMarketDiscovery(): UseMarketDiscoveryState {
   const { userData } = useStacks();
-  // Core data state
-  const [allMarkets, setAllMarkets] = useState<ProcessedMarket[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   // Filter state
   const [filters, setFilters] = useState<MarketFilters>({
     search: '',
@@ -50,35 +45,16 @@ export function useMarketDiscovery(): UseMarketDiscoveryState {
     isMyBetsOnly: false
   });
 
+  // Use the new sync hook
+  const {
+    markets: allMarkets,
+    isLoading,
+    error,
+    refetch: retry
+  } = useMarketSync(filters);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Fetch markets data
-  const fetchMarkets = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const poolsData = await fetchAllPools();
-      const currentBlockHeight = getCurrentBlockHeight();
-
-      const processedMarkets = poolsData.map(pool =>
-        processMarketData(pool, currentBlockHeight)
-      );
-
-      setAllMarkets(processedMarkets);
-    } catch (err) {
-      console.error('Failed to fetch markets:', err);
-      setError('Failed to load markets. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchMarkets();
-  }, [fetchMarkets]);
 
   // Filter and sort markets
   const filteredMarkets = useMemo(() => {
