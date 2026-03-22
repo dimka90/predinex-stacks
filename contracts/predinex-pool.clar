@@ -93,6 +93,7 @@
 (define-data-var pool-counter uint u1)
 (define-data-var total-volume uint u0)
 (define-data-var authorized-resolution-engine principal tx-sender)
+(define-data-var is-paused bool false)
 
 ;; Private Helpers
 
@@ -127,7 +128,9 @@
 ;; @returns (ok uint): The auto-incremented pool ID on success
 ;; @returns (err uint): ERR-INVALID-TITLE (u420) if validation fails
 (define-public (create-pool (title (string-ascii 256)) (description (string-ascii 512)) (outcome-a (string-ascii 128)) (outcome-b (string-ascii 128)) (duration uint))
-  (let ((pool-id (var-get pool-counter)))
+  (begin
+    (asserts! (not (var-get is-paused)) (err u503))
+    (let ((pool-id (var-get pool-counter)))
     (if (and 
           (> (len title) u0) (<= (len title) u256)
           (> (len description) u0) (<= (len description) u512)
@@ -195,7 +198,9 @@
 ;; @returns (ok bool): true on successful balance transfer and state update
 ;; @returns (err uint): ERR-POOL-NOT-FOUND (u404), ERR-INVALID-OUTCOME (u422), ERR-INVALID-AMOUNT (u400)
 (define-public (place-bet (pool-id uint) (outcome uint) (amount uint))
-  (match (map-get? pools { pool-id: pool-id })
+  (begin
+    (asserts! (not (var-get is-paused)) (err u503))
+    (match (map-get? pools { pool-id: pool-id })
     pool (if (and 
                (not (get settled pool))
                (or (is-eq outcome u0) (is-eq outcome u1))
@@ -354,6 +359,17 @@
   (begin
     (asserts! (is-admin tx-sender) (err ERR-UNAUTHORIZED))
     (var-set authorized-resolution-engine engine)
+    (ok true)
+  )
+)
+
+;; @desc Administrative: Toggle the paused state of the contract
+;; @param status (bool): true to pause, false to unpause
+(define-public (toggle-pause (status bool))
+  (begin
+    (asserts! (is-contract-owner tx-sender) (err ERR-UNAUTHORIZED))
+    (var-set is-paused status)
+    (print { event: "toggle-pause", status: status, actor: tx-sender })
     (ok true)
   )
 )
