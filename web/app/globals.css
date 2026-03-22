@@ -1,52 +1,29 @@
 @import "tailwindcss";
 
 :root {
-    /* Elegant Color Palette */
     --background: #050505;
     --foreground: #fafafa;
     --primary: #8b5cf6;
-    --primary-foreground: #ffffff;
+    --accent: #22d3ee;
     --muted: #121212;
     --muted-foreground: #a3a3a3;
-    --accent: #22d3ee;
     --border: #1e1e1e;
 
-    /* Transitions */
-    --transition-fast: 150ms;
-    --transition-base: 300ms;
-    --transition-slow: 500ms;
-
-    /* Typography Scale */
-    --font-xs: 0.75rem;
-    --font-sm: 0.875rem;
-    --font-base: 1rem;
-    --font-lg: 1.125rem;
-    --font-xl: 1.25rem;
-    --font-2xl: 1.5rem;
-    --font-3xl: 1.875rem;
-    --font-4xl: 2.25rem;
-    --font-5xl: 3rem;
+    /* Primary RGB for shadows */
+    --primary-rgb: 139, 92, 246;
 }
 
-@theme inline {
-    --color-background: var(--color-background);
-    --color-foreground: var(--color-foreground);
-    --color-primary: var(--color-primary);
-    --color-primary-foreground: var(--primary-foreground);
+@theme {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
+    --color-accent: var(--accent);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--color-accent);
-    --color-border: var(--color-border);
+    --color-border: var(--border);
 
-    --font-size-xs: var(--font-xs);
-    --font-size-sm: var(--font-sm);
-    --font-size-base: var(--font-base);
-    --font-size-lg: var(--font-lg);
-    --font-size-xl: var(--font-xl);
-    --font-size-2xl: var(--font-2xl);
-    --font-size-3xl: var(--font-3xl);
-    --font-size-4xl: var(--font-4xl);
-    --font-size-5xl: var(--font-5xl);
+    --animate-float: float 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    --animate-pulse-subtle: pulse-subtle 4s ease-in-out infinite;
 }
 
 body {
