@@ -36,23 +36,19 @@ export default function Navbar() {
                         <span className="font-bold text-xl tracking-tight text-gradient">Predinex</span>
                     </Link>
                     {/* Navigation Links - Desktop */}
-                    <div className="hidden md:flex items-center gap-6" role="navigation" aria-label="Desktop navigation">
-                        <Link href="/markets" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="View all markets">
+                    <div className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Desktop navigation">
+                        <Link href="/markets" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View all markets">
                             Markets
                         </Link>
-                        <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="Create a new prediction market">
-                            Create
+                        <Link href="/activity" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View activity feed">
+                            Activity
                         </Link>
-                        {userData && (
-                            <Link href="/activity" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="View activity feed">
-                                Activity
-                            </Link>
-                        )}
-                        {userData && (
-                            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" aria-label="User dashboard">
-                                Dashboard
-                            </Link>
-                        )}
+                        <Link href="/rankings" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View rankings">
+                            Rankings
+                        </Link>
+                        <Link href="/about" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="About Predinex">
+                            About
+                        </Link>
                     </div>
 
                     {/* User Info & Connect Button - Desktop */}
@@ -111,55 +107,48 @@ export default function Navbar() {
 
             {/* Mobile Menu Content */}
             {isMenuOpen && (
-                <div className="md:hidden glass border-t border-border animate-in slide-in-from-top-4 duration-300">
-                    <div className="px-4 pt-2 pb-6 space-y-1">
-                        <Link
-                            href="/markets"
-                            className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
+                onClick = {() => setIsMenuOpen(false)}
                         >
-                            Markets
-                        </Link>
-                        <Link
-                            href="/create"
-                            className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Create
-                        </Link>
-                        {userData && (
-                            <Link
-                                href="/activity"
-                                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Activity
-                            </Link>
-                        )}
-                        {userData && (
-                            <>
-                                <Link
-                                    href="/dashboard"
-                                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    Dashboard
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        signOut();
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-base font-medium text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                >
-                                    Sign Out
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
-        </nav>
+            Create
+        </Link>
+                        {
+        userData && (
+            <Link
+                href="/activity"
+                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+            >
+                Activity
+            </Link>
+        )
+    }
+    {
+        userData && (
+            <>
+                <Link
+                    href="/dashboard"
+                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                >
+                    Dashboard
+                </Link>
+                <button
+                    onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-base font-medium text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                >
+                    Sign Out
+                </button>
+            </>
+        )
+    }
+                    </div >
+                </div >
+            )
+}
+        </nav >
     );
 }
 // Generic navigation bar for all pages
