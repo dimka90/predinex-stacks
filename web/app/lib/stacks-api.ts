@@ -3,7 +3,7 @@ import { fetchCallReadOnlyFunction, cvToValue, uintCV, principalCV, ClarityValue
 import { CONTRACT_ADDRESS, CONTRACT_NAME, DEFAULT_NETWORK, NETWORK_CONFIG } from "./constants";
 
 // Use network based on environment
-const network: StacksNetwork = DEFAULT_NETWORK === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
+const network: StacksNetwork = (DEFAULT_NETWORK as string) === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
 
 export interface Pool {
     id: number;

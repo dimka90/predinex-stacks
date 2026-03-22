@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info } from 'lucide-react';
+import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info, ShieldCheck } from 'lucide-react';
 import { ProcessedMarket } from '../lib/market-types';
 import { formatSTXAmount, formatTimeRemaining } from '../lib/market-utils';
 import ShareMarketButton from './ShareMarketButton';
