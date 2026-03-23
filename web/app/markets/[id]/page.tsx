@@ -10,6 +10,7 @@ import { truncateAddress } from "../../lib/utils";
 import MarketChart from "../../components/MarketChart";
 import OrderBook from "../../components/OrderBook";
 import PriceOracleStatus from "../../components/PriceOracleStatus";
+import MarketSettlement from "../../components/markets/MarketSettlement";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -17,6 +18,9 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
 
     const [pool, setPool] = useState<Pool | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const { userData } = useStacks();
+    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
 
     useEffect(() => {
         getPool(poolId).then(data => {
