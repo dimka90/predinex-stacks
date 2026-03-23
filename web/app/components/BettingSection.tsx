@@ -185,6 +185,23 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
                 </div>
             </div>
 
+            {/* ROI CALCULATOR */}
+            {betAmount && parseFloat(betAmount) > 0 && (
+                <div className="grid grid-cols-2 gap-4 mb-8 p-4 bg-primary/5 rounded-2xl border border-primary/20 border-dashed animate-in fade-in zoom-in-95 duration-300">
+                    <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase mb-1">Potential Payout</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-lg font-black text-primary">{(parseFloat(betAmount) * (100 / ((pool.totalA + pool.totalB) > 0 ? (pool.totalA / (pool.totalA + pool.totalB)) * 100 : 50))).toFixed(2)}</span>
+                            <span className="text-[10px] font-bold text-primary opacity-60">STX</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col text-right">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase mb-1">Estimated ROI</span>
+                        <span className="text-lg font-black text-green-500">+{((100 / ((pool.totalA + pool.totalB) > 0 ? (pool.totalA / (pool.totalA + pool.totalB)) * 100 : 50) - 1) * 100).toFixed(0)}%</span>
+                    </div>
+                </div>
+            )}
+
             {/* Action Buttons */}
             <div className="space-y-4">
                 <button
