@@ -71,100 +71,97 @@ export default function MarketsPage() {
             <span className="text-sm font-black uppercase tracking-widest">Initialize Pool</span>
           </Link>
         </div>
-        Discover, analyze, and participate in decentralized prediction markets powered by Stacks.
-      </p>
-    </div>
 
-        {/* Stats Overview */ }
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-    <StatsCard
-      title="Total Markets"
-      value={stats.poolCount}
-      icon={Trophy}
-      color="primary"
-    />
-    <StatsCard
-      title="Total Volume"
-      value={`${stats.totalVolume.toLocaleString()} STX`}
-      icon={TrendingUp}
-      color="success"
-      trend="+12.5%"
-      trendType="up"
-      chart={<TrendChart data={[20, 35, 25, 45, 40, 60, 55]} color="#22c55e" height={40} />}
-    />
-    <StatsCard
-      title="Active Predictors"
-      value={stats.activeUsers}
-      icon={Users}
-      color="accent"
-    />
-  </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <StatsCard
+            title="Total Markets"
+            value={stats.poolCount}
+            icon={Trophy}
+            color="primary"
+          />
+          <StatsCard
+            title="Total Volume"
+            value={`${stats.totalVolume.toLocaleString()} STX`}
+            icon={TrendingUp}
+            color="success"
+            trend="+12.5%"
+            trendType="up"
+            chart={<TrendChart data={[20, 35, 25, 45, 40, 60, 55]} color="#22c55e" height={40} />}
+          />
+          <StatsCard
+            title="Active Predictors"
+            value={stats.activeUsers}
+            icon={Users}
+            color="accent"
+          />
+        </div>
 
-  {/* Controls */ }
-  <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-white/5 mx-[-1rem] px-[1rem] md:mx-0 md:px-0">
-    {/* Search and Clear */}
-    <div className="flex flex-col md:flex-row gap-4 items-end">
-      <div className="flex-1 max-w-2xl w-full">
-        <SearchBar
-          value={filters.search}
-          onChange={setSearch}
-          placeholder="Search markets by title or description..."
+        {/* Controls */}
+        <div className="space-y-6 mb-8 sticky top-16 z-30 py-4 bg-background/80 backdrop-blur-md border-b border-white/5 mx-[-1rem] px-[1rem] md:mx-0 md:px-0">
+          {/* Search and Clear */}
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 max-w-2xl w-full">
+              <SearchBar
+                value={filters.search}
+                onChange={setSearch}
+                placeholder="Search markets by title or description..."
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground rounded-xl border border-white/5 transition-all animate-in fade-in slide-in-from-left-2"
+              >
+                <XCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Clear Filters</span>
+              </button>
+            )}
+          </div>
+
+          {/* Filters and Sort */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Status Filters */}
+            <div className="flex-1">
+              <FilterControls
+                selectedStatus={filters.status}
+                onStatusChange={setStatusFilter}
+                counts={{
+                  all: filteredMarkets.length,
+                  active: filteredMarkets.filter(m => m.status === 'active').length,
+                  settled: filteredMarkets.filter(m => m.status === 'settled').length,
+                  expired: filteredMarkets.filter(m => m.status === 'expired').length,
+                }}
+                isVerifiedOnly={filters.isVerifiedOnly}
+                onVerifiedChange={setIsVerifiedOnly}
+                selectedCategory={filters.category}
+                onCategoryChange={setCategory}
+                isMyBetsOnly={filters.isMyBetsOnly}
+                onMyBetsChange={setIsMyBetsOnly}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Markets Grid */}
+        <MarketGrid
+          markets={paginatedMarkets}
+          isLoading={isMarketLoading}
+          error={error}
+          onRetry={retry}
+          searchQuery={filters.search}
+          hasFilters={hasActiveFilters}
         />
-      </div>
-      {hasActiveFilters && (
-        <button
-          onClick={clearFilters}
-          className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground rounded-xl border border-white/5 transition-all animate-in fade-in slide-in-from-left-2"
-        >
-          <XCircle className="w-4 h-4" />
-          <span className="text-sm font-bold">Clear Filters</span>
-        </button>
-      )}
-    </div>
 
-    {/* Filters and Sort */}
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Status Filters */}
-      <div className="flex-1">
-        <FilterControls
-          selectedStatus={filters.status}
-          onStatusChange={setStatusFilter}
-          counts={{
-            all: filteredMarkets.length,
-            active: filteredMarkets.filter(m => m.status === 'active').length,
-            settled: filteredMarkets.filter(m => m.status === 'settled').length,
-            expired: filteredMarkets.filter(m => m.status === 'expired').length,
-          }}
-          isVerifiedOnly={filters.isVerifiedOnly}
-          onVerifiedChange={setIsVerifiedOnly}
-          selectedCategory={filters.category}
-          onCategoryChange={setCategory}
-          isMyBetsOnly={filters.isMyBetsOnly}
-          onMyBetsChange={setIsMyBetsOnly}
-        />
-      </div>
-    </div>
-  </div>
-
-  {/* Markets Grid */ }
-  <MarketGrid
-    markets={paginatedMarkets}
-    isLoading={isMarketLoading}
-    error={error}
-    onRetry={retry}
-    searchQuery={filters.search}
-    hasFilters={hasActiveFilters}
-  />
-
-  {/* Pagination */ }
-  {
-    !isMarketLoading && !error && paginatedMarkets.length > 0 && (
-      <Pagination
-        pagination={pagination}
-        onPageChange={setPage}
-      />
-    )
-  }
+        {/* Pagination */}
+        {
+          !isMarketLoading && !error && paginatedMarkets.length > 0 && (
+            <Pagination
+              pagination={pagination}
+              onPageChange={setPage}
+            />
+          )
+        }
       </div >
     </main >
   );
