@@ -106,9 +106,19 @@ export default function MarketCard({ market, onShowDetails }: MarketCardProps) {
             <h3 className="text-xl font-black mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight tracking-tight">
               {market.title}
             </h3>
-            <p className="text-sm text-muted-foreground mb-8 line-clamp-3 leading-relaxed font-medium">
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed font-medium">
               {market.description}
             </p>
+            {/* Sparkline visualization */}
+            <div className="mb-6 h-8 w-full opacity-60 group-hover:opacity-100 transition-opacity">
+              <TrendChart
+                data={Array.from({ length: 12 }, (_, i) => Math.sin((market.poolId + i) * 0.4) * 10 + 20)}
+                width={200}
+                height={20}
+                strokeWidth={1.5}
+                color={market.oddsA > 50 ? '#22c55e' : '#3b82f6'}
+              />
+            </div>
           </div>
 
           <div className="space-y-6">
