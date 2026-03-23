@@ -65,7 +65,7 @@ export default function UserCreatedMarkets() {
                                 <Settings size={14} />
                             </button>
                             <Link
-                                href={`/markets/${market.id}`}
+                                href={`/markets/${market.poolId}`}
                                 className="p-2 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary transition-all"
                             >
                                 <ArrowUpRight size={14} />
