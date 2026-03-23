@@ -8,6 +8,7 @@ import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft, Ac
 import Link from "next/link";
 import { truncateAddress } from "../../lib/utils";
 import MarketChart from "../../components/MarketChart";
+import OrderBook from "../../components/OrderBook";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -175,10 +176,17 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
 
                     {/* Right Column: Betting Section */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-32">
+                        <div className="sticky top-32 space-y-6">
                             <BettingSection pool={pool as any} poolId={poolId} />
 
-                            <div className="mt-6 p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
+                            <OrderBook pool={{
+                                totalA: pool.totalA,
+                                totalB: pool.totalB,
+                                outcomeA: pool.outcomeA,
+                                outcomeB: pool.outcomeB
+                            }} />
+
+                            <div className="p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4">Risk Warning</h4>
                                 <p className="text-[11px] leading-relaxed text-muted-foreground">
                                     Prediction markets involve high risk. Past performance is not indicative of future results.

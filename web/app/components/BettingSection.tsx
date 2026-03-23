@@ -9,7 +9,7 @@ import { uintCV } from '@stacks/transactions';
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../../lib/constants';
 import { Loader2, Wallet, AlertCircle, Zap, TrendingUp, Info } from 'lucide-react';
 import { Pool } from '../../lib/stacks-api';
-import { formatCurrency } from '../../lib/market-utils';
+import { formatCurrency } from '../lib/market-utils';
 
 interface BettingSectionProps {
     pool: Pool;
