@@ -127,7 +127,7 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                         {pool && !pool.settled && stxAddress === pool.creator && (
                             <div className="mb-12">
                                 <MarketSettlement
-                                    poolId={pool.poolId}
+                                    poolId={pool.id}
                                     outcomeA={pool.outcomeA}
                                     outcomeB={pool.outcomeB}
                                 />
