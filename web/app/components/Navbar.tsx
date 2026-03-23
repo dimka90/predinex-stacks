@@ -151,14 +151,14 @@ export default function Navbar() {
                                     <span className="text-sm font-bold">Mainnet Terminal Active</span>
                                 </div>
                             </div>
-                            
+
                             <div className="flex justify-center">
                                 <AppKitButton />
                             </div>
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         onClick={() => setIsMenuOpen(false)}
                         className="absolute top-6 right-6 p-3 rounded-full bg-white/5 border border-white/5 text-muted-foreground hover:text-white transition-all"
                     >
@@ -166,9 +166,9 @@ export default function Navbar() {
                     </button>
                 </div>
             )}
-                        >
-                            Markets
-                        </Link>
+        </nav>
+    );
+}
                         <Link
                             href="/activity"
                             className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
@@ -191,22 +191,22 @@ export default function Navbar() {
                             About
                         </Link>
 
-                        {
-        userData && (
-            <div className="pt-4 border-t border-white/5 space-y-2">
-                <button
-                    onClick={() => {
-                        signOut();
-                        setIsMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
-                >
-                    Sign Out
-                    <LogOut size={16} />
-                </button>
-            </div>
-        )
-    }
+{
+    userData && (
+        <div className="pt-4 border-t border-white/5 space-y-2">
+            <button
+                onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+            >
+                Sign Out
+                <LogOut size={16} />
+            </button>
+        </div>
+    )
+}
                     </div >
                 </div >
             )
