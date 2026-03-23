@@ -12,6 +12,7 @@ import MarketChart from "../../components/MarketChart";
 import OrderBook from "../../components/OrderBook";
 import PriceOracleStatus from "../../components/PriceOracleStatus";
 import MarketSettlement from "../../components/markets/MarketSettlement";
+import SocialShare from "../../components/SocialShare";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
