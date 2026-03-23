@@ -153,7 +153,7 @@ export default function Navbar() {
                             </div>
                             
                             <div className="flex justify-center">
-                                <WalletConnection />
+                                <AppKitButton />
                             </div>
                         </div>
                     </div>
