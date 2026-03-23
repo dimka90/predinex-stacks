@@ -5,7 +5,8 @@ import { useUserRewards } from "../lib/hooks/useUserRewards";
 import PNLCard from "../components/dashboard/PNLCard";
 import UserBetsTable from "../components/dashboard/UserBetsTable";
 import { RewardBadge, MissionGrid } from "../components/rewards/RewardSystem";
-import { LayoutDashboard, History, TrendingUp, ShieldCheck } from "lucide-react";
+import UserCreatedMarkets from "../components/markets/UserCreatedMarkets";
+import { LayoutDashboard, History, TrendingUp, ShieldCheck, Settings } from "lucide-react";
 
 export default function Dashboard() {
     const { userData } = useStacks();
@@ -91,7 +92,6 @@ export default function Dashboard() {
                         <MissionGrid missions={missions} />
                     </div>
 
-                    {/* Right Column: Portfolio Details */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
@@ -103,6 +103,23 @@ export default function Dashboard() {
                             </button>
                         </div>
                         <UserBetsTable positions={portfolio} isLoading={isLoading} />
+
+                        {/* Market Creator Terminal */}
+                        <div className="pt-12 border-t border-white/5">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+                                    <Settings size={20} className="text-muted-foreground" />
+                                    Initialized Pools
+                                </h2>
+                                <Link
+                                    href="/markets/create"
+                                    className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
+                                >
+                                    New Market +
+                                </Link>
+                            </div>
+                            <UserCreatedMarkets />
+                        </div>
                     </div>
                 </div>
             </div>
