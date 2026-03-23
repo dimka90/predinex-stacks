@@ -173,6 +173,30 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                                 </div>
                             </div>
                         </div>
+
+                        {/* Social Proof / Activity */}
+                        <div className="mt-8 flex items-center justify-between p-6 bg-white/5 rounded-[2rem] border border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-zinc-800 flex items-center justify-center text-[10px] font-black">
+                                            {String.fromCharCode(64 + i)}
+                                        </div>
+                                    ))}
+                                    <div className="w-8 h-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-black">
+                                        +42
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black tracking-tight">Active Predictors</p>
+                                    <p className="text-[10px] text-muted-foreground font-bold">47 experts already placed their orders</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[10px] uppercase font-black text-muted-foreground mb-1">Sentiment</span>
+                                <span className="text-xs font-black text-primary">BULLISH</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Column: Betting Section */}
