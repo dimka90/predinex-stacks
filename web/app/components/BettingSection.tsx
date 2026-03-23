@@ -7,8 +7,9 @@ import { useToast } from '../../providers/ToastProvider';
 import { openContractCall } from '@stacks/connect';
 import { uintCV } from '@stacks/transactions';
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../../lib/constants';
-import { Loader2, Wallet, AlertCircle } from 'lucide-react';
+import { Loader2, Wallet, AlertCircle, Zap, TrendingUp, Info } from 'lucide-react';
 import { Pool } from '../../lib/stacks-api';
+import { formatCurrency } from '../../lib/market-utils';
 
 interface BettingSectionProps {
     pool: Pool;
@@ -115,63 +116,103 @@ export default function BettingSection({ pool, poolId }: BettingSectionProps) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="glass-panel p-8 rounded-[2.5rem] border border-white/10 bg-card/10 relative overflow-hidden group">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-2">
+                    <Zap size={18} className="text-primary fill-primary/20" />
+                    <h3 className="text-sm font-black uppercase tracking-[0.2em]">Execution Terminal</h3>
+                </div>
+                {isConnected && (
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Online</span>
+                    </div>
+                )}
+            </div>
+
             {/* Wallet Info */}
             {isConnected && address && (
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="mb-8 p-6 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-md">
                     <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Connected Wallet</p>
-                            <p className="font-mono text-sm">{address.slice(0, 8)}...{address.slice(-6)}</p>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Balance</span>
+                            <span className="text-2xl font-black">{walletBalance?.toFixed(2) || '0.00'} <span className="text-muted-foreground font-medium text-sm">STX</span></span>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Balance</p>
-                            <p className="font-bold">{walletBalance?.toFixed(2) || '0'} STX</p>
-                        </div>
+                        <button
+                            onClick={() => setBetAmount(walletBalance?.toString() || "")}
+                            className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl border border-primary/20 transition-all hover:scale-105"
+                        >
+                            Max
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* Balance Warning */}
-            {walletBalance !== null && walletBalance < 0.1 && (
-                <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex gap-2">
-                    <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-yellow-600">Insufficient balance to place bets. Minimum: 0.1 STX</p>
-                </div>
-            )}
-
-            {/* Bet Amount Input */}
-            <div>
-                <label className="block text-sm font-medium mb-2">Bet Amount (STX)</label>
-                <input
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    className="w-full bg-muted/50 border border-border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    placeholder="e.g., 10"
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(e.target.value)}
-                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
-                    aria-label="Enter bet amount in STX"
-                />
+            {/* QUICK PRESETS */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
+                {[10, 50, 100].map(amt => (
+                    <button
+                        key={amt}
+                        onClick={() => setBetAmount(amt.toString())}
+                        className="py-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 text-xs font-black uppercase tracking-widest transition-all hover:border-primary/30"
+                    >
+                        {amt} STX
+                    </button>
+                ))}
             </div>
 
-            {/* Bet Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Bet Amount Input */}
+            <div className="mb-8 group/input">
+                <div className="flex justify-between items-center mb-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Order Size</label>
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Available: {walletBalance || 0}</span>
+                </div>
+                <div className="relative">
+                    <input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        className="w-full bg-white/5 border border-white/5 group-hover/input:border-white/10 focus:border-primary/50 rounded-2xl px-6 py-5 focus:outline-none transition-all text-xl font-black placeholder:text-muted-foreground/30"
+                        placeholder="0.00"
+                        value={betAmount}
+                        onChange={(e) => setBetAmount(e.target.value)}
+                        disabled={isBetting}
+                    />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground select-none">
+                        STX
+                    </div>
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-4">
                 <button
                     onClick={() => placeBet(0)}
-                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
-                    className="py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                    disabled={isBetting || !betAmount}
+                    className="w-full py-6 bg-primary text-white font-black uppercase tracking-[0.2em] rounded-2xl transition-all disabled:opacity-50 hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] hover:-translate-y-1 active:translate-y-0 group"
                 >
-                    {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeA}`}
+                    {isBetting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : (
+                        <div className="flex items-center justify-center gap-3">
+                            <span>Execute Order: {pool.outcomeA}</span>
+                            <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    )}
                 </button>
+
                 <button
                     onClick={() => placeBet(1)}
-                    disabled={isBetting || (walletBalance !== null && walletBalance < 0.1)}
-                    className="py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                    disabled={isBetting || !betAmount}
+                    className="w-full py-5 bg-white/5 hover:bg-white/10 text-foreground/80 font-black uppercase tracking-widest rounded-2xl border border-white/5 transition-all disabled:opacity-50"
                 >
-                    {isBetting ? <Loader2 className="w-5 h-5 animate-spin" /> : `Bet on ${pool.outcomeB}`}
+                    Counter with: {pool.outcomeB}
                 </button>
+            </div>
+
+            {/* Terminal Info */}
+            <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2 text-muted-foreground">
+                <Info size={14} className="opacity-50" />
+                <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">Settlement occurs on-chain within ~10 minutes</span>
             </div>
         </div>
     );
