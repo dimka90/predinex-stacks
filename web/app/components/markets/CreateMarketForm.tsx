@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useMarketCreation } from '../../lib/hooks/useMarketCreation';
 import { Layout, Type, AlignLeft, Calendar, Coins, ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
-import { useToast } from '../../providers/ToastProvider';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function CreateMarketForm() {
     const { createMarket, isCreating } = useMarketCreation();

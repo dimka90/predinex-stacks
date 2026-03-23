@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function UserCreatedMarkets() {
     const { userData } = useStacks();
     const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
-    const { markets, isLoading } = useMarketSync();
+    const { markets, isLoading } = useMarketSync({});
 
     const userMarkets = markets.filter(m => m.creator === stxAddress);
 
