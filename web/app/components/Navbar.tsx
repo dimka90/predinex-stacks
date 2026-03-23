@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X, Wallet, Sun, Moon, Bell } from "lucide-react";
+import { LogOut, Menu, X, Wallet, Sun, Moon, Bell, BarChart3, Trophy, LayoutDashboard, History } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 import DarkModeToggle from "./ui/DarkModeToggle";
