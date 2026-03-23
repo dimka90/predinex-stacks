@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Predinex | Next-Gen Prediction Markets on Stacks",
+  title: "Predinex | Institutional Prediction Market Terminal",
   description: "The decentralized prediction market built for the Bitcoin economy. Predict, bet, and win on Stacks.",
   openGraph: {
     title: "Predinex | Next-Gen Prediction Markets on Stacks",
