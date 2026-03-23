@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, X, Wallet, Sun, Moon, Bell } from "lucide-react";
+import { LogOut, Menu, X, Wallet, Sun, Moon, Bell, BarChart3, Trophy, LayoutDashboard, History } from "lucide-react";
 import AppKitButton from "../../components/AppKitButton";
 import { useStacks } from "./StacksProvider";
 import DarkModeToggle from "./ui/DarkModeToggle";
@@ -38,6 +38,11 @@ export default function Navbar() {
                     </Link>
                     {/* Navigation Links - Desktop */}
                     <div className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Desktop navigation">
+                        {userData && (
+                            <Link href="/dashboard" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors tracking-widest uppercase border-b-2 border-primary/50 -mb-[2px]" aria-label="View your dashboard">
+                                Dashboard
+                            </Link>
+                        )}
                         <Link href="/markets" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View all markets">
                             Markets
                         </Link>
@@ -113,62 +118,52 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Menu Backdrop */}
+            {/* Mobile Navigation Menu */}
             {isMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-md z-[-1] md:hidden animate-in fade-in duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                />
-            )}
-
-            {/* Mobile Menu Content */}
-            {isMenuOpen && (
-                <div className="md:hidden glass-panel border-t border-white/5 animate-in slide-in-from-top-4 duration-300">
-                    <div className="px-4 pt-4 pb-6 space-y-2">
-                        <Link
-                            href="/markets"
-                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Markets
-                        </Link>
-                        <Link
-                            href="/activity"
-                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Activity
-                        </Link>
-                        <Link
-                            href="/rankings"
-                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Rankings
-                        </Link>
-                        <Link
-                            href="/about"
-                            className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            About
-                        </Link>
-
-                        {userData && (
-                            <div className="pt-4 border-t border-white/5 space-y-2">
-                                <button
-                                    onClick={() => {
-                                        signOut();
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+                <div className="md:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="flex flex-col h-full px-6 pt-24 pb-12 space-y-8 overflow-y-auto">
+                        <div className="flex flex-col space-y-4">
+                            {[
+                                { name: 'Markets', href: '/markets', icon: BarChart3 },
+                                { name: 'Rankings', href: '/rankings', icon: Trophy },
+                                ...(userData ? [{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }] : []),
+                                { name: 'Activity', href: '/activity', icon: History }
+                            ].map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group"
                                 >
-                                    Sign Out
-                                    <LogOut size={16} />
-                                </button>
+                                    <div className="p-2 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
+                                        <item.icon size={20} />
+                                    </div>
+                                    <span className="text-xl font-black italic tracking-tight">{item.name}</span>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <div className="mt-auto space-y-6">
+                            <div className="p-6 rounded-3xl bg-primary/5 border border-primary/20">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-3">Protocol Status</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    <span className="text-sm font-bold">Mainnet Terminal Active</span>
+                                </div>
                             </div>
-                        )}
+
+                            <div className="flex justify-center">
+                                <AppKitButton />
+                            </div>
+                        </div>
                     </div>
+
+                    <button
+                        onClick={() => setIsMenuOpen(false)}
+                        className="absolute top-6 right-6 p-3 rounded-full bg-white/5 border border-white/5 text-muted-foreground hover:text-white transition-all"
+                    >
+                        <X size={24} />
+                    </button>
                 </div>
             )}
         </nav>

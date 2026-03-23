@@ -1,46 +1,35 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import Toast, { ToastType } from '../components/ui/Toast';
-
-interface ToastMessage {
-    id: string;
-    message: string;
-    type?: ToastType;
-}
+import ToastContainer, { Toast } from '../components/ui/ToastContainer';
 
 interface ToastContextType {
-    showToast: (message: string, type?: ToastType) => void;
+    showToast: (message: string, type?: any) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const [toasts, setToasts] = useState<Toast[]>([]);
 
-    const showToast = useCallback((message: string, type: ToastType = 'info') => {
+    const showToast = useCallback((message: string, type: any = 'info') => {
         const id = Math.random().toString(36).substring(2, 9);
         setToasts((prev) => [...prev, { id, message, type }]);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 5000);
     }, []);
 
     const removeToast = useCallback((id: string) => {
-        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+        setToasts((prev) => prev.filter((t) => t.id !== id));
     }, []);
 
     return (
         <ToastContext.Provider value={{ showToast }}>
             {children}
-            <div className="fixed bottom-0 right-0 p-4 z-[100] flex flex-col gap-2 pointer-events-none">
-                {toasts.map((toast) => (
-                    <div key={toast.id} className="pointer-events-auto">
-                        <Toast
-                            message={toast.message}
-                            type={toast.type}
-                            onClose={() => removeToast(toast.id)}
-                        />
-                    </div>
-                ))}
-            </div>
+            <ToastContainer toasts={toasts} onClose={removeToast} />
         </ToastContext.Provider>
     );
 }

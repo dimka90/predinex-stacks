@@ -10,7 +10,9 @@ import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
 import { useRealTimeStats } from "../lib/hooks/useRealTimeStats";
-import { XCircle, Trophy, TrendingUp, Users } from 'lucide-react';
+import TrendChart from "../components/ui/TrendChart";
+import { XCircle, Trophy, TrendingUp, Users, Plus, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
 export default function MarketsPage() {
   const {
@@ -50,14 +52,24 @@ export default function MarketsPage() {
 
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-10 relative">
-          <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full blur-sm opacity-50" />
-          <h1 className="text-4xl font-black mb-3 bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent tracking-tighter">
-            Prediction Markets
-          </h1>
-          <p className="text-muted-foreground text-lg font-medium max-w-2xl leading-relaxed">
-            Discover, analyze, and participate in decentralized prediction markets powered by Stacks.
-          </p>
+        <div className="mb-10 relative flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full blur-sm opacity-50" />
+            <h1 className="text-4xl font-black bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent tracking-tighter">
+              Prediction Markets
+            </h1>
+            <p className="text-muted-foreground text-lg font-medium max-w-2xl leading-relaxed">
+              Experience institutional-grade prediction pools secured by the Stacks blockchain.
+            </p>
+          </div>
+
+          <Link
+            href="/markets/create"
+            className="flex items-center gap-3 bg-primary text-white px-8 py-4 rounded-2xl hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] transition-all hover:-translate-y-1 active:translate-y-0 group"
+          >
+            <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+            <span className="text-sm font-black uppercase tracking-widest">Initialize Pool</span>
+          </Link>
         </div>
 
         {/* Stats Overview */}
@@ -73,7 +85,9 @@ export default function MarketsPage() {
             value={`${stats.totalVolume.toLocaleString()} STX`}
             icon={TrendingUp}
             color="success"
-            trend="+12%"
+            trend="+12.5%"
+            trendType="up"
+            chart={<TrendChart data={[20, 35, 25, 45, 40, 60, 55]} color="#22c55e" height={40} />}
           />
           <StatsCard
             title="Active Predictors"
@@ -140,13 +154,15 @@ export default function MarketsPage() {
         />
 
         {/* Pagination */}
-        {!isMarketLoading && !error && paginatedMarkets.length > 0 && (
-          <Pagination
-            pagination={pagination}
-            onPageChange={setPage}
-          />
-        )}
-      </div>
-    </main>
+        {
+          !isMarketLoading && !error && paginatedMarkets.length > 0 && (
+            <Pagination
+              pagination={pagination}
+              onPageChange={setPage}
+            />
+          )
+        }
+      </div >
+    </main >
   );
 }

@@ -140,3 +140,24 @@ export function formatTimeRemaining(blocksRemaining: number | null): string {
 export function getCurrentBlockHeight(): number {
   return 150000; // Mock current block height
 }
+/**
+ * Calculates the liquidity depth as a measure of pool stability.
+ */
+export function calculateLiquidityDepth(totalA: number, totalB: number): number {
+    const total = totalA + totalB;
+    if (total === 0) return 0;
+    // Lower difference = higher depth/stability
+    const diff = Math.abs(totalA - totalB);
+    return Math.max(0, 100 - (diff / total) * 100);
+}
+
+/**
+ * Formats a microSTX value into a human-readable currency string.
+ */
+export function formatCurrency(microSTX: number, decimals: number = 2): string {
+    const stx = microSTX / 1_000_000;
+    return stx.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}

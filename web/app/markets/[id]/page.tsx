@@ -1,13 +1,18 @@
 'use client';
 
 import Navbar from "../../components/Navbar";
+import { useStacks } from "../../components/StacksProvider";
 import BettingSection from "../../components/BettingSection";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState, useMemo } from "react";
 import { getPool, Pool } from "../../lib/stacks-api";
-import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft } from "lucide-react";
+import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft, Activity } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
 import { truncateAddress } from "../../lib/utils";
+import MarketChart from "../../components/MarketChart";
+import OrderBook from "../../components/OrderBook";
+import PriceOracleStatus from "../../components/PriceOracleStatus";
+import MarketSettlement from "../../components/markets/MarketSettlement";
+import SocialShare from "../../components/SocialShare";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -15,6 +20,9 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
 
     const [pool, setPool] = useState<Pool | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const { userData } = useStacks();
+    const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
 
     useEffect(() => {
         getPool(poolId).then(data => {
@@ -46,6 +54,19 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
     const totalVolume = pool.totalA + pool.totalB;
     const oddsA = totalVolume > 0 ? (pool.totalA / totalVolume) * 100 : 50;
     const oddsB = totalVolume > 0 ? (pool.totalB / totalVolume) * 100 : 50;
+
+    // Generate mock history data for the chart
+    const historyData = useMemo(() => {
+        return Array.from({ length: 15 }, (_, i) => {
+            const variance = Math.sin((pool.id + i) * 0.8) * 5;
+            const valA = Math.max(5, Math.min(95, oddsA + variance));
+            return {
+                time: `${15 - i}h ago`,
+                oddsA: valA,
+                oddsB: 100 - valA
+            };
+        });
+    }, [pool.id, oddsA]);
 
     return (
         <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -103,14 +124,36 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                             </div>
                         </div>
 
+                        {/* Settlement Section (For Creator Only) */}
+                        {pool && !pool.settled && stxAddress === pool.creator && (
+                            <div className="mb-12">
+                                <MarketSettlement
+                                    poolId={pool.id}
+                                    outcomeA={pool.outcomeA}
+                                    outcomeB={pool.outcomeB}
+                                />
+                            </div>
+                        )}
+
                         {/* Market Analysis / Chart Stub */}
-                        <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5">
+                        <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-black tracking-tight">Market Probability</h3>
-                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                    <BarChart3 size={14} />
-                                    <span>Real-time on-chain data</span>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Analytical Terminal</span>
+                                    <h3 className="text-2xl font-black tracking-tight">Market Probability</h3>
                                 </div>
+                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                                    <Activity size={14} className="text-primary animate-pulse" />
+                                    <span>Live Feed</span>
+                                </div>
+                            </div>
+
+                            <div className="mb-10">
+                                <MarketChart
+                                    data={historyData}
+                                    outcomeA={pool.outcomeA}
+                                    outcomeB={pool.outcomeB}
+                                />
                             </div>
 
                             <div className="space-y-6">
@@ -147,14 +190,54 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                                 </div>
                             </div>
                         </div>
+
+                        {/* Social Proof / Activity */}
+                        <div className="mt-8 flex items-center justify-between p-6 bg-white/5 rounded-[2rem] border border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-zinc-800 flex items-center justify-center text-[10px] font-black">
+                                            {String.fromCharCode(64 + i)}
+                                        </div>
+                                    ))}
+                                    <div className="w-8 h-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-black">
+                                        +42
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black tracking-tight">Active Predictors</p>
+                                    <p className="text-[10px] text-muted-foreground font-bold">47 experts already placed their orders</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[10px] uppercase font-black text-muted-foreground mb-1">Sentiment</span>
+                                <span className="text-xs font-black text-primary">BULLISH</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Column: Betting Section */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-32">
+                        <div className="sticky top-32 space-y-6">
                             <BettingSection pool={pool as any} poolId={poolId} />
 
-                            <div className="mt-6 p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
+                            <OrderBook pool={{
+                                totalA: pool.totalA,
+                                totalB: pool.totalB,
+                                outcomeA: pool.outcomeA,
+                                outcomeB: pool.outcomeB
+                            }} />
+
+                            <PriceOracleStatus />
+
+                            <div className="glass-panel p-8 rounded-2xl border border-white/5">
+                                <SocialShare
+                                    title={pool?.title || ''}
+                                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                                />
+                            </div>
+
+                            <div className="p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4">Risk Warning</h4>
                                 <p className="text-[11px] leading-relaxed text-muted-foreground">
                                     Prediction markets involve high risk. Past performance is not indicative of future results.

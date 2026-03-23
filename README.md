@@ -1,9 +1,9 @@
-# Predinex Stacks
+# Predinex Protocol
 
-> Next-generation prediction markets on Bitcoin (via Stacks).
+> **Institutional-Grade Decentralized Prediction Markets on Stacks**
 
-![Status](https://img.shields.io/badge/Status-IMPROVED-success?style=for-the-badge)
-![Commits](https://img.shields.io/badge/Project_Lifecycle-66_Commits_Complete-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-INSTITUTION_READY-success?style=for-the-badge)
+![Commits](https://img.shields.io/badge/Project_Lifecycle-80+_Commits_Complete-blue?style=for-the-badge)
  ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
  ![NPM](https://img.shields.io/npm/v/predinex-stacks-sdk?style=flat-square&color=cb3837)
 
