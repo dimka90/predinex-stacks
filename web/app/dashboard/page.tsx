@@ -11,7 +11,10 @@ export default function Dashboard() {
     const { userData } = useStacks();
     const stxAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet || userData?.identityAddress;
 
-    const { portfolio, stats, isLoading } = useUserPortfolio(stxAddress);
+    const { portfolio, stats, isLoading: loadingPortfolio } = useUserPortfolio(stxAddress);
+    const { rewards, missions, isLoading: loadingRewards } = useUserRewards(stxAddress);
+
+    const isLoading = loadingPortfolio || loadingRewards;
 
     if (!userData) {
         return (
@@ -56,8 +59,14 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                    {/* Left Column: Stats Cards */}
+                    {/* Left Column: Stats & Rewards */}
                     <div className="lg:col-span-1 space-y-6">
+                        <RewardBadge
+                            level={rewards.level}
+                            points={rewards.totalPoints}
+                            multiplier={rewards.multiplier}
+                        />
+
                         <PNLCard
                             totalWagered={stats.totalWagered * 1_000_000}
                             totalWon={stats.totalWon * 1_000_000}
@@ -78,6 +87,8 @@ export default function Dashboard() {
                                 ))}
                             </div>
                         </div>
+
+                        <MissionGrid missions={missions} />
                     </div>
 
                     {/* Right Column: Portfolio Details */}
