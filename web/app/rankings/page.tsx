@@ -5,6 +5,7 @@ import { Award, ShieldCheck, Search } from "lucide-react";
 import { useLeaderboard } from "../lib/hooks/useLeaderboard";
 import LeaderboardTable from "../components/rankings/LeaderboardTable";
 import RankingStats from "../components/rankings/RankingStats";
+import UserRankCard from "../components/rankings/UserRankCard";
 
 export default function RankingsPage() {
     const { leaderboard, isLoading } = useLeaderboard();
@@ -50,6 +51,9 @@ export default function RankingsPage() {
 
                 {/* Performance Hub */}
                 <RankingStats />
+
+                {/* Personalized User Rank */}
+                <UserRankCard rank={42} points={4200} nextRankPoints={10000} />
 
                 {/* Global Leaderboard */}
                 <div className="space-y-6">
