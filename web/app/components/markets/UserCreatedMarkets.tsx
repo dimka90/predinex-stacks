@@ -14,7 +14,8 @@ export default function UserCreatedMarkets() {
         status: 'all',
         sortBy: 'newest',
         isVerifiedOnly: false,
-        category: 'All'
+        category: 'All',
+        isMyBetsOnly: false
     });
 
     const userMarkets = markets.filter(m => m.creator === stxAddress);
@@ -35,7 +36,7 @@ export default function UserCreatedMarkets() {
     return (
         <div className="space-y-4">
             {userMarkets.map(market => (
-                <div key={market.id} className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
+                <div key={market.poolId} className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
                     <div className="flex justify-between items-start">
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
@@ -44,7 +45,7 @@ export default function UserCreatedMarkets() {
                                     {market.status}
                                 </span>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase opacity-50 tracking-tighter">
-                                    POOL-ID #{market.id}
+                                    POOL-ID #{market.poolId}
                                 </span>
                             </div>
                             <h4 className="text-sm font-black tracking-tight group-hover:text-primary transition-colors">{market.title}</h4>
