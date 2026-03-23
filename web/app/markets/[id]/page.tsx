@@ -123,6 +123,17 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                             </div>
                         </div>
 
+                        {/* Settlement Section (For Creator Only) */}
+                        {pool && !pool.settled && stxAddress === pool.creator && (
+                            <div className="mb-12">
+                                <MarketSettlement
+                                    poolId={pool.poolId}
+                                    outcomeA={pool.outcomeA}
+                                    outcomeB={pool.outcomeB}
+                                />
+                            </div>
+                        )}
+
                         {/* Market Analysis / Chart Stub */}
                         <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
                             <div className="flex items-center justify-between mb-8">
