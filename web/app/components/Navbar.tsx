@@ -38,6 +38,11 @@ export default function Navbar() {
                     </Link>
                     {/* Navigation Links - Desktop */}
                     <div className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Desktop navigation">
+                        {userData && (
+                            <Link href="/dashboard" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors tracking-widest uppercase border-b-2 border-primary/50 -mb-[2px]" aria-label="View your dashboard">
+                                Dashboard
+                            </Link>
+                        )}
                         <Link href="/markets" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase" aria-label="View all markets">
                             Markets
                         </Link>
@@ -125,6 +130,15 @@ export default function Navbar() {
             {isMenuOpen && (
                 <div className="md:hidden glass-panel border-t border-white/5 animate-in slide-in-from-top-4 duration-300">
                     <div className="px-4 pt-4 pb-6 space-y-2">
+                        {userData && (
+                            <Link
+                                href="/dashboard"
+                                className="block px-4 py-3 text-sm font-black uppercase tracking-widest text-primary bg-primary/10 rounded-xl transition-colors mb-2"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                         <Link
                             href="/markets"
                             className="block px-4 py-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 rounded-xl transition-colors"
