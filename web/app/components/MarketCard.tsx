@@ -5,6 +5,7 @@ import { Clock, TrendingUp, Users, CheckCircle, XCircle, Info, ShieldCheck } fro
 import { ProcessedMarket } from '../lib/market-types';
 import { formatSTXAmount, formatTimeRemaining } from '../lib/market-utils';
 import ShareMarketButton from './ShareMarketButton';
+import TrendChart from '../components/ui/TrendChart';
 
 interface MarketCardProps {
   market: ProcessedMarket;

@@ -10,6 +10,7 @@ import MarketGrid from "../components/MarketGrid";
 import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
 import { useRealTimeStats } from "../lib/hooks/useRealTimeStats";
+import TrendChart from "../components/ui/TrendChart";
 import { XCircle, Trophy, TrendingUp, Users } from 'lucide-react';
 
 export default function MarketsPage() {
@@ -73,7 +74,9 @@ export default function MarketsPage() {
             value={`${stats.totalVolume.toLocaleString()} STX`}
             icon={TrendingUp}
             color="success"
-            trend="+12%"
+            trend="+12.5%"
+            trendType="up"
+            chart={<TrendChart data={[20, 35, 25, 45, 40, 60, 55]} color="#22c55e" height={40} />}
           />
           <StatsCard
             title="Active Predictors"
