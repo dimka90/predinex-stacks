@@ -230,6 +230,13 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
 
                             <PriceOracleStatus />
 
+                            <div className="glass-panel p-8 rounded-2xl border border-white/5">
+                                <SocialShare
+                                    title={pool?.title || ''}
+                                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                                />
+                            </div>
+
                             <div className="p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4">Risk Warning</h4>
                                 <p className="text-[11px] leading-relaxed text-muted-foreground">
