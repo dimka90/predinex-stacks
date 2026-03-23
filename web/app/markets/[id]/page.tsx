@@ -1,6 +1,7 @@
 'use client';
 
 import Navbar from "../../components/Navbar";
+import { useStacks } from "../../components/StacksProvider";
 import BettingSection from "../../components/BettingSection";
 import { use, useEffect, useState, useMemo } from "react";
 import { getPool, Pool } from "../../lib/stacks-api";
