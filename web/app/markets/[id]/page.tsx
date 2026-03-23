@@ -2,12 +2,12 @@
 
 import Navbar from "../../components/Navbar";
 import BettingSection from "../../components/BettingSection";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState, useMemo } from "react";
 import { getPool, Pool } from "../../lib/stacks-api";
-import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft } from "lucide-react";
+import { TrendingUp, Users, Clock, ShieldCheck, Share2, BarChart3, ArrowLeft, Activity } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
 import { truncateAddress } from "../../lib/utils";
+import MarketChart from "../../components/MarketChart";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -46,6 +46,19 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
     const totalVolume = pool.totalA + pool.totalB;
     const oddsA = totalVolume > 0 ? (pool.totalA / totalVolume) * 100 : 50;
     const oddsB = totalVolume > 0 ? (pool.totalB / totalVolume) * 100 : 50;
+
+    // Generate mock history data for the chart
+    const historyData = useMemo(() => {
+        return Array.from({ length: 15 }, (_, i) => {
+            const variance = Math.sin((pool.id + i) * 0.8) * 5;
+            const valA = Math.max(5, Math.min(95, oddsA + variance));
+            return {
+                time: `${15 - i}h ago`,
+                oddsA: valA,
+                oddsB: 100 - valA
+            };
+        });
+    }, [pool.id, oddsA]);
 
     return (
         <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -104,13 +117,24 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                         </div>
 
                         {/* Market Analysis / Chart Stub */}
-                        <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5">
+                        <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-black tracking-tight">Market Probability</h3>
-                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                    <BarChart3 size={14} />
-                                    <span>Real-time on-chain data</span>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Analytical Terminal</span>
+                                    <h3 className="text-2xl font-black tracking-tight">Market Probability</h3>
                                 </div>
+                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                                    <Activity size={14} className="text-primary animate-pulse" />
+                                    <span>Live Feed</span>
+                                </div>
+                            </div>
+
+                            <div className="mb-10">
+                                <MarketChart
+                                    data={historyData}
+                                    outcomeA={pool.outcomeA}
+                                    outcomeB={pool.outcomeB}
+                                />
                             </div>
 
                             <div className="space-y-6">
