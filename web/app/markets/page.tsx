@@ -11,7 +11,8 @@ import Pagination from "../components/Pagination";
 import { useMarketDiscovery } from "../lib/hooks/useMarketDiscovery";
 import { useRealTimeStats } from "../lib/hooks/useRealTimeStats";
 import TrendChart from "../components/ui/TrendChart";
-import { XCircle, Trophy, TrendingUp, Users } from 'lucide-react';
+import { XCircle, Trophy, TrendingUp, Users, Plus, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
 export default function MarketsPage() {
   const {
