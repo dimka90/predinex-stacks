@@ -1,8 +1,10 @@
 import Navbar from "../components/Navbar";
 import { useStacks } from "../components/StacksProvider";
 import { useUserPortfolio } from "../lib/hooks/useUserPortfolio";
+import { useUserRewards } from "../lib/hooks/useUserRewards";
 import PNLCard from "../components/dashboard/PNLCard";
 import UserBetsTable from "../components/dashboard/UserBetsTable";
+import { RewardBadge, MissionGrid } from "../components/rewards/RewardSystem";
 import { LayoutDashboard, History, TrendingUp, ShieldCheck } from "lucide-react";
 
 export default function Dashboard() {
