@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import { useStacks } from "../components/StacksProvider";
+import Link from "next/link";
 import { useUserPortfolio } from "../lib/hooks/useUserPortfolio";
 import { useUserRewards } from "../lib/hooks/useUserRewards";
 import PNLCard from "../components/dashboard/PNLCard";
