@@ -3,6 +3,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import ToastContainer, { Toast } from '../components/ui/ToastContainer';
 
+interface ToastContextType {
+    showToast: (message: string, type?: any) => void;
+}
+
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([]);
 
