@@ -9,6 +9,7 @@ import Link from "next/link";
 import { truncateAddress } from "../../lib/utils";
 import MarketChart from "../../components/MarketChart";
 import OrderBook from "../../components/OrderBook";
+import PriceOracleStatus from "../../components/PriceOracleStatus";
 
 export default function PoolDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -185,6 +186,8 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                                 outcomeA: pool.outcomeA,
                                 outcomeB: pool.outcomeB
                             }} />
+
+                            <PriceOracleStatus />
 
                             <div className="p-6 glass-panel rounded-2xl border border-white/5 opacity-60">
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4">Risk Warning</h4>
