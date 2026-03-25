@@ -25,3 +25,35 @@ export function truncateAddress(address: string, startChars = 6, endChars = 4): 
 export function formatAmount(amount: number, currency = 'STX'): string {
     return `${amount.toLocaleString()} ${currency}`;
 }
+
+/**
+ * Formats a number as a percentage string.
+ * @param value The decimal value (e.g., 0.75 for 75%)
+ * @param decimals Number of decimal places (default: 1)
+ * @returns Formatted percentage string (e.g., "75.0%")
+ */
+export function formatPercentage(value: number, decimals = 1): string {
+    if (isNaN(value) || !isFinite(value)) return '0%';
+    return `${(value * 100).toFixed(decimals)}%`;
+}
+
+/**
+ * Calculates time ago from a given date.
+ * @param date The date to calculate from
+ * @returns Human-readable relative time string
+ */
+export function timeAgo(date: Date | string | number): string {
+    const now = Date.now();
+    const past = new Date(date).getTime();
+    const diffMs = now - past;
+
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'just now';
+}
