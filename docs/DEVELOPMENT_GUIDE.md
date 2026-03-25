@@ -43,3 +43,39 @@ This guide provides instructions for setting up the Predinex development environ
 2.  Follow the established granular commit pattern.
 3.  Ensure all tests pass before submitting a Pull Request.
 4.  Update documentation in `docs/` if you introduce new features or contract functions.
+
+## Build Optimization
+
+### Next.js Performance
+- Use `next/dynamic` for code-splitting heavy components like `MarketChart` and `OrderBook`.
+- Keep `'use client'` directives on the smallest possible component boundary.
+- Use `next/image` for optimized image loading.
+
+### Bundle Analysis
+```bash
+cd web && ANALYZE=true npm run build
+```
+
+### Type Checking
+```bash
+cd web && npx tsc --noEmit
+```
+
+## Environment Variables
+
+| Variable | Description | Required |
+| :--- | :--- | :--- |
+| `PRIVATE_KEY` | Deployer wallet private key | Yes |
+| `DEPLOYER_KEY` | Alias for `PRIVATE_KEY` | No |
+| `STACKS_NETWORK` | `mainnet` or `testnet` | No (default: `mainnet`) |
+| `NEXT_PUBLIC_NETWORK` | Network for frontend | No (default: `mainnet`) |
+
+## Useful Scripts
+
+| Script | Description |
+| :--- | :--- |
+| `npm run dev` | Start Next.js dev server |
+| `npm run build` | Build production bundle |
+| `npx ts-node scripts/deploy.ts` | Deploy contracts to configured network |
+| `npx ts-node scripts/check-balance.ts` | Check deployer STX balance |
+| `npx ts-node scripts/health-check.ts` | Run protocol health diagnostics |
