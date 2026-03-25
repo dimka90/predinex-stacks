@@ -43,3 +43,32 @@ This document provides a reference for the public and read-only functions availa
 | `u430` | `ERR-ORACLE-NOT-FOUND` | The oracle provider is not registered. |
 | `u431` | `ERR-ORACLE-INACTIVE` | The oracle provider is currently deactivated. |
 | `u444` | `ERR-ALREADY-VOTED` | The user has already cast a vote in this dispute. |
+
+## `predinex-resolution-engine`
+
+### Public Functions
+
+- **`attempt-enhanced-resolution (pool-id)`**: Attempts automated resolution using oracle consensus data.
+- **`configure-advanced-resolution (pool-id, min-oracles, min-reputation)`**: Sets custom oracle requirements per market.
+- **`submit-dispute (pool-id, reason)`**: Initiates a community dispute against an automated settlement.
+- **`vote-on-dispute (pool-id, vote)`**: Casts a vote in an active dispute (1 = support, 0 = reject).
+
+### Read-Only Functions
+
+- **`get-resolution-status (pool-id)`**: Returns the resolution state and oracle data for a pool.
+- **`get-dispute-details (pool-id)`**: Returns active dispute vote counts and status.
+
+## `liquidity-incentives`
+
+### Public Functions
+
+- **`initialize-pool-incentives (pool-id)`**: Initializes the incentive structure for a new pool.
+- **`claim-incentive (pool-id)`**: Claims earned incentives after the vesting period.
+- **`adjust-bonus-rates (pool-id, early-bird, volume, referral, loyalty)`**: Adjusts dynamic bonus percentages (Owner only).
+
+### Read-Only Functions
+
+- **`get-top-earners (pool-id)`**: Returns the leaderboard of top incentive earners.
+- **`calculate-vesting-schedule (pool-id, user)`**: Returns vesting progress and claimable amount.
+- **`get-leaderboard-analytics (pool-id)`**: Returns participation and earning statistics.
+
