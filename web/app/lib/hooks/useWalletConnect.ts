@@ -14,21 +14,22 @@ export interface WalletContextType {
     isConnected: boolean;
     balance?: number;
   } | null;
+  isConnecting: boolean;
 }
 
 export function useWalletConnect(): WalletContextType {
-  const { address, isConnected } = useAppKitAccount();
-  
+  const { address, isConnected, isConnecting } = useAppKitAccount();
+
   const session = useMemo(() => {
     if (isConnected && address) {
-      return { 
+      return {
         address,
         isConnected: true,
-        balance: 0 
+        balance: 0
       };
     }
     return null;
   }, [address, isConnected]);
 
-  return { session };
+  return { session, isConnecting };
 }
