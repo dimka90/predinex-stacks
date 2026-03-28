@@ -39,6 +39,18 @@ Contracts must be deployed in the following order due to internal contract-calls
 3. `predinex-pool` (Depends on 1 & 2)
 4. `predinex-resolution-engine` (Depends on 1 & 3)
 
+## Key Features (v1.2.0)
+
+### 1. Automated Resolution Engine
+- **Oracle Consensus**: The `predinex-resolution-engine` now supports multi-oracle consensus for automated market settlement.
+- **Dispute Resolution**: Implementation of a community-driven dispute mechanism where users can challenge automated resolutions via binary voting.
+- **Dynamic Thresholds**: Market creators can configure minimum oracle counts and reputation requirements per-pool.
+
+### 2. Liquidity Incentive Tiering
+- **Early-Bird Bonuses**: Automated bonus calculation for early participants based on pool volume milestones.
+- **Vesting Logic**: Integrated 7-day vesting for earned incentives to ensure protocol stability and long-term commitment.
+- **Leaderboard Integration**: Real-time tracking of top participants and incentive earners.
+
 ## Key Features (v1.1.0)
 
 ### 1. Enhanced Security

@@ -18,13 +18,13 @@ export interface WalletContextType {
 
 export function useWalletConnect(): WalletContextType {
   const { address, isConnected } = useAppKitAccount();
-  
+
   const session = useMemo(() => {
     if (isConnected && address) {
-      return { 
+      return {
         address,
         isConnected: true,
-        balance: 0 
+        balance: 0
       };
     }
     return null;
