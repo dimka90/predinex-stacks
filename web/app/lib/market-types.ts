@@ -31,6 +31,7 @@ export interface ProcessedMarket {
   creator: string;
   isVerified: boolean;
   category: string;
+  expiryDate: number;
 }
 
 export interface MarketFilters {
