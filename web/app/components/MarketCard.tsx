@@ -6,7 +6,7 @@ import { ProcessedMarket } from '../lib/market-types';
 import { formatSTXAmount } from '../lib/market-utils';
 import ShareMarketButton from './ShareMarketButton';
 import TrendChart from '../components/ui/TrendChart';
-import StatusBadge from '@/web/components/ui/StatusBadge';
+import StatusBadge from '@/components/ui/StatusBadge';
 import CountdownTimer from './CountdownTimer';
 import PoolCreatorBadge from './PoolCreatorBadge';
 import { useMarketStatus } from '../lib/hooks/useMarketStatus';
@@ -110,7 +110,7 @@ export default function MarketCard({ market, onShowDetails }: MarketCardProps) {
               </div>
               <div className="flex flex-col gap-1 items-end">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Settlement</span>
-                <CountdownTimer expiryDate={market.expiryDate} compact />
+                <CountdownTimer targetDate={market.expiryDate} showLabels={false} />
               </div>
             </div>
 
