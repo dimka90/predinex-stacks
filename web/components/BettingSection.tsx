@@ -22,17 +22,17 @@ export default function BettingSection({ pool, poolId }: { pool: Pool, poolId: n
                     {pool.outcomeB}
                 </button>
             </div>
-            
+
             <div className="mb-4">
                 <input
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="Amount (STX)"
-                    className="w-full px-4 py-3 rounded-lg bg-background border border-input outline-none focus:border-primary"
+                    className="w-full px-4 py-4 rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all font-black"
                 />
             </div>
-            
+
             <button className="w-full py-4 bg-gradient-to-r from-primary to-purple-600 rounded-lg font-bold hover:opacity-90 transition-opacity">
                 Place Bet
             </button>
