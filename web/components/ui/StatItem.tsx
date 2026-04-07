@@ -28,8 +28,8 @@ export default function StatItem({
 }: StatItemProps) {
     return (
         <div className={`flex flex-col gap-1 ${className}`}>
-            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-widest flex items-center gap-1.5">
-                {icon}
+            <span className="text-[11px] uppercase font-black text-muted-foreground/60 tracking-[0.1em] flex items-center gap-2">
+                <span className="p-1 rounded bg-muted/20 text-primary">{icon}</span>
                 {label}
             </span>
             <div className="flex items-baseline gap-2">
