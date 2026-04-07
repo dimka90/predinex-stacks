@@ -11,7 +11,7 @@ export default function CampaignRules() {
             <div className="space-y-6">
                 <div className="relative pl-8 group">
                     <div className="absolute left-0 top-0 h-full w-px bg-border group-hover:bg-primary transition-colors duration-500"></div>
-                    <div className="absolute left-[-4px] top-1 h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--primary-rgb),0.8)] animate-pulse-subtle"></div>
+                    <div className="absolute left-[-4px] top-1.5 h-2 w-2 rounded-full bg-primary shadow-[0_0_15px_rgba(79,70,229,0.6)] animate-pulse" />
                     <h4 className="font-bold text-foreground mb-1 flex items-center gap-2">
                         <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         Development Activity
