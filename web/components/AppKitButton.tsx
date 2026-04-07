@@ -19,7 +19,7 @@ export default function AppKitButton({ className, label = 'Connect Wallet' }: Ap
 
   if (!mounted) {
     return (
-      <button 
+      <button
         className={`flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm ${className}`}
         disabled
       >
@@ -34,9 +34,9 @@ export default function AppKitButton({ className, label = 'Connect Wallet' }: Ap
       {!isConnected ? (
         <button
           onClick={() => open()}
-          className={`flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 ${className}`}
+          className={`flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl border border-primary/20 shadow-lg shadow-primary/20 transition-all font-black text-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 group ${className}`}
         >
-          <Wallet className="w-4 h-4" />
+          <Wallet className="w-4 h-4 group-hover:scale-110 transition-transform" />
           {label}
         </button>
       ) : (
