@@ -15,7 +15,7 @@ export default function Navbar() {
           <div className="p-1.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
             <Rocket className="h-5 w-5" />
           </div>
-          <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/70">
+          <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/70 tracking-tighter">
             Predinex
           </span>
         </Link>
