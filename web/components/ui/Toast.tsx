@@ -40,7 +40,7 @@ export default function Toast({
     };
 
     return (
-        <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-300 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'} ${bgClasses[type]} min-w-[300px]`}>
+        <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-500 ease-out transform ${isVisible ? 'translate-x-0 opacity-100 animate-in slide-in-from-right-10 duration-500' : 'translate-x-20 opacity-0'} ${bgClasses[type]} min-w-[320px] fixed bottom-8 right-8 z-[100]`}>
             <div className="shrink-0">{icons[type]}</div>
             <p className="text-sm font-bold tracking-tight flex-1">{message}</p>
             <button
