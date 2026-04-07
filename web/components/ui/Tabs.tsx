@@ -31,22 +31,19 @@ export default function Tabs({
             {tabs.map((tab) => {
                 const isActive = tab.id === activeTab;
                 return (
-                    <button
-                        key={tab.id}
-                        onClick={() => onChange(tab.id)}
-                        className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all
+                    className = {`
+              flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300
               ${isActive
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                            }
+                            ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }
             `}
                     >
-                        {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
-                        {tab.label}
+                { tab.icon && <span className="w-4 h-4">{tab.icon}</span> }
+                        { tab.label }
                     </button>
-                );
-            })}
-        </div>
+    );
+})}
+        </div >
     );
 }
