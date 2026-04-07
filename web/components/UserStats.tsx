@@ -59,7 +59,7 @@ export default function UserStats() {
                     label="Points Balance"
                     value={metrics.points || '0'}
                     icon={<Trophy className="h-4 w-4" />}
-                    trend={metrics.points > 0 ? "+12%" : undefined}
+                    trend={Number(metrics.points) > 0 ? "+12%" : undefined}
                     isLoading={isLoading}
                 />
                 <StatItem
