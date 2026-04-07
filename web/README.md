@@ -17,6 +17,13 @@ The project includes a custom UI kit located in `components/ui/` designed for a 
 - **Tooltip**: Technical term explanations on hover.
 - **Toast**: Ephemeral notifications for transaction feedback.
 
+## Premium User Experience
+The Predinex Stacks UI is built to feel fast, secure, and intuitive:
+- **Responsive by Design**: Advanced grid layouts that adapt from mobile to ultra-wide displays.
+- **Visual Feedback**: Every interaction (hover, click, transaction) provides immediate, satisfying visual cues.
+- **Institutional Aesthetics**: A dark-first interface that maximizes focus and reduces eye strain during long trading sessions.
+- **Accessible Interfaces**: Full keyboard navigability and semantic HTML for all users.
+
 ## Key Features
 - **Market Discovery**: Advanced filtering, search, and sorting system.
 - **Wallet Integration**: Unified support for Leather, Xverse, and WalletConnect.
