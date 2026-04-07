@@ -20,7 +20,7 @@ export default function UserTierBadge({ tier, progress, pointsToNext, nextTier }
 
             <div className="w-full bg-muted/50 rounded-full h-3 p-0.5 overflow-hidden">
                 <div
-                    className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
+                    className="bg-gradient-to-r from-primary via-indigo-400 to-purple-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(79,70,229,0.4)]"
                     style={{ width: `${progress}%` }}
                 />
             </div>
