@@ -1,5 +1,5 @@
 :root {
-  --primary: #6366f1;
+  --primary: #4f46e5;
   --secondary: #a855f7;
   --accent: #f43f5e;
   --background: #0f172a;
@@ -30,5 +30,7 @@ body {
 
 .btn-primary {
   @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
-}  --transition-smooth: 200ms ease-in-out;
-  --transition-smooth: 200ms ease-in-out;
+}
+
+--transition-smooth: 200ms ease-in-out;
+--transition-smooth: 200ms ease-in-out;
