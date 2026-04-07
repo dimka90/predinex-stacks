@@ -5,6 +5,7 @@
   --background: #0f172a;
   --card: #1e293b;
   --border: rgba(255, 255, 255, 0.1);
+  --slate-950: #020617;
 }
 
 body {
@@ -32,5 +33,6 @@ body {
   @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
 }
 
---transition-smooth: 200ms ease-in-out;
---transition-smooth: 200ms ease-in-out;
+:root {
+  --transition-smooth: 200ms ease-in-out;
+}
