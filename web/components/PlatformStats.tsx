@@ -47,14 +47,14 @@ export default function PlatformStats() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             {items.map((item, i) => (
-                <Card key={i} className="p-4 bg-card/40 backdrop-blur-md border-border/50 hover:border-primary/30 transition-all group overflow-hidden relative">
+                <Card key={i} className={`p-4 bg-card/40 backdrop-blur-md border-border/50 hover:border-primary/30 transition-all group overflow-hidden relative animate-in fade-in slide-in-from-bottom-2 duration-500`} style={{ animationDelay: `${i * 100}ms` }}>
                     <div className="flex items-center gap-4">
                         <div className={`p-3 rounded-xl bg-background/50 border border-border group-hover:scale-110 transition-transform`}>
                             <item.icon className={`w-5 h-5 ${item.color}`} />
                         </div>
                         <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{item.label}</p>
-                            <p className="text-xl font-black">{item.value}</p>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-widest leading-none mb-1">{item.label}</p>
+                            <p className="text-xl font-black tracking-tight">{item.value}</p>
                         </div>
                     </div>
                     <div className={`absolute -bottom-2 -right-2 w-16 h-16 opacity-[0.03] group-hover:opacity-10 transition-opacity ${item.color}`}>
