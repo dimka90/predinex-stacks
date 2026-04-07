@@ -41,7 +41,7 @@ export default function MarketCard({ market }: { market: Pool }) {
                         )}
                     </div>
 
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                    <h3 className="text-xl font-black mb-4 group-hover:text-primary transition-colors line-clamp-2 leading-tight tracking-tight">
                         {market.title}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-8 line-clamp-2 flex-grow leading-relaxed font-medium">
