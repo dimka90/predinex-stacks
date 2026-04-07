@@ -26,7 +26,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5"
+              className="relative text-sm font-bold text-muted-foreground hover:text-primary transition-all hover:-translate-y-0.5 px-2 py-1 rounded-lg hover:bg-primary/5"
             >
               {link.label}
             </Link>
