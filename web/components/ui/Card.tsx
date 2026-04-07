@@ -23,7 +23,7 @@ export default function Card({
     const baseClasses = 'rounded-2xl transition-all duration-300 overflow-hidden';
 
     const variantClasses = {
-        glass: 'glass border border-border',
+        glass: 'glass border border-white/10 bg-white/5 backdrop-blur-md',
         outline: 'border border-border bg-background/50',
         flat: 'bg-muted/30 border border-transparent',
     };
