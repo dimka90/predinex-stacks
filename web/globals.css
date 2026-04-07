@@ -14,6 +14,25 @@ body {
   min-height: 100vh;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--slate-950);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--card);
+  border-radius: 5px;
+  border: 2px solid var(--slate-950);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 .smooth-transition {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
