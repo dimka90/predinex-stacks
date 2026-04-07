@@ -9,8 +9,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav aria-label="Main navigation" className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+    <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
+      <div className="container mx-auto px-6 h-24 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-black text-2xl hover:text-primary transition-all duration-300 group">
           <div className="p-1.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
             <Rocket className="h-5 w-5" />
