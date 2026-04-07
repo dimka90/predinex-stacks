@@ -21,7 +21,7 @@ export default function Button({
     ...props
 }: ButtonProps) {
     const variants = {
-        primary: 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/40',
+        primary: 'bg-primary text-white hover:bg-primary/95 shadow-xl shadow-primary/20 hover:shadow-primary/30',
         secondary: 'bg-muted text-foreground hover:bg-muted/80 border border-border',
         outline: 'bg-transparent border border-primary/50 text-primary hover:bg-primary/5',
         ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50',
