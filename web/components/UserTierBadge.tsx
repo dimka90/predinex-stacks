@@ -9,7 +9,8 @@ interface UserTierBadgeProps {
 
 export default function UserTierBadge({ tier, progress, pointsToNext, nextTier }: UserTierBadgeProps) {
     return (
-        <div className="p-6 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 relative">
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/20 via-indigo-500/10 to-purple-500/5 border border-primary/30 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_-20%,rgba(79,70,229,0.1),transparent_70%)]" />
             <div className="flex justify-between items-end mb-3">
                 <div>
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">Current Level</p>
