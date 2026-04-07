@@ -6,6 +6,7 @@
   --card: #1e293b;
   --border: rgba(255, 255, 255, 0.1);
   --slate-950: #020617;
+  --transition-smooth: 200ms ease-in-out;
 }
 
 body {
@@ -37,25 +38,30 @@ body {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Rewards Page Specifics */
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-[24px] border border-white/10 rounded-2xl shadow-2xl;
-  transition: all 0.3s ease;
-}
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-[24px] border border-white/10 rounded-2xl shadow-2xl;
+    transition: all 0.3s ease;
+  }
 
-.glass-panel:hover {
-  @apply border-white/20 bg-white/10;
-  transform: translateY(-2px);
-}
+  .glass-panel:hover {
+    @apply border-white/20 bg-white/10;
+    transform: translateY(-2px);
+  }
 
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 font-bold;
-}
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 font-bold;
+  }
 
-.btn-primary {
-  @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
-}
+  .btn-primary {
+    @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
+  }
 
-:root {
-  --transition-smooth: 200ms ease-in-out;
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary/40 ring-offset-2 ring-offset-background;
+  }
+
+  .primary-glow {
+    @apply shadow-[0_0_15px_rgba(79, 70, 229, 0.3)];
+  }
 }
