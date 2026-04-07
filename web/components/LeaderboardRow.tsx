@@ -38,7 +38,7 @@ export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) 
             </div>
             <div className="flex items-center gap-2">
                 <Star className={`h-3 w-3 ${isCurrentUser ? "text-primary fill-primary animate-spin-slow" : "text-primary fill-primary"}`} />
-                <span className={`font-bold ${isCurrentUser ? "text-primary text-lg" : "text-primary"}`}>{formatPoints(c.points)} pts</span>
+                <span className={`font-black tracking-tight ${isCurrentUser ? "text-primary text-xl" : "text-primary text-lg"}`}>{formatPoints(c.points)} pts</span>
             </div>
         </div>
     );
