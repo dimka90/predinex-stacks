@@ -47,17 +47,18 @@ export default function PlatformStats() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             {items.map((item, i) => (
-                <Card key={i} className={`p-4 bg-card/40 backdrop-blur-md border-border/50 hover:border-primary/30 transition-all group overflow-hidden relative animate-in fade-in slide-in-from-bottom-2 duration-500`} style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-xl bg-background/50 border border-border group-hover:scale-110 transition-transform`}>
+                <Card key={i} className={`p-5 bg-card/40 backdrop-blur-xl border-border/50 hover:border-primary/30 transition-all group overflow-hidden relative animate-in fade-in zoom-in-95 duration-700 fill-mode-both`} style={{ animationDelay: `${i * 150}ms` }}>
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className={`p-3.5 rounded-2xl bg-primary/5 border border-primary/10 group-hover:scale-110 transition-transform duration-500`}>
                             <item.icon className={`w-5 h-5 ${item.color}`} />
                         </div>
                         <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-widest leading-none mb-1">{item.label}</p>
-                            <p className="text-xl font-black tracking-tight">{item.value}</p>
+                            <p className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-[0.2em] leading-none mb-2">{item.label}</p>
+                            <p className="text-2xl font-black tracking-tighter">{item.value}</p>
                         </div>
                     </div>
-                    <div className={`absolute -bottom-2 -right-2 w-16 h-16 opacity-[0.03] group-hover:opacity-10 transition-opacity ${item.color}`}>
+                    {/* Visual flourish */}
+                    <div className={`absolute -bottom-6 -right-6 w-24 h-24 opacity-[0.02] group-hover:opacity-[0.08] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 ${item.color}`}>
                         <item.icon className="w-full h-full" />
                     </div>
                 </Card>
