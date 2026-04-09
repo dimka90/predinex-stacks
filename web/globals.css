@@ -17,7 +17,14 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
+}
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
 }
 
 ::-webkit-scrollbar-track {
@@ -26,7 +33,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--card);
-  border-radius: 5px;
+  border-radius: 10px;
   border: 2px solid var(--slate-950);
 }
 
@@ -35,33 +42,42 @@ body {
 }
 
 .smooth-transition {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::selection {
+  background: rgba(79, 70, 229, 0.2);
+  color: white;
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-[24px] border border-white/10 rounded-2xl shadow-2xl;
-    transition: all 0.3s ease;
+    @apply bg-white/5 backdrop-blur-[32px] border border-white/10 rounded-2xl shadow-2xl;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-panel:hover {
-    @apply border-white/20 bg-white/10;
-    transform: translateY(-2px);
+    @apply border-white/20 bg-white/10 shadow-primary/5;
+    transform: translateY(-4px);
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 font-bold;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-primary to-purple-400 font-black;
   }
 
   .btn-primary {
-    @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
+    @apply px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl hover:shadow-indigo-500/30 active:scale-95 border border-indigo-400/20;
   }
 
   .focus-ring {
-    @apply outline-none ring-2 ring-primary/40 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-2 ring-primary/40 ring-offset-4 ring-offset-background transition-all;
   }
 
   .primary-glow {
-    @apply shadow-[0_0_15px_rgba(79, 70, 229, 0.3)];
+    @apply shadow-[0_0_30px_rgba(79, 70, 229, 0.2)];
+  }
+
+  .institutional-shadow {
+    @apply shadow-[0_20px_50px_rgba(0, 0, 0, 0.3)];
   }
 }
