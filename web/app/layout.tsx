@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   title: "Predinex | Institutional Prediction Market Terminal",
   description: "The decentralized prediction market built for the Bitcoin economy. Predict, bet, and win on Stacks.",
   openGraph: {
-    title: "Predinex | Next-Gen Prediction Markets on Stacks",
-    description: "The decentralized prediction market built for the Bitcoin economy. Predict, bet, and win on Stacks.",
+    title: "Predinex Institutional | Precision Prediction Terminal",
+    description: "The secure, trustless prediction market terminal for the Bitcoin economy. High-fidelity settlement on Stacks.",
     url: "https://predinex.io",
     siteName: "Predinex",
     images: [
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Predinex - Prediction Markets on Stacks",
+        alt: "Predinex Institutional Terminal",
       },
     ],
     locale: "en_US",
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Predinex | Next-Gen Prediction Markets on Stacks",
-    description: "Predict the future. Win on Bitcoin.",
+    title: "Predinex Institutional | Secure Prediction Architecture",
+    description: "Predict the future. Secure institutional-grade yield on Bitcoin.",
     images: ["/og-image.png"],
   },
   viewport: {
