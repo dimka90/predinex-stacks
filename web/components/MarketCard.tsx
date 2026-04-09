@@ -4,13 +4,14 @@ import { TrendingUp, Clock, ChevronRight, CheckCircle2 } from 'lucide-react';
 import MarketCardHeader from './ui/MarketCardHeader';
 import ClaimWinningsButton from './ClaimWinningsButton';
 
-export default function MarketCard({ market }: { market: Pool }) {
+export default function MarketCard({ market, index = 0 }: { market: Pool, index?: number }) {
     // In a real app, we would check if the user has a winning bet.
     const canClaim = market.status === 'settled';
     const isVerified = market.isVerified;
+    const isExpiringSoon = market.expiry < 1000; // Mock threshold for demonstration
 
     return (
-        <div className="group block h-full rounded-3xl relative">
+        <div className="group block h-full rounded-3xl relative animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
             <Link
                 href={`/markets/${market.id}`}
                 className="block h-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-3xl"
@@ -66,8 +67,8 @@ export default function MarketCard({ market }: { market: Pool }) {
                             >
                                 <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <Clock className="h-3.5 w-3.5 text-accent" />
-                                    <span>Block {market.expiry}</span>
+                                    <Clock className={`h-3.5 w-3.5 ${isExpiringSoon ? 'text-rose-400' : 'text-accent'}`} />
+                                    <span className={isExpiringSoon ? 'text-rose-400' : 'text-accent'}>Block {market.expiry}</span>
                                 </div>
                             </div>
                         </div>
