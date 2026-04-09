@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pool } from '../lib/stacks-api';
+import { Zap } from 'lucide-react';
 
 export default function BettingSection({ pool, poolId }: { pool: Pool, poolId: number }) {
     const [selectedOutcome, setSelectedOutcome] = useState<'A' | 'B' | null>(null);
