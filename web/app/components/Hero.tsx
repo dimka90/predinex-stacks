@@ -19,30 +19,31 @@ export default function Hero() {
                     Protocol Live on Stacks Mainnet
                 </div>
 
-                <h1 className="text-[12vw] sm:text-7xl md:text-9xl font-black tracking-tighter mb-10 leading-[0.85] uppercase">
+                <h1 className="text-[12vw] sm:text-7xl md:text-9xl font-black tracking-tighter mb-10 leading-[0.85] uppercase drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                     Predict <span className="gradient-text">Reality</span>.
                     <br />
                     Secure <span className="text-foreground">Yield</span>.
                 </h1>
 
-                <p className="max-w-3xl mx-auto text-xl md:text-2xl text-muted-foreground mb-16 leading-relaxed font-medium">
+                <p className="max-w-3xl mx-auto text-xl md:text-2xl text-muted-foreground/80 mb-16 leading-relaxed font-medium tracking-tight">
                     The institutional-grade prediction architecture for the Stacks ecosystem.
                     Scalable, trustless settlement, and 1:1 Bitcoin security.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <Link
                         href="/markets"
-                        className="btn-primary flex items-center gap-4 group px-12 py-6 text-base font-black tracking-widest"
+                        className="btn-primary flex items-center gap-4 group px-12 py-6 text-base font-black tracking-widest relative overflow-hidden institutional-shadow"
                     >
-                        EXPLORE TERMINAL
-                        <TrendingUp className="w-5 h-5 group-hover:translate-y-[-2px] group-hover:translate-x-[2px] transition-transform" />
+                        <span className="relative z-10">EXPLORE TERMINAL</span>
+                        <TrendingUp className="w-5 h-5 relative z-10 group-hover:translate-y-[-2px] group-hover:translate-x-[2px] transition-transform" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
                     </Link>
                     <Link
                         href="/create"
-                        className="glass-panel px-12 py-6 flex items-center gap-4 text-base font-black tracking-widest hover:bg-white/10 active:scale-95 transition-all border-white/10"
+                        className="glass-panel px-12 py-6 flex items-center gap-4 text-base font-black tracking-widest hover:bg-white/10 active:scale-95 transition-all border-white/10 backdrop-blur-2xl"
                     >
-                        <Trophy className="w-5 h-5 text-accent" />
+                        <Trophy className="w-5 h-5 text-accent animate-pulse" />
                         INITIATE POOL
                     </Link>
                 </div>
