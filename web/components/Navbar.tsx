@@ -12,7 +12,7 @@ export default function Navbar() {
     <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
       <div className="container mx-auto px-6 h-24 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-black text-2xl hover:text-primary transition-all duration-300 group">
-          <div className="p-1.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
+          <div className="p-1.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 group-hover:rotate-[15deg] transition-transform duration-500">
             <Rocket className="h-5 w-5" />
           </div>
           <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/70 tracking-tighter">
