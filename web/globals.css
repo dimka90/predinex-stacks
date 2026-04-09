@@ -80,4 +80,49 @@ body {
   .institutional-shadow {
     @apply shadow-[0_20px_50px_rgba(0, 0, 0, 0.3)];
   }
+
+  .active-scale {
+    @apply active:scale-95 transition-transform;
+  }
+
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-xl border border-white/5 rounded-[2rem] shadow-2xl;
+  }
+
+  .glass-card:hover {
+    @apply bg-card/60 border-white/10;
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
