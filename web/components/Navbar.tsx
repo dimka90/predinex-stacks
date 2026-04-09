@@ -21,56 +21,57 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        {NAV_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="relative text-sm font-black uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-all px-1 py-2 group/nav"
+        <div className="hidden md:flex gap-10 items-center">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="relative text-sm font-black uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-all px-1 py-2 group/nav"
+            >
+              {link.label}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover/nav:w-full" />
+            </Link>
+          ))}
+          <button
+            onClick={connect}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 border border-primary/50"
           >
-            {link.label}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover/nav:w-full" />
-          </Link>
-        ))}
-        <button
-          onClick={connect}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 border border-primary/50"
-        >
-          {isConnected ? 'Connected' : 'Connect Wallet'}
-        </button>
+            {isConnected ? 'Connected' : 'Connect Wallet'}
+          </button>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="md:hidden flex items-center gap-4">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2.5 bg-muted/20 text-muted-foreground hover:text-primary rounded-xl transition-all border border-transparent hover:border-primary/20"
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu Toggle */}
-      <div className="md:hidden flex items-center gap-4">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2.5 bg-muted/20 text-muted-foreground hover:text-primary rounded-xl transition-all border border-transparent hover:border-primary/20"
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+      {/* Mobile Menu Content */}
+      <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="flex flex-col p-6 gap-4">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <button
+            onClick={() => { connect(); setIsOpen(false); }}
+            className="mt-2 w-full p-4 bg-primary text-primary-foreground rounded-xl font-black text-center shadow-lg shadow-primary/20"
+          >
+            {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+          </button>
+        </div>
       </div>
-    </div>
-
-      {/* Mobile Menu Content */ }
-  <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-    <div className="flex flex-col p-6 gap-4">
-      {NAV_LINKS.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          onClick={() => setIsOpen(false)}
-          className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
-        >
-          {link.label}
-        </Link>
-      ))}
-      <button
-        onClick={() => { connect(); setIsOpen(false); }}
-        className="mt-2 w-full p-4 bg-primary text-primary-foreground rounded-xl font-black text-center shadow-lg shadow-primary/20"
-      >
-        {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
-      </button>
-    </div>
-  </div>
-    </nav >
+    </nav>
   );
 }
