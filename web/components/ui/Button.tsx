@@ -21,7 +21,7 @@ export default function Button({
     ...props
 }: ButtonProps) {
     const variants = {
-        primary: 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/40',
+        primary: 'bg-primary text-white hover:bg-primary/95 shadow-xl shadow-primary/20 hover:shadow-primary/30',
         secondary: 'bg-muted text-foreground hover:bg-muted/80 border border-border',
         outline: 'bg-transparent border border-primary/50 text-primary hover:bg-primary/5',
         ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50',
@@ -37,7 +37,7 @@ export default function Button({
     return (
         <button
             className={cn(
-                'inline-flex items-center justify-center gap-2 font-black rounded-2xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none',
+                'inline-flex items-center justify-center gap-2 font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:pointer-events-none',
                 variants[variant],
                 sizes[size],
                 className
@@ -45,12 +45,15 @@ export default function Button({
             disabled={disabled || isLoading}
             {...props}
         >
-            {isLoading && (
+            {isLoading ? (
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+                <>
+                    {leftIcon}
+                    {children}
+                    {rightIcon}
+                </>
             )}
-            {!isLoading && leftIcon}
-            {children}
-            {!isLoading && rightIcon}
         </button>
     );
 }

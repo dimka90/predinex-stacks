@@ -11,9 +11,9 @@ export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) 
     const isCurrentUser = c.isCurrentUser;
     return (
         <div
-            className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 border group ${isCurrentUser
-                ? "bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] scale-[1.02]"
-                : "bg-muted/20 border-transparent hover:bg-muted/40 hover:border-primary/20 hover:scale-[1.01]"
+            className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-500 border group ${isCurrentUser
+                ? "bg-primary/10 border-primary/30 shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]"
+                : "bg-muted/10 border-white/5 hover:bg-muted/30 hover:border-primary/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/5"
                 }`}
         >
             <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) 
             </div>
             <div className="flex items-center gap-2">
                 <Star className={`h-3 w-3 ${isCurrentUser ? "text-primary fill-primary animate-spin-slow" : "text-primary fill-primary"}`} />
-                <span className={`font-bold ${isCurrentUser ? "text-primary text-lg" : "text-primary"}`}>{formatPoints(c.points)} pts</span>
+                <span className={`font-black tracking-tight ${isCurrentUser ? "text-primary text-xl" : "text-primary text-lg"}`}>{formatPoints(c.points)} pts</span>
             </div>
         </div>
     );

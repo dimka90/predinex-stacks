@@ -31,6 +31,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
     return (
         <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
+            <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(79,70,229,0.05),transparent_70%)] opacity-50`} />
             <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -mr-12 -mt-12 opacity-20 group-hover:opacity-40 transition-opacity ${color === 'primary' ? 'bg-primary' : 'bg-accent'}`} />
 
             <div className={`p-3 w-fit rounded-xl border ${colorMap[color]} mb-4`}>

@@ -58,6 +58,13 @@ export const NETWORK_CONFIG = {
   }
 };
 
+export const UI_DESIGN = {
+  GLASS_OPACITY: '0.4',
+  BLUR_STRENGTH: 'xl',
+  ANIMATION_DURATION: 300,
+  BORDER_OPACITY: '0.1',
+} as const;
+
 export const ICON_CLASS = {
   sm: "w-4 h-4",
   md: "w-5 h-5",

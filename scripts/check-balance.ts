@@ -20,8 +20,16 @@ async function checkBalance() {
 
             const data = await response.json() as any;
 
+            const nonceResponse = await fetch(`https://api.mainnet.hiro.so/extended/v1/address/${address}/nonces`);
+            const nonceData = await nonceResponse.json() as any;
+            const nextNonce = nonceData.possible_next_nonce ?? data.nonce;
+
             console.log(`   Balance: ${data.balance} microSTX (${(parseInt(data.balance) / 1000000).toFixed(6)} STX)`);
-            console.log(`   Nonce: ${data.nonce} | Txs: ${data.tx_count}`);
+            console.log(`   On-Chain Nonce: ${data.nonce} | Next Safe Nonce: ${nextNonce}`);
+
+            if (nonceData.detected_missing_nonces && nonceData.detected_missing_nonces.length > 0) {
+                console.log(`   ⚠️  WARNING: Nonce gap detected in mempool! Missing: ${nonceData.detected_missing_nonces.join(', ')}`);
+            }
 
             if (data.balance === '0') {
                 console.log(`   ⚠️  WARNING: Zero balance! Funding required.`);

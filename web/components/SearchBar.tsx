@@ -15,8 +15,17 @@ export default function SearchBar({ value, onChange, placeholder }: Props) {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-background border border-input focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card/40 border border-border focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:bg-card/60 outline-none transition-all placeholder:text-muted-foreground/50 font-medium ring-offset-background focus-visible:ring-2"
             />
+            {value && (
+                <button
+                    onClick={() => onChange('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted/20 rounded-full transition-colors text-muted-foreground/50 hover:text-foreground"
+                    aria-label="Clear search"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </button>
+            )}
         </div>
     );
 }

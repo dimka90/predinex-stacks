@@ -80,9 +80,10 @@ The frontend interacts with Stacks smart contracts using `@stacks/transactions`.
 We use Tailwind CSS for all component styling, leveraging a custom theme that provides a cohesive institutional aesthetic.
 
 **Core Design Principles:**
-- **Glassmorphism**: Extensive use of `backdrop-blur` and semi-transparent backgrounds (`bg-white/10` or `bg-black/10`).
-- **Gradients**: Dynamic background blobs and text gradients (e.g., `bg-gradient-to-r from-primary to-purple-400`).
-- **Institutional Palette**: A mix of deep backgrounds (`bg-background`) and vibrant highlight colors (`text-primary`).
+- **Glassmorphism**: High-fidelity `backdrop-blur-xl`, semi-transparent slate backgrounds (`bg-slate-900/40`), and subtle `border-white/10` for layered depth.
+- **Gradients**: Deep primary radial gradients for background texture and vibrant linear gradients for interactive elements.
+- **Micro-animations**: Specialized `animate-in` effects from `tailwind-animate` for all entrance transitions.
+- **Institutional Palette**: A refined palette of Slate-950 for depth, Primary Indigo for actions, and Emerald/Rose for trading sentiment.
 
 ### Animations
 Animations are implemented using simple CSS transitions for performance:

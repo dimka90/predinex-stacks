@@ -28,14 +28,14 @@ export default function StatItem({
 }: StatItemProps) {
     return (
         <div className={`flex flex-col gap-1 ${className}`}>
-            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-widest flex items-center gap-1.5">
-                {icon}
+            <span className="text-[11px] uppercase font-black text-muted-foreground/50 tracking-[0.1em] flex items-center gap-2">
+                <span className="p-1 rounded bg-primary/10 text-primary/80">{icon}</span>
                 {label}
             </span>
             <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black tracking-tight">{value}</span>
                 {trend && (
-                    <span className={`text-[10px] font-bold ${trend.isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`text-[10px] font-bold ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {trend.isPositive ? '+' : ''}{trend.value}
                     </span>
                 )}

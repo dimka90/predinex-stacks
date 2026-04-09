@@ -1,34 +1,128 @@
 :root {
-  --primary: #6366f1;
+  --primary: #4f46e5;
   --secondary: #a855f7;
   --accent: #f43f5e;
   --background: #0f172a;
   --card: #1e293b;
   --border: rgba(255, 255, 255, 0.1);
+  --slate-950: #020617;
+  --transition-smooth: 200ms ease-in-out;
 }
 
 body {
-  background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+  background: radial-gradient(circle at top right, #1e1b4b, #020617);
   color: #f8fafc;
   min-height: 100vh;
 }
 
-/* Rewards Page Specifics */
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl;
-  transition: all 0.3s ease;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.glass-panel:hover {
-  @apply border-white/20 bg-white/10;
-  transform: translateY(-2px);
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
 }
 
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 font-bold;
+::-webkit-scrollbar-track {
+  background: var(--slate-950);
 }
 
-.btn-primary {
-  @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25;
-}  --transition-smooth: 200ms ease-in-out;
-  --transition-smooth: 200ms ease-in-out;
+::-webkit-scrollbar-thumb {
+  background: var(--card);
+  border-radius: 10px;
+  border: 2px solid var(--slate-950);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::selection {
+  background: rgba(79, 70, 229, 0.2);
+  color: white;
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-[32px] border border-white/10 rounded-2xl shadow-2xl;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-panel:hover {
+    @apply border-white/20 bg-white/10 shadow-primary/5;
+    transform: translateY(-4px);
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-primary to-purple-400 font-black;
+  }
+
+  .btn-primary {
+    @apply px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl hover:shadow-indigo-500/30 active:scale-95 border border-indigo-400/20;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary/40 ring-offset-4 ring-offset-background transition-all;
+  }
+
+  .primary-glow {
+    @apply shadow-[0_0_30px_rgba(79, 70, 229, 0.2)];
+  }
+
+  .institutional-shadow {
+    @apply shadow-[0_20px_50px_rgba(0, 0, 0, 0.3)];
+  }
+
+  .active-scale {
+    @apply active:scale-95 transition-transform;
+  }
+
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-xl border border-white/5 rounded-[2rem] shadow-2xl;
+  }
+
+  .glass-card:hover {
+    @apply bg-card/60 border-white/10;
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

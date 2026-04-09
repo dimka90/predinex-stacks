@@ -1,16 +1,17 @@
 import Link from 'next/link';
 import { Pool } from '../lib/stacks-api';
-import { TrendingUp, Clock, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
 import MarketCardHeader from './ui/MarketCardHeader';
 import ClaimWinningsButton from './ClaimWinningsButton';
 
-export default function MarketCard({ market }: { market: Pool }) {
+export default function MarketCard({ market, index = 0 }: { market: Pool, index?: number }) {
     // In a real app, we would check if the user has a winning bet.
     const canClaim = market.status === 'settled';
     const isVerified = market.isVerified;
+    const isExpiringSoon = market.expiry < 1000; // Mock threshold for demonstration
 
     return (
-        <div className="group block h-full rounded-3xl relative">
+        <div className="group block h-full rounded-3xl relative animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
             <Link
                 href={`/markets/${market.id}`}
                 className="block h-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-3xl"
@@ -21,30 +22,22 @@ export default function MarketCard({ market }: { market: Pool }) {
                     role="article"
                 >
                     {/* Status Badge */}
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <MarketCardHeader id={market.id} status={market.status} />
-                            {isVerified && (
-                                <div className="p-1 bg-blue-500/10 rounded-full" title="Verified Market">
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
-                                </div>
-                            )}
-                        </div>
-                        {market.status === 'active' && (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse-subtle">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                </span>
-                                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
-                            </div>
-                        )}
-                    </div>
+                    <MarketCardHeader id={market.id} status={market.status} isVerified={isVerified} />
 
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                    {market.status === 'active' && (
+                        <div className="absolute top-20 right-8 flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse-subtle">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            </span>
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
+                        </div>
+                    )}
+
+                    <h3 className="text-xl font-black mb-4 group-hover:text-primary transition-colors line-clamp-2 leading-tight tracking-tight">
                         {market.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-8 line-clamp-2 flex-grow leading-relaxed font-medium">
+                    <p className="text-sm text-muted-foreground mb-10 line-clamp-2 flex-grow leading-relaxed font-medium">
                         {market.description}
                     </p>
 
@@ -66,8 +59,8 @@ export default function MarketCard({ market }: { market: Pool }) {
                             >
                                 <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <Clock className="h-3.5 w-3.5 text-accent" />
-                                    <span>Block {market.expiry}</span>
+                                    <Clock className={`h-3.5 w-3.5 ${isExpiringSoon ? 'text-rose-400' : 'text-accent'}`} />
+                                    <span className={isExpiringSoon ? 'text-rose-400' : 'text-accent'}>Block {market.expiry}</span>
                                 </div>
                             </div>
                         </div>
@@ -77,7 +70,7 @@ export default function MarketCard({ market }: { market: Pool }) {
                     </div>
 
                     {/* Subtle gradient overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
             </Link>
 

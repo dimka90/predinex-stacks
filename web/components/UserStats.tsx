@@ -56,10 +56,10 @@ export default function UserStats() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <StatItem
-                    label="Total Points"
-                    value={metrics.points}
+                    label="Points Balance"
+                    value={metrics.points || '0'}
                     icon={<Trophy className="h-4 w-4" />}
-                    trend="+12%"
+                    trend={Number(metrics.points) > 0 ? "+12%" : undefined}
                     isLoading={isLoading}
                 />
                 <StatItem
