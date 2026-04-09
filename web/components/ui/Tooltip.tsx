@@ -31,10 +31,17 @@ export default function Tooltip({
             className="relative inline-block"
             onMouseEnter={() => setIsVisible(true)}
             onMouseLeave={() => setIsVisible(false)}
+            onFocus={() => setIsVisible(true)}
+            onBlur={() => setIsVisible(false)}
+            aria-describedby={isVisible ? "tooltip-content" : undefined}
         >
             {children}
             {isVisible && (
-                <div className={`absolute z-50 px-4 py-2 text-[11px] font-black text-white bg-slate-900/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl shadow-black/50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}>
+                <div
+                    id="tooltip-content"
+                    role="tooltip"
+                    className={`absolute z-50 px-4 py-2 text-[11px] font-black text-white bg-slate-900/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl shadow-black/50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}
+                >
                     {content}
                     {/* Arrow */}
                     <div className={`absolute w-2 h-2 bg-black/90 rotate-45 border-white/10 ${position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1 border-r border-b' :
