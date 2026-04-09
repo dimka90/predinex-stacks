@@ -34,6 +34,16 @@ export default function Tabs({
                     <button
                         key={tab.id}
                         onClick={() => onChange(tab.id)}
+                        onKeyDown={(e) => {
+                            const currentIndex = tabs.findIndex(t => t.id === activeTab);
+                            if (e.key === 'ArrowRight') {
+                                const nextIndex = (currentIndex + 1) % tabs.length;
+                                onChange(tabs[nextIndex].id);
+                            } else if (e.key === 'ArrowLeft') {
+                                const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                                onChange(tabs[prevIndex].id);
+                            }
+                        }}
                         className={`
               flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300
               ${isActive
