@@ -2,6 +2,13 @@
 
 > **Institutional-Grade Decentralized Prediction Markets on Stacks**
 
+## Institutional Design System
+Predinex utilizes a high-fidelity visual language designed for precision and clarity:
+- **Semantic Color Palette**: Deep slates and vibrant primaries for professional data visualization.
+- **Motion Architecture**: Cascading entrance animations and micro-interactions for perceived performance.
+- **Typography**: Heavy-weighted headings (font-black) and uppercase labels for an institutional terminal feel.
+- **Glassmorphism**: Multi-layered backdrop blurs and white/10 borders for depth and modern aesthetics.
+
 ![Status](https://img.shields.io/badge/Status-INSTITUTION_READY-success?style=for-the-badge)
 ![Commits](https://img.shields.io/badge/Project_Lifecycle-80+_Commits_Complete-blue?style=for-the-badge)
  ![Clarity](https://img.shields.io/badge/Language-Clarity-orange?style=flat-square) ![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)
