@@ -45,12 +45,15 @@ export default function Button({
             disabled={disabled || isLoading}
             {...props}
         >
-            {isLoading && (
+            {isLoading ? (
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+                <>
+                    {leftIcon}
+                    {children}
+                    {rightIcon}
+                </>
             )}
-            {!isLoading && leftIcon}
-            {children}
-            {!isLoading && rightIcon}
         </button>
     );
 }
