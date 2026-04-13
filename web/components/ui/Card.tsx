@@ -23,15 +23,15 @@ export default function Card({
     hover = true,
     style
 }: CardProps) {
-    const baseClasses = 'rounded-2xl transition-all duration-300 overflow-hidden';
+    const baseClasses = 'rounded-[2rem] transition-all duration-500 overflow-hidden';
 
     const variantClasses = {
-        glass: 'glass border border-white/10 bg-white/5 backdrop-blur-md',
-        outline: 'border border-border bg-background/50',
-        flat: 'bg-muted/30 border border-transparent',
+        glass: 'glass-card backdrop-blur-2xl bg-black/20 border border-white/5 relative z-10',
+        outline: 'border border-white/10 bg-black/40 relative z-10 backdrop-blur-md shadow-inner',
+        flat: 'bg-black/10 border border-transparent backdrop-blur-sm relative z-10',
     };
 
-    const hoverClasses = hover ? 'hover:border-primary/40 hover-lift' : '';
+    const hoverClasses = hover ? 'hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-1' : '';
 
     return (
         <div
