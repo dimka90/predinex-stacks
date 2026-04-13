@@ -40,7 +40,7 @@ export default function Tooltip({
                 <div
                     id="tooltip-content"
                     role="tooltip"
-                    className={`absolute z-50 px-4 py-2 text-[11px] font-black text-white bg-slate-900/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl shadow-black/50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}
+                    className={`absolute z-50 px-5 py-3 text-[10px] uppercase tracking-[0.2em] font-black text-white bg-black/80 backdrop-blur-[20px] rounded-2xl border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.6)] whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}
                 >
                     {content}
                     {/* Arrow */}
