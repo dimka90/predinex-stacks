@@ -10,12 +10,15 @@ interface LeaderboardRowProps {
 export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) {
     const isCurrentUser = c.isCurrentUser;
     return (
+    return (
         <div
-            className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-500 border group ${isCurrentUser
-                ? "bg-primary/10 border-primary/30 shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]"
-                : "bg-muted/10 border-white/5 hover:bg-muted/30 hover:border-primary/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/5"
+            className={`flex items-center justify-between p-5 rounded-[2rem] transition-all duration-500 border group active:scale-95 relative overflow-hidden ${isCurrentUser
+                ? "bg-gradient-to-r from-primary/20 via-indigo-500/10 to-transparent border-primary/50 shadow-[0_10px_30px_rgba(79,70,229,0.25)] scale-[1.02] z-10"
+                : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-primary/30 hover:scale-[1.02] hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] shadow-inner"
                 }`}
         >
+            {isCurrentUser && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_3s_infinite]" />}
+
             <div className="flex items-center gap-4">
                 <div className="w-8 text-center">
                     <RankBadge rank={c.rank} />
