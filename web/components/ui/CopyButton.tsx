@@ -35,13 +35,14 @@ export default function CopyButton({
     const iconClass = size === 'sm' ? ICON_CLASS.sm : size === 'md' ? ICON_CLASS.md : ICON_CLASS.lg;
 
     return (
+    return (
         <button
             onClick={handleCopy}
-            className={`p-2 hover:bg-muted rounded-lg transition-all active:scale-90 relative ${className} ${copied ? 'text-green-500' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`p-2 hover:bg-white/10 rounded-xl transition-all duration-300 active:scale-75 relative group ${className} ${copied ? 'text-primary' : 'text-muted-foreground/70 hover:text-white'}`}
             title={copied ? "Copied!" : "Copy to clipboard"}
             aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
         >
-            <Icon className={iconClass} />
+            <Icon className={`${iconClass} ${copied ? 'drop-shadow-[0_0_8px_rgba(79,70,229,0.8)] animate-in zoom-in-50 duration-200' : 'group-hover:scale-110 transition-transform'}`} />
         </button>
     );
 }
