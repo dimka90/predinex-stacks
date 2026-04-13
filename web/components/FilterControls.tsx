@@ -24,20 +24,20 @@ export default function FilterControls({
     const categories = ['all', 'Sports', 'Politics', 'Crypto', 'Tech'];
 
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card/30 p-6 rounded-3xl border border-border shadow-sm glass">
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap gap-2 bg-muted/30 p-1.5 rounded-xl w-fit border border-border/50">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-card p-4 lg:p-6 mb-8 mt-2 relative z-10">
+            <div className="flex flex-col xl:flex-row xl:items-center gap-6">
+                <div className="flex flex-wrap gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-2xl w-fit border border-white/5 shadow-inner">
                     {statuses.map(status => (
                         <button
                             key={status}
                             onClick={() => onStatusChange(status)}
-                            className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${selectedStatus === status
-                                ? 'bg-background shadow-lg text-primary scale-105'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedStatus === status
+                                ? 'bg-primary shadow-[0_5px_15px_rgba(79,70,229,0.3)] text-white scale-[1.02] border border-white/10'
+                                : 'text-muted-foreground/70 hover:text-white hover:bg-white/5 border border-transparent'
                                 }`}
                         >
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                            <span className="ml-1.5 opacity-60 text-[10px]">{counts[status] || 0}</span>
+                            {status}
+                            <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${selectedStatus === status ? 'bg-black/20 text-white' : 'bg-white/5 text-muted-foreground/50'}`}>{counts[status] || 0}</span>
                         </button>
                     ))}
                 </div>
@@ -47,9 +47,9 @@ export default function FilterControls({
                         <button
                             key={cat}
                             onClick={() => onCategoryChange(cat)}
-                            className={`px-4 py-1.5 rounded-full border text-xs font-bold transition-all ${selectedCategory === cat
-                                ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
-                                : 'border-border/50 bg-transparent text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary'
+                            className={`px-5 py-2 rounded-full border text-[10px] uppercase font-black tracking-[0.15em] transition-all ${selectedCategory === cat
+                                ? 'bg-primary/20 border-primary/50 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)]'
+                                : 'border-white/5 bg-black/20 text-muted-foreground/50 hover:border-primary/30 hover:bg-primary/5 hover:text-primary backdrop-blur-sm'
                                 }`}
                         >
                             {cat}
@@ -61,13 +61,13 @@ export default function FilterControls({
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => onVerifiedChange(!isVerifiedOnly)}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all font-bold text-sm ${isVerifiedOnly
-                        ? 'bg-blue-500/10 border-blue-500/30 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-                        : 'bg-muted/20 border-transparent text-muted-foreground hover:border-border'
+                    className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl border transition-all font-black text-xs uppercase tracking-widest ${isVerifiedOnly
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.15)] active:scale-95'
+                        : 'bg-black/20 border-white/5 text-muted-foreground/50 hover:border-white/10 hover:bg-white/5 active:scale-95 backdrop-blur-sm'
                         }`}
                 >
-                    <CheckCircle2 className={`h-4 w-4 ${isVerifiedOnly ? 'animate-pulse' : ''}`} />
-                    Verified Only
+                    <CheckCircle2 className={`h-4 w-4 ${isVerifiedOnly ? 'animate-pulse drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]' : 'opacity-50'}`} />
+                    Verified Markets
                 </button>
             </div>
         </div>
