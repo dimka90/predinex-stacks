@@ -13,24 +13,25 @@ interface StatItemProps {
 
 function StatItem({ label, value, icon, trend, isLoading }: StatItemProps) {
     if (isLoading) return (
-        <div className="flex flex-col gap-2 p-5 bg-muted/10 backdrop-blur-sm rounded-xl border border-border/50 animate-pulse">
-            <div className="h-2 w-12 bg-muted rounded mb-2" />
-            <div className="h-8 w-24 bg-muted rounded" />
+        <div className="flex flex-col gap-2 p-5 bg-card/10 backdrop-blur-md rounded-2xl border border-white/5 animate-pulse shadow-inner">
+            <div className="h-2 w-12 bg-white/10 rounded mb-2" />
+            <div className="h-8 w-24 bg-white/10 rounded" />
         </div>
     );
     const formattedValue = label.toLowerCase().includes('points') ? formatPoints(value) : value;
     return (
-        <div className="flex flex-col gap-2 p-5 bg-muted/10 backdrop-blur-sm rounded-xl hover:bg-muted/20 transition-all duration-300 border border-border/50 hover:border-primary/30 group">
-            <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
-                <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
+        <div className="flex flex-col gap-2 p-5 bg-black/20 backdrop-blur-xl rounded-2xl hover:bg-white/5 transition-all duration-500 border border-white/5 hover:border-primary/40 group relative overflow-hidden active:scale-95 shadow-inner hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="flex items-center justify-between relative z-10">
+                <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">{label}</span>
+                <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner group-hover:shadow-[0_0_15px_rgba(79,70,229,0.5)]">
                     {icon}
                 </div>
             </div>
-            <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black tracking-tight">{formattedValue}</span>
+            <div className="flex items-baseline gap-2 relative z-10 mt-1">
+                <span className="text-3xl font-black tracking-tighter tabular-nums drop-shadow-sm">{formattedValue}</span>
                 {trend && (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">
+                    <div className="flex items-center gap-1 text-[9px] font-black tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 group-hover:border-emerald-500/40 transition-colors">
                         <Activity className="h-2 w-2" />
                         {trend}
                     </div>
