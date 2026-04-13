@@ -27,15 +27,15 @@ export default function StatItem({
     className = ''
 }: StatItemProps) {
     return (
-        <div className={`flex flex-col gap-1 ${className}`}>
-            <span className="text-[11px] uppercase font-black text-muted-foreground/50 tracking-[0.1em] flex items-center gap-2">
-                <span className="p-1 rounded bg-primary/10 text-primary/80">{icon}</span>
+        <div className={`flex flex-col gap-2 ${className}`}>
+            <span className="text-[10px] uppercase font-black text-muted-foreground/60 tracking-[0.2em] flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-primary drop-shadow-[0_0_5px_rgba(79,70,229,0.5)]">{icon}</span>
                 {label}
             </span>
-            <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black tracking-tight">{value}</span>
+            <div className="flex items-baseline gap-3">
+                <span className="text-2xl font-black tracking-tighter">{value}</span>
                 {trend && (
-                    <span className={`text-[10px] font-bold ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${trend.isPositive ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]'}`}>
                         {trend.isPositive ? '+' : ''}{trend.value}
                     </span>
                 )}
