@@ -27,19 +27,20 @@ export default function PortfolioOverview() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full md:w-auto">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black text-primary/70 tracking-[0.2em] mb-2">Total Wagered</span>
-                        <span className="text-3xl font-black tracking-tighter">1,250 STX</span>
+                    <div className="flex flex-col group/stat cursor-default">
+                        <span className="text-[10px] uppercase font-black text-primary/70 tracking-[0.2em] mb-2 group-hover/stat:text-primary transition-colors">Total Wagered</span>
+                        <span className="text-3xl font-black tracking-tighter tabular-nums text-white group-hover/stat:scale-105 transition-transform origin-left">1,250 <span className="text-sm">STX</span></span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black text-accent/70 tracking-[0.2em] mb-2">Total Won</span>
-                        <span className="text-3xl font-black tracking-tighter text-accent">840 STX</span>
+                    <div className="flex flex-col group/stat cursor-default">
+                        <span className="text-[10px] uppercase font-black text-accent/70 tracking-[0.2em] mb-2 group-hover/stat:text-accent transition-colors">Total Won</span>
+                        <span className="text-3xl font-black tracking-tighter tabular-nums text-accent group-hover/stat:scale-105 transition-transform origin-left group-hover/stat:drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]">840 <span className="text-sm">STX</span></span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black text-emerald-400/70 tracking-[0.2em] mb-2">Net P/L</span>
-                        <div className="flex items-center gap-2">
+                    <div className="flex flex-col group/stat cursor-default">
+                        <span className="text-[10px] uppercase font-black text-emerald-400/70 tracking-[0.2em] mb-2 group-hover/stat:text-emerald-400 transition-colors">Net P/L</span>
+                        <div className="flex items-center gap-2 group-hover/stat:scale-105 transition-transform origin-left group-hover/stat:drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]">
                             <CircleDollarSign className="w-6 h-6 text-emerald-400" />
-                            <span className="text-3xl font-black text-emerald-400 tracking-tighter">+590 STX</span>
+                            <span className="text-3xl font-black text-emerald-400 tracking-tighter tabular-nums">+590</span>
+                            <span className="text-sm font-black text-emerald-400/80">STX</span>
                         </div>
                     </div>
                 </div>
