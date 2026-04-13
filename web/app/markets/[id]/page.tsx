@@ -84,19 +84,21 @@ export default function PoolDetails({ params }: { params: Promise<{ id: string }
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Market Info */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
+                        <div className="bg-black/40 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10 group">
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 pointer-events-none opacity-50" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -mr-32 -mt-32 group-hover:bg-primary/30 transition-colors duration-1000" />
+                            <div className="absolute -left-1 top-20 w-2 h-16 bg-primary rounded-full blur-[2px] opacity-70" />
 
-                            <div className="flex justify-between items-start mb-8">
-                                <div className="flex items-center gap-3">
-                                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20">
-                                        #POOL-{pool.id}
+                            <div className="flex justify-between items-start mb-10 relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <span className="px-4 py-1.5 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] border border-primary/30 shadow-inner">
+                                        #PROTOCOL-POOL-{pool.id}
                                     </span>
-                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${pool.settled ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-green-500/10 text-green-500 border-green-500/20'}`}>
-                                        {pool.settled ? 'Settled' : 'Active'}
+                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-inner ${pool.settled ? 'bg-zinc-900 text-zinc-500 border-zinc-800' : 'bg-green-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(52,211,153,0.15)]'}`}>
+                                        {pool.settled ? 'Settled' : 'Active Listing'}
                                     </span>
                                 </div>
-                                <button className="p-3 rounded-xl bg-muted/50 hover:bg-muted border border-border/50 transition-all">
+                                <button className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 hover:border-primary/40 border border-white/10 transition-all active:scale-95 text-muted-foreground hover:text-white">
                                     <Share2 size={18} />
                                 </button>
                             </div>
