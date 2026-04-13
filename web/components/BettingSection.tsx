@@ -26,21 +26,22 @@ export default function BettingSection({ pool, poolId }: { pool: Pool, poolId: n
             </div>
 
             <div className="mb-8">
-                <div className="relative">
+                <div className="relative group/input">
                     <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full px-6 py-6 rounded-2xl bg-background border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-black text-2xl tabular-nums placeholder:text-muted-foreground/30"
+                        className="w-full px-6 py-6 rounded-2xl bg-black/20 backdrop-blur-md border border-white/5 group-hover/input:border-white/10 focus:ring-4 focus:ring-primary/20 focus:border-primary focus:bg-primary/5 outline-none transition-all font-black text-3xl tabular-nums placeholder:text-muted-foreground/30 shadow-inner"
                     />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground tracking-widest">STX</span>
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground tracking-[0.2em]">STX MIN.</span>
                 </div>
             </div>
 
-            <button className="w-full py-6 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-primary/30 border border-primary-foreground/10 flex items-center justify-center gap-3 group">
-                CONFIRM TRANSACTION
-                <Zap className="w-4 h-4 fill-white group-hover:scale-125 transition-transform" />
+            <button className="w-full py-6 bg-gradient-to-r from-primary to-indigo-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all shadow-[0_15px_30px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_40px_rgba(79,70,229,0.4)] border border-white/20 flex items-center justify-center gap-3 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                <span className="relative z-10">CONFIRM TRANSACTION</span>
+                <Zap className="w-5 h-5 fill-white group-hover:scale-125 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all relative z-10" />
             </button>
         </div>
     );
