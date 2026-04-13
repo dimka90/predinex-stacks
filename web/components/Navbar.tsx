@@ -9,44 +9,46 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
-      <div className="container mx-auto px-6 h-24 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-black text-2xl hover:text-primary transition-all duration-300 group">
-          <div className="p-1.5 bg-primary text-primary-foreground rounded-lg shadow-lg shadow-primary/20 group-hover:rotate-[15deg] transition-transform duration-500">
-            <Rocket className="h-5 w-5" />
+    <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+      <div className="container mx-auto px-6 h-28 flex items-center justify-between relative">
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+
+        <Link href="/" className="flex items-center gap-3 font-black text-2xl hover:text-primary transition-all duration-500 group relative z-10">
+          <div className="p-2 bg-gradient-to-br from-primary via-indigo-500 to-purple-600 text-white rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group-hover:rotate-[15deg] transition-all duration-500 border border-white/20">
+            <Rocket className="h-5 w-5 drop-shadow-md" />
           </div>
-          <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/70 tracking-tighter">
+          <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/70 tracking-widest uppercase">
             Predinex
           </span>
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex gap-10 items-center">
+        <div className="hidden md:flex gap-12 items-center relative z-10">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="relative text-sm font-black uppercase tracking-widest text-muted-foreground/70 hover:text-primary transition-all px-1 py-2 group/nav"
+              className="relative text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 hover:text-white transition-all py-2 group/nav"
             >
               {link.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover/nav:w-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-primary transition-all duration-500 group-hover/nav:w-full group-hover/nav:shadow-[0_0_10px_rgba(79,70,229,0.8)] rounded-full" />
             </Link>
           ))}
           <button
             onClick={connect}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 border border-primary/50"
+            className="px-8 py-3.5 bg-gradient-to-r from-primary via-indigo-500 to-primary bg-[length:200%_auto] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all duration-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] border border-white/20 hover:bg-[position:right_center]"
           >
-            {isConnected ? 'Connected' : 'Connect Wallet'}
+            {isConnected ? 'Wallet Connected' : 'Connect Protocol'}
           </button>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center gap-4">
+        <div className="md:hidden flex items-center gap-4 relative z-10">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2.5 bg-muted/20 text-muted-foreground hover:text-primary rounded-xl transition-all border border-transparent hover:border-primary/20"
+            className="p-3 bg-white/5 text-muted-foreground hover:text-white rounded-xl transition-all border border-white/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(79,70,229,0.2)] active:scale-95"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
