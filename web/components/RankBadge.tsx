@@ -5,8 +5,8 @@ interface RankBadgeProps {
 }
 
 export default function RankBadge({ rank }: RankBadgeProps) {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500 mx-auto animate-bounce-subtle drop-shadow-[0_0_10px_rgba(234,179,8,0.6)]" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-slate-300 mx-auto animate-in zoom-in duration-500 drop-shadow-[0_0_8px_rgba(203,213,225,0.4)]" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-amber-600 mx-auto animate-in zoom-in duration-500 drop-shadow-[0_0_8px_rgba(217,119,6,0.4)]" />;
-    return <span className="font-black text-muted-foreground/60 font-mono text-sm animate-in fade-in duration-500">{rank}</span>;
+    if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-400 mx-auto animate-bounce-subtle drop-shadow-[0_0_15px_rgba(250,204,21,0.8)] filter brightness-110" />;
+    if (rank === 2) return <Medal className="h-6 w-6 text-slate-200 mx-auto animate-in zoom-in duration-500 drop-shadow-[0_0_12px_rgba(226,232,240,0.6)] filter brightness-110" />;
+    if (rank === 3) return <Medal className="h-6 w-6 text-amber-500 mx-auto animate-in zoom-in duration-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)] filter brightness-110" />;
+    return <span className="font-black text-muted-foreground/60 font-mono text-sm animate-in fade-in duration-500 text-center block tracking-tight">#{rank}</span>;
 }
