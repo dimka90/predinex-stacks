@@ -31,13 +31,15 @@ const AccordionTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline",
+      "flex flex-1 items-center justify-between py-5 font-black uppercase tracking-widest text-sm transition-all hover:text-primary group border-b border-transparent hover:border-white/5",
       className
     )}
     {...(props as any)}
   >
     {children}
-    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+    <div className="p-1 rounded-full bg-white/5 group-hover:bg-primary/10 transition-colors">
+      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-500 text-muted-foreground group-hover:text-primary group-data-[state=open]:rotate-180" />
+    </div>
   </button>
 ))
 AccordionTrigger.displayName = "AccordionTrigger"
