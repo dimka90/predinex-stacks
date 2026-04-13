@@ -30,17 +30,17 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     };
 
     return (
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
-            <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(79,70,229,0.05),transparent_70%)] opacity-50`} />
-            <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -mr-12 -mt-12 opacity-20 group-hover:opacity-40 transition-opacity ${color === 'primary' ? 'bg-primary' : 'bg-accent'}`} />
+        <div className="glass-panel p-6 rounded-[2rem] relative overflow-hidden group hover:border-primary/40 transition-all duration-500 shadow-inner hover:shadow-[0_10px_30px_rgba(0,0,0,0.3)] bg-black/40 backdrop-blur-2xl">
+            <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(79,70,229,0.1),transparent_70%)] opacity-50 pointer-events-none group-hover:opacity-100 transition-opacity duration-700`} />
+            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] -mr-16 -mt-16 opacity-30 group-hover:opacity-60 transition-opacity duration-1000 ${color === 'primary' ? 'bg-primary' : color === 'success' ? 'bg-emerald-500' : 'bg-accent'}`} />
 
-            <div className={`p-3 w-fit rounded-xl border ${colorMap[color]} mb-4`}>
-                {Icon ? <Icon size={20} /> : <div className="w-5 h-5" />}
+            <div className={`p-4 w-fit rounded-2xl border ${colorMap[color]} mb-6 shadow-inner relative z-10`}>
+                {Icon ? <Icon size={20} className="drop-shadow-md" /> : <div className="w-5 h-5" />}
             </div>
 
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-end relative z-10">
                 <div>
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{title}</h3>
+                    <h3 className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-[0.3em] mb-2">{title}</h3>
                     <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-black tracking-tighter">{value}</span>
                         {trend && (
