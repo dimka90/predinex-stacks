@@ -7,10 +7,12 @@ interface TooltipProps {
 }
 
 /**
- * Tooltip - Hover information component
- * @param content The text to display in the tooltip
- * @param children The element that triggers the tooltip
- * @param position Tooltip position relative to children
+ * Tooltip - Hover-dependent absolute portal component contextualizing data nodes.
+ * Explicitly binds `aria-describedby` links and forces 200ms `zoom-in-95` GPU transforms.
+ * 
+ * @param {string} content - Explanatory text injected into the portal container
+ * @param {ReactNode} children - Hover target boundary that controls element visibility tracking
+ * @param {'top'|'bottom'|'left'|'right'} position - Relative coordinate anchor
  */
 export default function Tooltip({
     content,
