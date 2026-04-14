@@ -56,7 +56,7 @@ class ErrorBoundary extends Component<Props, State> {
 
                         <button
                             onClick={this.handleReset}
-                            className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-[0_10px_30px_rgba(220,38,38,0.4)] border border-red-500/50"
+                            className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] active:scale-95 shadow-[0_10px_30px_rgba(220,38,38,0.4)] border border-red-500/50"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Force Restart Terminal
