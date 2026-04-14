@@ -1,6 +1,11 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
 
+/**
+ * ThemeToggle - Hardware-accelerated protocol aesthetic mode switcher.
+ * Encapsulates dedicated 700ms bezier rotational sequences on `Sun`/`Moon` geometries.
+ * Incorporates explicit screen reader switch parameters and focus-visible loop boundaries.
+ */
 const ThemeToggle = () => {
     return (
         <button
