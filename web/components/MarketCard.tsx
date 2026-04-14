@@ -4,6 +4,14 @@ import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
 import MarketCardHeader from './ui/MarketCardHeader';
 import ClaimWinningsButton from './ClaimWinningsButton';
 
+/**
+ * MarketCard - Primary institutional data structure visualizing pool vectors.
+ * Encapsulates dynamic status pulses, glass-morphic backdrop blurs, and hover scaling.
+ * Embedded ARIA structures explicitly link interactive limits for WCAG compliance.
+ * 
+ * @param {Pool} market - Complex generic object defining Stacks pool parameters
+ * @param {number} index - Render iteration index targeting cascading animation delays
+ */
 export default function MarketCard({ market, index = 0 }: { market: Pool, index?: number }) {
     // In a real app, we would check if the user has a winning bet.
     const canClaim = market.status === 'settled';
