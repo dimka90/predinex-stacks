@@ -46,9 +46,12 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-4 relative z-10">
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            aria-label="Toggle navigation menu"
             className="p-3 bg-white/5 text-muted-foreground hover:text-white rounded-xl transition-all border border-white/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(79,70,229,0.2)] active:scale-95"
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
