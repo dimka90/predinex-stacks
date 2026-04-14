@@ -6,6 +6,14 @@ interface Props {
     placeholder?: string;
 }
 
+/**
+ * SearchBar - Globally integrated search directive with accessible interaction schemas.
+ * Includes explicit `search` ARIA roles and keyboard-focused visual bounding vectors.
+ * 
+ * @param {string} value - Current text query in the search node
+ * @param {function} onChange - Emitter for input value mutations
+ * @param {string} placeholder - Optional static ghost string
+ */
 export default function SearchBar({ value, onChange, placeholder }: Props) {
     return (
         <div role="search" aria-label="Global Search" className="relative group focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-background rounded-[1.25rem] transition-all duration-300">
