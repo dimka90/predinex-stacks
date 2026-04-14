@@ -18,8 +18,8 @@ export default function MarketCardHeader({ id, status, isVerified, className }: 
             <div className="flex items-center gap-3">
                 <StatusBadge status={status} />
                 {isVerified && (
-                    <div className="p-1.5 bg-blue-500/10 rounded-xl border border-blue-500/20 shadow-inner group-hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-shadow" title="Verified Protocol Market">
-                        <CheckCircle2 className="h-4 w-4 text-blue-500 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500" />
+                    <div className="p-2 md:p-1.5 bg-blue-500/10 rounded-xl border border-blue-500/20 shadow-inner group-hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-shadow" title="Verified Protocol Market">
+                        <CheckCircle2 className="h-5 w-5 md:h-4 md:w-4 text-blue-500 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500" />
                     </div>
                 )}
             </div>
