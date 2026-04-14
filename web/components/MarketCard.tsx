@@ -14,7 +14,7 @@ export default function MarketCard({ market, index = 0 }: { market: Pool, index?
         <div className="group block h-full rounded-3xl relative animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
             <Link
                 href={`/markets/${market.id}`}
-                className="block h-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-3xl"
+                className="block h-full focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-3xl"
                 aria-label={`View details for market: ${market.title}`}
             >
                 <div
