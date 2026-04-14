@@ -58,7 +58,7 @@ export default function PlatformStats() {
                         </div>
                     </div>
                     {/* Visual flourish */}
-                    <div className={`absolute -bottom-8 -right-8 w-32 h-32 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 ${item.color}`}>
+                    <div className={`absolute -bottom-8 -right-8 w-32 h-32 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:-rotate-12 ${item.color}`}>
                         <item.icon className="w-full h-full" />
                     </div>
                 </Card>
