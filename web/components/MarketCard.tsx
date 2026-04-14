@@ -46,16 +46,18 @@ export default function MarketCard({ market, index = 0 }: { market: Pool, index?
                             <div
                                 className="flex flex-col gap-1 cursor-help"
                                 title="Total 24h trading volume in STX"
+                                aria-label={`Trading volume: ${(market.totalA + market.totalB).toLocaleString()} STX`}
                             >
-                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Volume</span>
+                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Volume</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                                     <span>{(market.totalA + market.totalB).toLocaleString()} STX</span>
                                 </div>
                             </div>
                             <div
                                 className="flex flex-col gap-1 cursor-help"
                                 title={`This market expires at Stacks block height ${market.expiry}`}
+                                aria-label={`Expires at block ${market.expiry}`}
                             >
                                 <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
