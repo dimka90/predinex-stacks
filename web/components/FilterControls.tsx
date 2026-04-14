@@ -11,6 +11,19 @@ export interface FilterControlsProps {
     onCategoryChange: (category: string) => void;
 }
 
+/**
+ * FilterControls - Institutional market segmentation toolkit.
+ * Implements strict accessibility focus rings and 300ms ease-out glass transitions.
+ * Coordinates multidimensional filtering via Category, Status, and Verification graphs.
+ * 
+ * @param {string} selectedStatus - Current market state filter (e.g. 'active')
+ * @param {function} onStatusChange - Handler for updating the state filter
+ * @param {Object} counts - Key-value map defining quantitative distribution across statuses
+ * @param {boolean} isVerifiedOnly - Boolean active flag for Protocol verified restriction
+ * @param {function} onVerifiedChange - Handler for toggling verification requirements
+ * @param {string} selectedCategory - Current active category filter scalar
+ * @param {function} onCategoryChange - Handler for semantic string category updates
+ */
 export default function FilterControls({
     selectedStatus,
     onStatusChange,
