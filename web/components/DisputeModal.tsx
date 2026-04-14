@@ -4,7 +4,7 @@ const DisputeModal = ({ poolId, onClose }: { poolId: number, onClose: () => void
     const [reason, setReason] = useState('');
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-3xl p-4 animate-in fade-in zoom-in-95 duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-3xl p-4 animate-in fade-in zoom-in-95 duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
             <div className="bg-black/60 border border-white/10 w-full max-w-lg rounded-[2.5rem] p-10 shadow-[0_20px_60px_rgba(220,38,38,0.15)] relative overflow-hidden backdrop-blur-md">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600/10 via-red-500 to-red-600/10 shadow-[0_0_20px_rgba(239,68,68,0.8)]" />
                 <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 blur-[60px] rounded-full mix-blend-screen pointer-events-none" />
