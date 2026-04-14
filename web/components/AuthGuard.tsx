@@ -8,9 +8,9 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] p-12 glass-card mx-auto max-w-lg mt-12 text-center relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 blur-[50px] -mt-16 group-hover:bg-primary/20 transition-colors duration-700" />
-        <div className="p-5 bg-card/50 rounded-full border border-white/5 mb-8 shadow-2xl relative z-10 group-hover:scale-110 transition-transform duration-500">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-12 glass-card mx-auto max-w-lg mt-12 text-center relative overflow-hidden group animate-in fade-in zoom-in-95 duration-700 ease-out">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 blur-[50px] -mt-16 group-hover:bg-primary/20 transition-colors duration-700 ease-out" />
+        <div className="p-5 bg-card/50 rounded-full border border-white/5 mb-8 shadow-2xl relative z-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
           <Lock className="w-8 h-8 text-primary/70" />
         </div>
         <h2 className="text-3xl font-black mb-4 tracking-tighter uppercase relative z-10">Terminal Locked</h2>
@@ -25,7 +25,4 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   return <>{children}</>;
-}
-
-return <>{children}</>;
 }
