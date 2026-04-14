@@ -52,7 +52,7 @@ export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilt
                 {hasFilters && (
                     <button
                         onClick={onRetry}
-                        className="mt-10 px-8 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all border border-primary/20 font-black uppercase tracking-[0.2em] text-xs hover:shadow-[0_0_20px_rgba(79,70,229,0.2)] active:scale-95 relative z-10"
+                        className="mt-10 px-8 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all duration-500 ease-out border border-primary/20 font-black uppercase tracking-[0.2em] text-xs hover:shadow-[0_0_20px_rgba(79,70,229,0.2)] active:scale-95 relative z-10"
                     >
                         Reset Protocol Filters
                     </button>
