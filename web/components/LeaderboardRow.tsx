@@ -10,9 +10,8 @@ interface LeaderboardRowProps {
 export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) {
     const isCurrentUser = c.isCurrentUser;
     return (
-    return (
         <div
-            className={`flex items-center justify-between p-5 rounded-[2rem] transition-all duration-500 border group active:scale-95 relative overflow-hidden ${isCurrentUser
+            className={`flex items-center justify-between p-6 md:p-5 rounded-[2rem] transition-all duration-500 border group active:scale-95 relative overflow-hidden ${isCurrentUser
                 ? "bg-gradient-to-r from-primary/20 via-indigo-500/10 to-transparent border-primary/50 shadow-[0_10px_30px_rgba(79,70,229,0.25)] scale-[1.02] z-10"
                 : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-primary/30 hover:scale-[1.02] hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] shadow-inner"
                 }`}
