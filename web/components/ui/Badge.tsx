@@ -9,10 +9,12 @@ interface BadgeProps {
 }
 
 /**
- * Badge - Generic tag component
- * @param children Badge content
- * @param variant Visual style variant
- * @param className Additional CSS classes
+ * Badge - Generic tag array component establishing micro-level data classification.
+ * Optimized with dedicated `duration-300` layout interpolations ensuring jank-free color mapping.
+ * 
+ * @param {ReactNode} children - Core scalar metrics or categorical strings
+ * @param {BadgeVariant} variant - Design system constant dictating semantic color constraints
+ * @param {string} className - Optional tailwind overrides applied to final resolution
  */
 export default function Badge({
     children,
