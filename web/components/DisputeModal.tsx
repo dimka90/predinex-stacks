@@ -16,17 +16,17 @@ const DisputeModal = ({ poolId, onClose }: { poolId: number, onClose: () => void
                 </p>
 
                 <textarea
-                    className="w-full h-40 bg-black/40 border border-white/10 rounded-2xl p-5 text-sm mb-8 focus:ring-2 focus:ring-red-500/30 focus:border-red-500/50 outline-none transition-all font-medium resize-none shadow-inner relative z-10"
+                    className="w-full h-40 bg-black/40 border border-white/10 rounded-2xl p-5 text-sm mb-8 focus-visible:ring-4 focus-visible:ring-red-500/30 focus-visible:border-red-500/50 outline-none transition-all font-medium resize-none shadow-inner relative z-10"
                     placeholder="PROVIDE EVIDENCE OR REASON FOR DISPUTE..."
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                 />
 
                 <div className="flex gap-4 relative z-10">
-                    <button className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-colors active:scale-95 shadow-inner" onClick={onClose}>
+                    <button className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-colors active:scale-95 shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black" onClick={onClose}>
                         Cancel
                     </button>
-                    <button className="flex-1 py-4 bg-red-600/90 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] active:scale-95 border border-red-500/50">
+                    <button className="flex-1 py-4 bg-red-600/90 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] active:scale-95 border border-red-500/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
                         Submit Dispute
                     </button>
                 </div>
