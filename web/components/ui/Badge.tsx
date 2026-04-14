@@ -30,7 +30,7 @@ export default function Badge({
     };
 
     return (
-        <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-colors ${variantClasses[variant]} ${className}`}>
+        <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-colors duration-300 ease-out ${variantClasses[variant]} ${className}`}>
             {children}
         </span>
     );
