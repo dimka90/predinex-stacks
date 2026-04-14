@@ -10,6 +10,15 @@ interface ToastProps {
     onClose: () => void;
 }
 
+/**
+ * Toast - Ephemeral systemic feedback node mapping protocol output boundaries.
+ * Bounded by strict 700ms `cubic-bezier` trajectory coordinates for institutional-grade visual timing.
+ * 
+ * @param {string} message - Primary feedback string emitted from server operations
+ * @param {ToastType} type - Predefined state vector resolving discrete icon and background palettes
+ * @param {number} duration - Temporal constraint triggering component dismount logic
+ * @param {function} onClose - Cleanup handler executed post-animation
+ */
 export default function Toast({
     message,
     type = 'info',
