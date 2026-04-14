@@ -3,6 +3,13 @@ import { ReactNode } from 'react';
 import { Lock } from 'lucide-react';
 import AppKitButton from './AppKitButton';
 
+/**
+ * AuthGuard - Higher Order Component pattern for institutional gateway access.
+ * Secures deep links and transaction panels unless a Stacks AppKit connection is present.
+ * Implements 700ms cubic-bezier transition locking animations.
+ *
+ * @param {ReactNode} children - Authenticated content to render
+ */
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { isConnected } = useWalletConnection();
 
