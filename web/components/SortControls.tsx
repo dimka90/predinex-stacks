@@ -11,7 +11,7 @@ export default function SortControls({ selectedSort, onSortChange }: Props) {
             <select
                 value={selectedSort}
                 onChange={(e) => onSortChange(e.target.value)}
-                className="w-full px-6 py-4 bg-transparent outline-none transition-all font-black text-xs uppercase tracking-[0.2em] appearance-none cursor-pointer pr-12 text-muted-foreground hover:text-white"
+                className="w-full px-6 py-5 md:py-4 min-h-[48px] bg-transparent outline-none transition-all font-black text-xs uppercase tracking-[0.2em] appearance-none cursor-pointer pr-12 text-muted-foreground hover:text-white"
             >
                 <option value="newest" className="bg-slate-900 font-bold">Newest First</option>
                 <option value="ending_soon" className="bg-slate-900 font-bold">Ending Soon</option>
