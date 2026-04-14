@@ -43,6 +43,8 @@ export default function Button({
                 className
             )}
             disabled={disabled || isLoading}
+            aria-disabled={disabled || isLoading}
+            aria-busy={isLoading}
             {...props}
         >
             {isLoading ? (
