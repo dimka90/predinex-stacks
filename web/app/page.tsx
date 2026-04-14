@@ -19,11 +19,12 @@ export default function Home() {
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">
-              Featured <span className="gradient-text">Markets</span>
+            <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter uppercase relative">
+              <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-2 h-8 bg-primary rounded-full drop-shadow-[0_0_8px_rgba(79,70,229,0.8)]" />
+              Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-400 to-purple-400 drop-shadow-sm">Markets</span>
             </h2>
-            <p className="text-muted-foreground max-w-lg">
-              The most active prediction markets on the protocol. Analyze the data and place your bets.
+            <p className="text-muted-foreground/80 max-w-lg font-medium leading-relaxed tracking-wide">
+              The most active prediction markets on the protocol. Analyze the data and execute your strategy.
             </p>
           </div>
           <a

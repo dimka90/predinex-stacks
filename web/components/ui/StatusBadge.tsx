@@ -30,12 +30,12 @@ export default function StatusBadge({ status, className = '', size = 'md' }: Sta
 
     return (
         <span
-            className={`inline-flex items-center gap-1.5 rounded-full font-black tracking-widest uppercase border ${sizeStyles[size]} ${style} ${className}`}
+            className={`inline-flex items-center gap-2 rounded-xl font-black tracking-[0.2em] uppercase border ${sizeStyles[size]} ${style} ${className} shadow-inner bg-opacity-40 backdrop-blur-sm`}
             aria-label={`Market status: ${status}`}
         >
-            <span className={`w-1.5 h-1.5 rounded-full ${normalizedStatus === 'active' ? 'bg-green-400 animate-pulse' :
-                normalizedStatus === 'pending' ? 'bg-yellow-400 animate-pulse' :
-                    normalizedStatus === 'disputed' ? 'bg-orange-400 animate-pulse' :
+            <span className={`w-2 h-2 rounded-full shadow-inner border border-white/20 ${normalizedStatus === 'active' ? 'bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]' :
+                normalizedStatus === 'pending' ? 'bg-yellow-400 animate-pulse shadow-[0_0_8px_rgba(250,204,21,0.8)]' :
+                    normalizedStatus === 'disputed' ? 'bg-orange-400 animate-pulse shadow-[0_0_8px_rgba(251,146,60,0.8)]' :
                         'bg-current opacity-50'
                 }`} />
             {status}

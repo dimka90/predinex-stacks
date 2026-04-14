@@ -7,15 +7,21 @@ const Leaderboard = memo(function Leaderboard() {
   const { contributors, isLoading } = useLeaderboard();
 
   return (
-    <div className="glass-panel rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Trophy className="h-6 w-6 text-yellow-500" />
-          <h2 className="text-2xl font-bold tracking-tight">Top Contributors</h2>
+    <div className="glass-card rounded-[2rem] p-8 relative overflow-hidden group">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 blur-[50px] rounded-full -mr-24 -mt-24 group-hover:bg-yellow-500/10 transition-colors duration-700" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 relative z-10 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20 group-hover:scale-110 transition-transform duration-500">
+            <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black tracking-tighter uppercase mb-1">Top Contributors</h2>
+            <p className="text-[10px] text-muted-foreground/70 uppercase tracking-[0.2em] font-bold">Protocol Elite Ranks</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md cursor-help border border-border/50 hover:bg-muted transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-black/40 px-3 py-1.5 rounded-lg cursor-help border border-white/5 hover:border-white/20 hover:text-white transition-all shadow-inner"
             title="Leaderboard ranks are updated every 60 minutes based on on-chain activity and GitHub contributions."
           >
             Updated Hourly

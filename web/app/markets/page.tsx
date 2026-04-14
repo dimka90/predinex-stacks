@@ -52,14 +52,14 @@ export default function MarketsPage() {
 
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-10 relative flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-3">
-            <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full blur-sm opacity-50" />
-            <h1 className="text-4xl font-black bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent tracking-tighter">
-              Prediction Markets
+        <div className="mb-14 relative flex flex-col md:flex-row md:items-end justify-between gap-8 z-10">
+          <div className="space-y-4">
+            <div className="absolute -left-6 top-0 w-1.5 h-14 bg-primary/80 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)]" />
+            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-br from-white via-white/90 to-primary/50 bg-clip-text text-transparent tracking-tighter uppercase drop-shadow-sm">
+              Terminal Markets
             </h1>
-            <p className="text-muted-foreground text-lg font-medium max-w-2xl leading-relaxed">
-              Experience institutional-grade prediction pools secured by the Stacks blockchain.
+            <p className="text-muted-foreground/80 text-lg font-medium max-w-2xl leading-relaxed tracking-wide">
+              Experience institutional-grade prediction pools secured by the remote Stacks network execution state.
             </p>
           </div>
 

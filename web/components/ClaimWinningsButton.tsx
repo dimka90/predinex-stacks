@@ -51,16 +51,17 @@ export default function ClaimWinningsButton({ poolId, isSettled, userHasWinnings
             <button
                 onClick={handleClaim}
                 disabled={isPending}
-                className="flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-yellow-900/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="flex items-center justify-center gap-3 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_15px_35px_rgba(245,158,11,0.3)] hover:shadow-[0_20px_45px_rgba(245,158,11,0.5)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden border border-white/20"
             >
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
                 {isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin relative z-10" />
                 ) : (
-                    <Coins className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                    <Coins className="w-5 h-5 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all relative z-10" />
                 )}
-                {isPending ? 'Processing...' : 'Claim Winnings'}
+                <span className="relative z-10 text-sm">{isPending ? 'PROCESSING' : 'CLAIM WINNINGS'}</span>
             </button>
-            {error && <p className="text-red-400 text-xs text-center font-medium animate-pulse">{error}</p>}
+            {error && <p className="text-red-400 text-[10px] uppercase font-black tracking-widest text-center mt-1 animate-pulse bg-red-500/10 py-1 rounded-lg border border-red-500/20">{error}</p>}
         </div>
     );
 }

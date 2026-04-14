@@ -27,7 +27,7 @@ export default function Tabs({
     className = ''
 }: TabsProps) {
     return (
-        <div className={`flex items-center gap-1 p-1 bg-muted/30 rounded-xl border border-border w-fit ${className}`}>
+        <div className={`flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner w-fit ${className}`}>
             {tabs.map((tab) => {
                 const isActive = tab.id === activeTab;
                 return (
@@ -45,14 +45,14 @@ export default function Tabs({
                             }
                         }}
                         className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300
+              flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95
               ${isActive
-                                ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                                ? 'bg-primary text-white shadow-[0_5px_20px_rgba(79,70,229,0.4)] scale-[1.02] border border-white/10'
+                                : 'text-muted-foreground/60 hover:text-white hover:bg-white/5 border border-transparent'
                             }
             `}
                     >
-                        {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
+                        {tab.icon && <span className={`w-4 h-4 ${isActive ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : ''}`}>{tab.icon}</span>}
                         {tab.label}
                     </button>
                 );

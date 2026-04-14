@@ -2,11 +2,14 @@ import { HelpCircle, Code, Zap, Package, ChevronRight } from "lucide-react";
 
 export default function CampaignRules() {
     return (
-        <div className="glass-panel rounded-3xl p-8 border-primary/20 primary-glow relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16 animate-pulse" />
+        <div className="glass-panel bg-black/40 backdrop-blur-[40px] rounded-[2.5rem] p-10 border border-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 pointer-events-none opacity-50" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[60px] -mr-16 -mt-16 animate-pulse group-hover:bg-primary/30 transition-colors duration-1000" />
 
-            <h3 className="text-xl font-black mb-8 flex items-center gap-3">
-                <HelpCircle className="h-6 w-6 text-primary" />
+            <h3 className="text-2xl font-black mb-10 flex items-center gap-3 relative z-10 tracking-tight uppercase">
+                <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 shadow-inner">
+                    <HelpCircle className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(79,70,229,0.8)]" />
+                </div>
                 Campaign Guidelines
             </h3>
 

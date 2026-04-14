@@ -15,16 +15,17 @@ export default function RankingsPage() {
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative z-10">
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <Award size={16} className="text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Hall of Fame</span>
+                        <div className="flex items-center gap-3 bg-primary/10 w-fit px-4 py-2 rounded-xl border border-primary/20">
+                            <Award size={14} className="text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Hall of Fame</span>
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-tight">
-                            Global <span className="text-primary italic">Rankings</span>
+                        <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-none relative">
+                            <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-2 h-12 bg-primary rounded-full drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] opacity-60" />
+                            Global <span className="text-transparent bg-clip-text bg-gradient-to-br from-primary via-indigo-400 to-primary drop-shadow-sm italic">Rankings</span>
                         </h1>
-                        <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                        <p className="text-lg text-muted-foreground/80 max-w-2xl leading-relaxed font-medium">
                             Track the elite predictors securing the Predinex network. Performance is verified on-chain via Stacks.
                         </p>
                     </div>

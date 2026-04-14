@@ -8,22 +8,22 @@ interface Props {
 
 export default function SearchBar({ value, onChange, placeholder }: Props) {
     return (
-        <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative group focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-background rounded-[1.25rem] transition-all duration-300">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
             <input
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card/40 border border-border focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:bg-card/60 outline-none transition-all placeholder:text-muted-foreground/50 font-medium ring-offset-background focus-visible:ring-2"
+                className="w-full pl-12 pr-12 py-4 rounded-[1.25rem] bg-black/20 backdrop-blur-md border border-white/5 hover:border-white/10 focus:border-primary/50 focus:bg-primary/5 outline-none transition-all placeholder:text-muted-foreground/40 font-bold text-sm shadow-inner"
             />
             {value && (
                 <button
                     onClick={() => onChange('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted/20 rounded-full transition-colors text-muted-foreground/50 hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl transition-all text-muted-foreground/50 hover:text-white active:scale-90"
                     aria-label="Clear search"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                 </button>
             )}
         </div>

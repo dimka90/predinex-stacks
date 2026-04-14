@@ -39,23 +39,23 @@ export default function Dashboard() {
 
             <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 relative z-10">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <LayoutDashboard size={16} className="text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Terminal v2.0</span>
+                        <div className="flex items-center gap-3 bg-primary/10 w-fit px-4 py-2 rounded-xl border border-primary/20 shadow-inner mb-3">
+                            <LayoutDashboard size={14} className="text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Terminal v2.0</span>
                         </div>
-                        <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-foreground via-foreground/80 to-primary bg-clip-text text-transparent">
+                        <h1 className="text-6xl font-black tracking-tighter bg-gradient-to-br from-white via-white/80 to-primary/40 bg-clip-text text-transparent uppercase drop-shadow-sm">
                             Account Overview
                         </h1>
                     </div>
-                    <div className="flex items-center gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl backdrop-blur-sm">
-                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
-                            <TrendingUp size={20} className="text-primary" />
+                    <div className="flex items-center gap-5 bg-black/40 border border-white/5 p-4 pr-10 rounded-[2rem] backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-indigo-500/10 flex items-center justify-center border border-primary/30 shadow-inner">
+                            <TrendingUp size={24} className="text-primary drop-shadow-[0_0_8px_rgba(79,70,229,0.8)]" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Win Rate</span>
-                            <span className="text-lg font-black">{stats.winRate.toFixed(1)}%</span>
+                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] block">Win Rate</span>
+                            <span className="text-2xl font-black">{stats.winRate.toFixed(1)}%</span>
                         </div>
                     </div>
                 </div>

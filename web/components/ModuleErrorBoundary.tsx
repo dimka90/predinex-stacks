@@ -32,19 +32,23 @@ class ModuleErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="glass-panel p-6 rounded-xl border-red-500/20 bg-red-500/5 flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="text-red-500 font-bold flex items-center gap-2">
-                        Failed to load {this.props.moduleName || 'component'}
+                <div className="glass-panel p-8 rounded-3xl border-red-500/20 bg-red-950/20 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in duration-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[40px] -mr-16 -mt-16" />
+                    <div className="p-4 bg-red-500/10 rounded-full text-red-500/80 mb-2">
+                        <RefreshCcw className="h-6 w-6" />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        A small technical issue occurred within this section.
+                    <div className="text-red-400 font-black tracking-widest uppercase text-sm flex items-center gap-2">
+                        Module Integrity Failure: {this.props.moduleName || 'Component'}
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground/70 max-w-xs">
+                        A technical anomaly prevented this module from rendering correctly.
                     </p>
                     <button
                         onClick={this.handleReset}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 text-xs font-bold rounded-lg hover:bg-red-500/20 transition-colors"
+                        className="flex items-center gap-3 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-[0.2em] rounded-xl transition-all active:scale-95 group relative z-10"
                     >
-                        <RefreshCcw className="h-3 w-3" />
-                        Try Again
+                        <RefreshCcw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
+                        Reboot Module
                     </button>
                 </div>
             );

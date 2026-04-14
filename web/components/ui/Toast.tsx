@@ -36,11 +36,11 @@ export default function Toast({
     };
 
     const bgClasses = {
-        success: 'bg-green-500/10 border-green-500/20 text-green-500',
-        error: 'bg-red-500/10 border-red-500/20 text-red-500',
-        info: 'bg-primary/10 border-primary/20 text-primary font-bold',
-        warning: 'bg-orange-500/10 border-orange-500/20 text-orange-500',
-        loading: 'bg-muted/30 border-primary/20 text-foreground',
+        success: 'bg-green-500/10 border-green-500/30 text-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.15)]',
+        error: 'bg-red-500/10 border-red-500/30 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.15)]',
+        info: 'bg-primary/20 border-primary/30 text-primary font-black tracking-widest uppercase shadow-[0_0_20px_rgba(79,70,229,0.2)]',
+        warning: 'bg-orange-500/10 border-orange-500/30 text-amber-500 shadow-[0_0_20px_rgba(249,115,22,0.15)]',
+        loading: 'bg-black/60 border-primary/40 text-white shadow-[0_0_20px_rgba(0,0,0,0.5)]',
     };
 
     return (

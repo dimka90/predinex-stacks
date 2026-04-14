@@ -14,18 +14,19 @@ interface MarketCardHeaderProps {
  */
 export default function MarketCardHeader({ id, status, isVerified, className }: MarketCardHeaderProps) {
     return (
-        <div className={`flex justify-between items-center mb-8 ${className || ''}`}>
-            <div className="flex items-center gap-2">
+        <div className={`flex justify-between items-center mb-6 relative z-10 ${className || ''}`}>
+            <div className="flex items-center gap-3">
                 <StatusBadge status={status} />
                 {isVerified && (
-                    <div className="p-1 bg-blue-500/10 rounded-full" title="Verified Market">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
+                    <div className="p-1.5 bg-blue-500/10 rounded-xl border border-blue-500/20 shadow-inner group-hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-shadow" title="Verified Protocol Market">
+                        <CheckCircle2 className="h-4 w-4 text-blue-500 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500" />
                     </div>
                 )}
             </div>
-            <span className="text-[9px] text-muted-foreground font-mono font-black uppercase tracking-widest bg-muted/20 px-2.5 py-1 rounded-lg border border-border/50">
+            <span className="text-[10px] text-muted-foreground/60 font-mono font-black uppercase tracking-[0.2em] bg-black/40 px-3 py-1.5 rounded-xl border border-white/5 shadow-inner">
                 #POOL-{id}
             </span>
+
         </div>
     );
 }
