@@ -6,14 +6,14 @@ export default function Footer() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-50 pointer-events-none" aria-hidden="true" />
       <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-muted-foreground relative z-10">
         <p className="text-[9px] font-black uppercase tracking-[0.3em] order-2 md:order-1 opacity-50">&copy; 2026 Predinex Institutional. Built on Stacks Blockchain.</p>
-        <div className="flex items-center gap-8 order-1 md:order-2 bg-white/5 px-8 py-3 rounded-2xl border border-white/5 shadow-inner">
-          <a href="#" className="hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="Twitter">
+        <div className="flex items-center gap-6 md:gap-8 order-1 md:order-2 bg-white/5 px-6 md:px-8 py-4 md:py-3 rounded-3xl md:rounded-2xl border border-white/5 shadow-inner w-full md:w-auto justify-center">
+          <a href="#" className="p-2 hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="Twitter">
             <Twitter className="w-5 h-5" />
           </a>
-          <a href="#" className="hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="Discord">
+          <a href="#" className="p-2 hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="Discord">
             <MessageCircle className="w-5 h-5" />
           </a>
-          <a href="#" className="hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="GitHub">
+          <a href="#" className="p-2 hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="GitHub">
             <Github className="w-5 h-5" />
           </a>
           <div className="w-[1px] h-6 bg-white/10 mx-2" />
