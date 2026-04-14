@@ -57,14 +57,14 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu Content */}
-      <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="flex flex-col p-6 gap-4">
+      <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="flex flex-col p-6 gap-6">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+              className="text-lg font-bold py-5 px-6 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all active:scale-[0.98] border border-transparent hover:border-primary/20"
             >
               {link.label}
             </Link>
