@@ -50,7 +50,7 @@ export default function Tabs({
                             }
                         }}
                         className={`
-              flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95
+              flex items-center gap-2.5 px-6 py-4 md:py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 min-h-[48px]
               ${isActive
                                 ? 'bg-primary text-white shadow-[0_5px_20px_rgba(79,70,229,0.4)] scale-[1.02] border border-white/10'
                                 : 'text-muted-foreground/60 hover:text-white hover:bg-white/5 border border-transparent'
