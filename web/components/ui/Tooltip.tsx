@@ -33,7 +33,9 @@ export default function Tooltip({
             onMouseLeave={() => setIsVisible(false)}
             onFocus={() => setIsVisible(true)}
             onBlur={() => setIsVisible(false)}
+            tabIndex={0}
             aria-describedby={isVisible ? "tooltip-content" : undefined}
+            role="doc-tip"
         >
             {children}
             {isVisible && (
