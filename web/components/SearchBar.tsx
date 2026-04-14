@@ -16,7 +16,7 @@ export default function SearchBar({ value, onChange, placeholder }: Props) {
                 aria-label={placeholder || "Search input"}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-12 pr-12 py-5 md:py-4 min-h-[48px] rounded-[1.25rem] bg-black/20 backdrop-blur-md border border-white/5 hover:border-white/10 focus:border-primary/50 focus:bg-primary/5 outline-none transition-all placeholder:text-muted-foreground/40 font-bold text-sm shadow-inner"
+                className="w-full pl-12 pr-12 py-5 md:py-4 min-h-[48px] rounded-[1.25rem] bg-black/20 backdrop-blur-md border border-white/5 hover:border-white/10 focus-visible:border-primary/50 focus-visible:bg-primary/5 focus-visible:ring-1 focus-visible:ring-primary/30 outline-none transition-all placeholder:text-muted-foreground/40 font-bold text-sm shadow-inner"
             />
             {value && (
                 <button
