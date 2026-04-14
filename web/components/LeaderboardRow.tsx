@@ -7,6 +7,12 @@ interface LeaderboardRowProps {
     contributor: Contributor;
 }
 
+/**
+ * LeaderboardRow - Visual list element documenting protocol contributor metrics.
+ * Configured with dynamic background tracking (`shimmer`) for authenticated nodes.
+ *
+ * @param {Contributor} contributor - Profile data vector including ranking arrays and point hashes
+ */
 export default function LeaderboardRow({ contributor: c }: LeaderboardRowProps) {
     const isCurrentUser = c.isCurrentUser;
     return (
