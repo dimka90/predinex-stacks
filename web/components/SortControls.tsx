@@ -5,6 +5,13 @@ interface Props {
 
 import { ChevronDown } from 'lucide-react';
 
+/**
+ * SortControls - High-fidelity temporal and volumetric sorting primitive.
+ * Maps native select parameters into institutional glass layers and dynamic pointer geometries.
+ * 
+ * @param {string} selectedSort - Active sorting directive configuration string
+ * @param {function} onSortChange - Callback injected upon user dropdown selection event
+ */
 export default function SortControls({ selectedSort, onSortChange }: Props) {
     return (
         <div className="relative w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-black group shadow-inner">
