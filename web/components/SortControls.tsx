@@ -7,11 +7,11 @@ import { ChevronDown } from 'lucide-react';
 
 export default function SortControls({ selectedSort, onSortChange }: Props) {
     return (
-        <div className="relative w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/40 group shadow-inner">
+        <div className="relative w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-black group shadow-inner">
             <select
                 value={selectedSort}
                 onChange={(e) => onSortChange(e.target.value)}
-                className="w-full px-6 py-5 md:py-4 min-h-[48px] bg-transparent outline-none transition-all font-black text-xs uppercase tracking-[0.2em] appearance-none cursor-pointer pr-12 text-muted-foreground hover:text-white"
+                className="w-full px-6 py-5 md:py-4 min-h-[48px] bg-transparent outline-none focus-visible:outline-none transition-all font-black text-xs uppercase tracking-[0.2em] appearance-none cursor-pointer pr-12 text-muted-foreground hover:text-white"
             >
                 <option value="newest" className="bg-slate-900 font-bold">Newest First</option>
                 <option value="ending_soon" className="bg-slate-900 font-bold">Ending Soon</option>
