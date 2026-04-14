@@ -16,12 +16,12 @@ export default function SearchBar({ value, onChange, placeholder }: Props) {
                 aria-label={placeholder || "Search input"}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-12 pr-12 py-4 rounded-[1.25rem] bg-black/20 backdrop-blur-md border border-white/5 hover:border-white/10 focus:border-primary/50 focus:bg-primary/5 outline-none transition-all placeholder:text-muted-foreground/40 font-bold text-sm shadow-inner"
+                className="w-full pl-12 pr-12 py-5 md:py-4 min-h-[48px] rounded-[1.25rem] bg-black/20 backdrop-blur-md border border-white/5 hover:border-white/10 focus:border-primary/50 focus:bg-primary/5 outline-none transition-all placeholder:text-muted-foreground/40 font-bold text-sm shadow-inner"
             />
             {value && (
                 <button
                     onClick={() => onChange('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl transition-all text-muted-foreground/50 hover:text-white active:scale-90"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-3 md:p-2 hover:bg-white/10 rounded-xl transition-all text-muted-foreground/50 hover:text-white active:scale-90"
                     aria-label="Clear search"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
