@@ -31,7 +31,7 @@ export default function FilterControls({
                         <button
                             key={status}
                             onClick={() => onStatusChange(status)}
-                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedStatus === status
+                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ease-out ${selectedStatus === status
                                 ? 'bg-primary shadow-[0_5px_15px_rgba(79,70,229,0.3)] text-white scale-[1.02] border border-white/10'
                                 : 'text-muted-foreground/70 hover:text-white hover:bg-white/5 border border-transparent'
                                 }`}
@@ -47,7 +47,7 @@ export default function FilterControls({
                         <button
                             key={cat}
                             onClick={() => onCategoryChange(cat)}
-                            className={`px-5 py-2 rounded-full border text-[10px] uppercase font-black tracking-[0.15em] transition-all ${selectedCategory === cat
+                            className={`px-5 py-2 rounded-full border text-[10px] uppercase font-black tracking-[0.15em] transition-all duration-300 ease-out ${selectedCategory === cat
                                 ? 'bg-primary/20 border-primary/50 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)]'
                                 : 'border-white/5 bg-black/20 text-muted-foreground/50 hover:border-primary/30 hover:bg-primary/5 hover:text-primary backdrop-blur-sm'
                                 }`}
@@ -61,7 +61,7 @@ export default function FilterControls({
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => onVerifiedChange(!isVerifiedOnly)}
-                    className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl border transition-all font-black text-xs uppercase tracking-widest ${isVerifiedOnly
+                    className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl border transition-all duration-300 ease-out font-black text-xs uppercase tracking-widest ${isVerifiedOnly
                         ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.15)] active:scale-95'
                         : 'bg-black/20 border-white/5 text-muted-foreground/50 hover:border-white/10 hover:bg-white/5 active:scale-95 backdrop-blur-sm'
                         }`}
