@@ -27,12 +27,17 @@ export default function Tabs({
     className = ''
 }: TabsProps) {
     return (
-        <div className={`flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner w-fit ${className}`}>
+        <div role="tablist" aria-orientation="horizontal" aria-label="Content Tabs" className={`flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner w-fit ${className}`}>
             {tabs.map((tab) => {
                 const isActive = tab.id === activeTab;
                 return (
                     <button
                         key={tab.id}
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`panel-${tab.id}`}
+                        id={`tab-${tab.id}`}
+                        tabIndex={isActive ? 0 : -1}
                         onClick={() => onChange(tab.id)}
                         onKeyDown={(e) => {
                             const currentIndex = tabs.findIndex(t => t.id === activeTab);
