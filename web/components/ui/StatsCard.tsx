@@ -32,7 +32,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     return (
         <div role="group" aria-label={`${title} Statistics`} className="glass-panel p-6 rounded-[2rem] relative overflow-hidden group hover:border-primary/40 transition-all duration-500 shadow-inner hover:shadow-[0_10px_30px_rgba(0,0,0,0.3)] bg-black/40 backdrop-blur-2xl">
             <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(79,70,229,0.1),transparent_70%)] opacity-50 pointer-events-none group-hover:opacity-100 transition-opacity duration-700`} />
-            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] -mr-16 -mt-16 opacity-30 group-hover:opacity-60 transition-opacity duration-1000 ${color === 'primary' ? 'bg-primary' : color === 'success' ? 'bg-emerald-500' : 'bg-accent'}`} />
+            <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] -mr-16 -mt-16 opacity-30 group-hover:opacity-60 transition-opacity duration-1000 ${color === 'primary' ? 'bg-primary' : color === 'success' ? 'bg-emerald-500' : 'bg-accent'}`} />
 
             <div className={`p-4 w-fit rounded-2xl border ${colorMap[color]} mb-6 shadow-inner relative z-10`}>
                 {Icon ? <Icon size={20} className="drop-shadow-md" /> : <div className="w-5 h-5" />}
