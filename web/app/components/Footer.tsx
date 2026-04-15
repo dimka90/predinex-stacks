@@ -24,8 +24,9 @@ const legalLinks = [
 
 export default function Footer() {
     return (
-        <footer className="py-16 border-t border-white/10 glass-panel !rounded-none !border-x-0 !border-b-0">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <footer className="py-16 border-t border-white/10 glass-panel !rounded-none !border-x-0 !border-b-0 relative overflow-hidden z-10 mt-auto">
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[400px] bg-primary/10 blur-[150px] pointer-events-none rounded-t-full mix-blend-screen" aria-hidden="true" />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                     {/* Brand */}
                     <div className="md:col-span-1">
