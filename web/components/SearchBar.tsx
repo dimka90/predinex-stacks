@@ -16,7 +16,7 @@ interface Props {
  */
 export default function SearchBar({ value, onChange, placeholder }: Props) {
     return (
-        <div role="search" aria-label="Global Search" className="relative group focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-background rounded-[1.25rem] transition-all duration-300">
+        <div role="search" aria-label="Global Search" aria-controls="market-grid-results" className="relative group focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-background rounded-[1.25rem] transition-all duration-300">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" aria-hidden="true" />
             <input
                 type="search"
