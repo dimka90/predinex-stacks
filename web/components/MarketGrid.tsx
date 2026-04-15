@@ -15,8 +15,11 @@ interface Props {
 export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilters }: Props) {
     if (isLoading) {
         return (
-            <div className="flex justify-center py-20">
-                <Spinner className="h-8 w-8" />
+            <div className="flex flex-col items-center justify-center py-32 glass-panel rounded-[2.5rem] border border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] -mr-16 -mt-16 pointer-events-none" />
+                <Spinner className="h-8 w-8 text-primary drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] relative z-10" />
+                <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/70 relative z-10">Querying Blockchain state...</p>
+                <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-full animate-[shimmer_2s_infinite]" />
             </div>
         );
     }
