@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-50 pointer-events-none" aria-hidden="true" />
       <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-muted-foreground relative z-10">
         <p className="text-[9px] font-black uppercase tracking-[0.3em] order-2 md:order-1 opacity-50">&copy; 2026 Predinex Institutional. Built on Stacks Blockchain.</p>
-        <div className="flex items-center gap-6 md:gap-8 order-1 md:order-2 bg-white/5 px-6 md:px-8 py-4 md:py-3 rounded-3xl md:rounded-2xl border border-white/5 shadow-inner w-full md:w-auto justify-center">
+        <div className="flex items-center justify-center gap-6 md:gap-8 order-1 md:order-2 bg-white/5 px-6 md:px-8 py-4 md:py-3 rounded-3xl md:rounded-2xl border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.5)] w-full md:w-auto">
           <a href="#" className="p-2 hover:text-primary transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] active:scale-90" aria-label="Twitter">
             <Twitter className="w-5 h-5" />
           </a>
