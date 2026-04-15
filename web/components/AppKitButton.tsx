@@ -20,7 +20,7 @@ export default function AppKitButton({ className, label = 'Connect Wallet' }: Ap
   if (!mounted) {
     return (
       <button
-        className={`flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm ${className}`}
+        className={`flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full border border-primary/20 transition-colors font-medium text-sm w-full md:w-auto min-h-[48px] shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${className}`}
         disabled
       >
         <Wallet className="w-4 h-4" />
