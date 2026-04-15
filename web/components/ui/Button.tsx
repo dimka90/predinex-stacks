@@ -37,7 +37,7 @@ export default function Button({
     return (
         <button
             className={cn(
-                'inline-flex items-center justify-center gap-3 font-black uppercase rounded-[1.25rem] transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:pointer-events-none',
+                'inline-flex items-center justify-center gap-3 font-black uppercase rounded-[1.25rem] transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black',
                 variants[variant],
                 sizes[size],
                 className
