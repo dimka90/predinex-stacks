@@ -19,7 +19,7 @@ export default function Pagination({ pagination, onPageChange }: Props) {
                     Prev
                 </button>
             </Tooltip>
-            <span className="px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] flex items-center bg-primary/10 rounded-xl border border-primary/20 shadow-[0_0_15px_rgba(79,70,229,0.1)]">
+            <span role="status" aria-live="polite" aria-current="page" className="px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] flex items-center bg-primary/10 rounded-xl border border-primary/20 shadow-[0_0_15px_rgba(79,70,229,0.1)]">
                 Page {pagination.currentPage} / {pagination.totalPages}
             </span>
             <Tooltip content="Next Page" position="top">
