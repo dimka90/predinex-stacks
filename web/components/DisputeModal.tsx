@@ -21,8 +21,16 @@ const DisputeModal = ({ poolId, onClose }: { poolId: number, onClose: () => void
                     value={reason}
                     maxLength={500}
                     aria-invalid={reason.length > 0 && reason.length < 10}
+                    aria-required="true"
+                    aria-errormessage={reason.length > 0 && reason.length < 10 ? "At least 10 characters required." : undefined}
                     onChange={(e) => setReason(e.target.value)}
                 />
+
+                {reason.length > 0 && reason.length < 10 && (
+                    <p className="text-red-400 text-[10px] uppercase tracking-widest font-black mt-[-1.5rem] mb-6 relative z-10 px-2 animate-pulse bg-red-500/10 py-1 rounded-lg border border-red-500/20 text-center">
+                        Validation failed: Minimum 10 characters required.
+                    </p>
+                )}
 
                 <div className="flex gap-4 relative z-10">
                     <button className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-colors active:scale-95 shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black" onClick={onClose}>
