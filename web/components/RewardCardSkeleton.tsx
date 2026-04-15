@@ -1,7 +1,7 @@
 export default function RewardCardSkeleton() {
     return (
         <div className="glass-card p-8 relative overflow-hidden animate-pulse">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
             <div className="flex items-center gap-4 mb-8 relative z-10">
                 <div className="h-10 w-10 bg-slate-800/80 rounded-xl" />
                 <div className="h-8 w-48 bg-slate-800/80 rounded-lg" />
