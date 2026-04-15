@@ -4,9 +4,9 @@ export default function MarketCardSkeleton() {
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
 
             {/* Status Badge Skeleton */}
-            <div className="flex justify-between items-center mb-8 relative z-10">
-                <div className="h-8 w-24 bg-white/5 rounded-xl" />
-                <div className="h-6 w-20 bg-white/5 rounded-xl" />
+            <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5 relative z-10">
+                <div className="h-8 w-24 bg-white/5 rounded-xl shadow-inner" />
+                <div className="h-6 w-20 bg-white/5 rounded-xl shadow-inner" />
             </div>
 
             {/* Title Skeleton */}
