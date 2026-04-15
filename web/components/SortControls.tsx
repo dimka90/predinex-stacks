@@ -14,7 +14,7 @@ import { ChevronDown } from 'lucide-react';
  */
 export default function SortControls({ selectedSort, onSortChange }: Props) {
     return (
-        <div className="relative w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-black group shadow-inner">
+        <div className="relative w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-black group shadow-inner">
             <select
                 value={selectedSort}
                 onChange={(e) => onSortChange(e.target.value)}
