@@ -32,7 +32,7 @@ export default function PlatformStats() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="h-24 bg-card/20 animate-pulse rounded-2xl border border-white/5 relative overflow-hidden shadow-inner">
-                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                     </div>
                 ))}
             </div>
