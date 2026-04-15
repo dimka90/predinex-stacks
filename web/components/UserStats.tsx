@@ -45,7 +45,7 @@ export default function UserStats() {
     const { metrics, isLoading } = useMetrics();
 
     return (
-        <div className="glass-panel rounded-2xl p-8 h-full relative overflow-hidden group">
+        <div className="glass-panel rounded-[2.5rem] p-8 md:p-10 h-full relative overflow-hidden group border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-500" />
 
             <h3 className="text-xl font-black mb-6 flex items-center gap-3">
