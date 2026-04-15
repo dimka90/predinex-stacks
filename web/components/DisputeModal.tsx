@@ -16,9 +16,11 @@ const DisputeModal = ({ poolId, onClose }: { poolId: number, onClose: () => void
                 </p>
 
                 <textarea
-                    className="w-full h-40 bg-black/40 border border-white/10 rounded-2xl p-5 text-sm mb-8 focus-visible:ring-4 focus-visible:ring-red-500/30 focus-visible:border-red-500/50 outline-none transition-all font-medium resize-none shadow-inner relative z-10"
+                    className={`w-full h-40 bg-black/40 border ${reason.length > 0 && reason.length < 10 ? 'border-red-500' : 'border-white/10'} rounded-2xl p-5 text-sm mb-8 focus-visible:ring-4 focus-visible:ring-red-500/30 focus-visible:border-red-500/50 outline-none transition-all font-medium resize-none shadow-inner relative z-10`}
                     placeholder="PROVIDE EVIDENCE OR REASON FOR DISPUTE..."
                     value={reason}
+                    maxLength={500}
+                    aria-invalid={reason.length > 0 && reason.length < 10}
                     onChange={(e) => setReason(e.target.value)}
                 />
 
