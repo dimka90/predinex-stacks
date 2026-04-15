@@ -26,7 +26,7 @@ export default function MarketCard({ market, index = 0 }: { market: Pool, index?
                 aria-label={`View details for market: ${market.title}`}
             >
                 <div
-                    className="p-8 rounded-[2rem] border border-white/5 bg-black/20 backdrop-blur-2xl hover:bg-black/40 hover:border-primary/40 transition-all duration-500 h-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.15)] relative overflow-hidden group/card"
+                    className="p-8 rounded-[2rem] border border-white/5 bg-black/20 backdrop-blur-2xl hover:bg-black/40 hover:border-primary/40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] h-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.15)] relative overflow-hidden group/card"
                     role="article"
                 >
                     {/* Status Badge */}
