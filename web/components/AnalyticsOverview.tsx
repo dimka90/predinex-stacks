@@ -2,7 +2,7 @@ import React from 'react';
 
 const AnalyticsOverview = () => {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 relative z-10">
             <div className="glass-card p-6 rounded-3xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <h3 className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.2em] font-black mb-2 relative z-10">Total Volume</h3>
