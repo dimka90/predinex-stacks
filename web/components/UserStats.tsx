@@ -92,7 +92,10 @@ export default function UserStats() {
             </div>
 
             {isLoading ? (
-                <div className="h-32 w-full bg-muted/10 rounded-xl animate-pulse" />
+                <div className="h-32 w-full bg-black/20 backdrop-blur-md rounded-[1.5rem] border border-white/5 relative overflow-hidden shadow-inner flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    <div className="w-16 h-16 rounded-full border-2 border-white/5 animate-pulse" />
+                </div>
             ) : (
                 <UserTierBadge
                     tier={metrics.tier}
