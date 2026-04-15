@@ -7,7 +7,7 @@ const Leaderboard = memo(function Leaderboard() {
   const { contributors, isLoading } = useLeaderboard();
 
   return (
-    <div className="glass-card rounded-[2rem] p-8 relative overflow-hidden group">
+    <div className="glass-card rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
       <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 blur-[50px] rounded-full -mr-24 -mt-24 group-hover:bg-yellow-500/10 transition-colors duration-700" />
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 relative z-10 gap-4">
         <div className="flex items-center gap-4">
