@@ -48,7 +48,10 @@ export default function Button({
             {...props}
         >
             {isLoading ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                    <span className="sr-only">Security processing...</span>
+                </>
             ) : (
                 <>
                     {leftIcon}
