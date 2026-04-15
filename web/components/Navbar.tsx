@@ -11,7 +11,7 @@ export default function Navbar() {
   return (
     <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
       <div className="container mx-auto px-6 h-28 flex items-center justify-between relative">
-        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_15px_rgba(79,70,229,0.5)]" />
 
         <Link href="/" className="flex items-center gap-3 font-black text-2xl hover:text-primary transition-all duration-500 group relative z-10">
           <div className="p-2 bg-gradient-to-br from-primary via-indigo-500 to-purple-600 text-white rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group-hover:rotate-[15deg] transition-all duration-500 border border-white/20">
