@@ -62,7 +62,7 @@ export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilt
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 xl:gap-12 relative z-10 w-full max-w-full">
             {markets.map((market, index) => (
                 <MarketCard key={market.id} market={market} index={index} />
             ))}
