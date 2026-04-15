@@ -37,7 +37,7 @@ export default function FilterControls({
     const categories = ['all', 'Sports', 'Politics', 'Crypto', 'Tech'];
 
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-card p-4 lg:p-6 mb-8 mt-2 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-card p-4 lg:p-6 mb-8 mt-2 relative z-10 animate-in slide-in-from-bottom-2 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
             <div className="flex flex-col xl:flex-row xl:items-center gap-6">
                 <div className="flex flex-wrap gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-2xl w-fit border border-white/5 shadow-inner">
                     {statuses.map(status => (
