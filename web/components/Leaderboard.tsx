@@ -32,7 +32,14 @@ const Leaderboard = memo(function Leaderboard() {
       <div className="space-y-3">
         {isLoading ? (
           [1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-20 w-full bg-muted/10 rounded-lg animate-pulse" />
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-[2rem] border border-white/5 bg-black/20 backdrop-blur-md relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 shadow-inner" />
+                <div className="h-4 w-32 bg-white/10 rounded-md" />
+              </div>
+              <div className="h-10 w-24 bg-white/5 rounded-xl mt-4 sm:mt-0 relative z-10 shadow-inner" />
+            </div>
           ))
         ) : (
           contributors.map((c) => (
