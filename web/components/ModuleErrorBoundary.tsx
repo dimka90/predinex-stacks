@@ -32,7 +32,7 @@ class ModuleErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="glass-panel p-8 rounded-3xl border-red-500/20 bg-red-950/20 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in duration-500 relative overflow-hidden">
+                <div role="alert" aria-live="assertive" className="glass-panel p-8 rounded-3xl border-red-500/20 bg-red-950/20 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden shadow-[0_10px_30px_rgba(220,38,38,0.15)]">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[40px] -mr-16 -mt-16" />
                     <div className="p-4 bg-red-500/10 rounded-full text-red-500/80 mb-2">
                         <RefreshCcw className="h-6 w-6" />
