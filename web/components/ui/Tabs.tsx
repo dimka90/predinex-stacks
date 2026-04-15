@@ -37,6 +37,7 @@ export default function Tabs({
                         aria-selected={isActive}
                         aria-controls={`panel-${tab.id}`}
                         id={`tab-${tab.id}`}
+                        aria-label={`Switch to ${tab.label} tab`}
                         tabIndex={isActive ? 0 : -1}
                         onClick={() => onChange(tab.id)}
                         onKeyDown={(e) => {
