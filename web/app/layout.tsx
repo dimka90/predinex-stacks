@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://predinex.io'),
   title: "Predinex | Institutional Prediction Market Terminal",
   description: "The decentralized prediction market built for the Bitcoin economy. Predict, bet, and win on Stacks.",
   openGraph: {
