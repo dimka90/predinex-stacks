@@ -9,7 +9,7 @@ interface UserTierBadgeProps {
 
 export default function UserTierBadge({ tier, progress, pointsToNext, nextTier }: UserTierBadgeProps) {
     return (
-        <div className="p-6 md:p-8 rounded-[2rem] bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-black/40 border border-white/10 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div role="region" aria-label={`User Protocol Tier: ${tier}, ${progress}% to ${nextTier}`} className="p-6 md:p-8 rounded-[2rem] bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-black/40 border border-white/10 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_-20%,rgba(99,102,241,0.15),transparent_70%)]" />
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[60px] rounded-full mix-blend-screen pointer-events-none group-hover:bg-primary/20 transition-colors duration-1000 ease-in-out" />
 
