@@ -59,6 +59,8 @@ export default function FilterControls({
                     {['All', ...categories].map(cat => (
                         <button
                             key={cat}
+                            aria-pressed={selectedCategory === cat}
+                            aria-label={`Filter by ${cat} category`}
                             onClick={() => onCategoryChange(cat)}
                             className={`px-5 py-2 rounded-full border text-[10px] uppercase font-black tracking-[0.15em] transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${selectedCategory === cat
                                 ? 'bg-primary/20 border-primary/50 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)]'
