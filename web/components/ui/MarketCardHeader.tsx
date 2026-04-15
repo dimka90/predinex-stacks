@@ -14,7 +14,7 @@ interface MarketCardHeaderProps {
  */
 export default function MarketCardHeader({ id, status, isVerified, className }: MarketCardHeaderProps) {
     return (
-        <div className={`flex justify-between items-center mb-6 relative z-10 ${className || ''}`}>
+        <div className={`flex justify-between items-center mb-8 pb-4 border-b border-white/5 relative z-10 ${className || ''}`}>
             <div className="flex items-center gap-3">
                 <StatusBadge status={status} />
                 {isVerified && (
