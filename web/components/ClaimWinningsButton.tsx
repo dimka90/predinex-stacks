@@ -55,7 +55,7 @@ export default function ClaimWinningsButton({ poolId, isSettled, userHasWinnings
                 aria-label={isPending ? 'Processing transaction securely...' : 'Claim Winnings'}
                 className="flex items-center justify-center gap-3 px-8 py-4 md:py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_15px_35px_rgba(245,158,11,0.3)] hover:shadow-[0_20px_45px_rgba(245,158,11,0.5)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden border border-white/20 min-h-[48px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
-                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                 {isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin relative z-10" />
                 ) : (
