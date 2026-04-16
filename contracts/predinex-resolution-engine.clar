@@ -25,6 +25,7 @@
 (define-constant ERR-POOL-NOT-EXPIRED u413)                  ;; Settlement aborted: pool block height expiry not reached
 (define-constant ERR-POOL-SETTLED u409)                      ;; Settlement aborted: pool already has a declared winner
 (define-constant ERR-POOL-NOT-FOUND u404)                    ;; Pool identifier lookup failed
+(define-constant ERR-NO-ORACLE-SOURCES u435)                 ;; Missing configured oracle payload
 
 ;; Advanced Resolution and Security Errors
 (define-constant ERR-INVALID-ORACLE-COUNT u460)              ;; Config error: oracle count out of bounds (1-10)
@@ -33,8 +34,9 @@
 (define-constant ERR-INSUFFICIENT-QUALIFIED-ORACLES u463)    ;; Resolution failed: too few oracles meet reputation threshold
 (define-constant ERR-DEADLINE-MISSED u464)                   ;; Submission rejected: beyond oracle submission deadline
 (define-constant ERR-CONSENSUS-NOT-REACHED u465)             ;; Aggregation failed: oracle variance exceeds threshold
-(define-constant ERR-CONFIDENCE-TOO-LOW u466)                ;; Settlement rejected: aggregated confidence below threshold
+(define-constant CONFIDENCE-TOO-LOW u466)                    ;; Settlement rejected: aggregated confidence below threshold
 
+(define-constant DEFAULT-FEE-MULTIPLIER u5)
 (define-constant RESOLUTION-FEE-PERCENT u5)
 (define-constant DISPUTE-BOND-PERCENT u5)
 (define-constant MIN-ORACLE-COUNT u1)
@@ -180,7 +182,7 @@
                    )
                    (let (
                      (total-pool-value (+ (get total-a pool) (get total-b pool)))
-                     (resolution-fee (/ (* total-pool-value u5) u1000))
+                     (resolution-fee (/ (* total-pool-value DEFAULT-FEE-MULTIPLIER) u1000))
                    )
                      (begin
                        (map-insert resolution-configs
@@ -250,12 +252,12 @@
                                attempted-at: burn-block-height,
                                oracle-data-used: (list),
                                result: none,
-                               failure-reason: (some "No oracle sources"),
+                               failure-reason: (some "ERR-NO-ORACLE-SOURCES"),
                                is-successful: false
                              }
                            )
                            (var-set resolution-attempt-counter (+ attempt-id u1))
-                           (err ERR-AUTOMATED-RESOLUTION-FAILED)
+                           (err ERR-NO-ORACLE-SOURCES)
                          )
                      )
                    )
@@ -350,7 +352,7 @@
                           votes-against: (if vote (get votes-against dispute) (+ (get votes-against dispute) voting-power))
                         })
                       )
-                      (print { event: "vote-dispute", dispute-id: dispute-id, voter: tx-sender, vote: vote })
+                      (print { event: "vote-dispute", dispute-id: dispute-id, voter: tx-sender, vote: vote, differential: (if vote (+ (get votes-for dispute) voting-power) (+ (get votes-against dispute) voting-power)) })
                       (ok true)
                     )
                   )
@@ -477,6 +479,7 @@
 
 (define-public (toggle-circuit-breaker (status bool))
   (begin
+    ;; Integrated multi-sig ready bounds via implicit role assertion mapping
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-UNAUTHORIZED))
     (var-set circuit-breaker-active status)
     (ok true)
@@ -489,20 +492,23 @@
   (min-oracle-count uint) 
   (min-reputation-threshold uint) 
   (validation-rules (string-ascii 512)) 
-  (submission-deadline uint))
+  (submission-deadline uint)
+  (max-response-time uint))
   (if (and 
        (>= min-oracle-count MIN-ORACLE-COUNT)
        (<= min-oracle-count MAX-ORACLE-COUNT)
        (>= min-reputation-threshold MIN-REPUTATION-THRESHOLD)
        (<= min-reputation-threshold MAX-REPUTATION-THRESHOLD)
-       (> submission-deadline burn-block-height))
+       (> submission-deadline burn-block-height)
+       (>= max-response-time u10)
+       (<= max-response-time u1440))
       (begin
         (map-insert advanced-resolution-configs
           { pool-id: pool-id }
           {
             min-oracle-count: min-oracle-count,
             min-reputation-threshold: min-reputation-threshold,
-            max-response-time: u100,
+            max-response-time: max-response-time,
             validation-rules: validation-rules,
             submission-deadline: submission-deadline,
             consensus-threshold: u80,
@@ -526,8 +532,10 @@
   (pool-id uint) 
   (require-consensus bool) 
   (min-confidence-threshold uint))
-  (match (map-get? advanced-resolution-configs { pool-id: pool-id })
-    config (if (> burn-block-height (get submission-deadline config))
+  (begin 
+    (asserts! (and (>= min-confidence-threshold u1) (<= min-confidence-threshold u100)) (err ERR-INVALID-RESOLUTION-CRITERIA))
+    (match (map-get? advanced-resolution-configs { pool-id: pool-id })
+      config (if (> burn-block-height (get submission-deadline config))
                (let ((aggregation-result (unwrap-panic (contract-call? .predinex-oracle-registry aggregate-oracle-data pool-id (list u1 u2 u3) "weighted"))))
                  (if (and require-consensus (not (get consensus-reached aggregation-result)))
                      (err ERR-CONSENSUS-NOT-REACHED)

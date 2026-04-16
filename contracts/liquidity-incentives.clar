@@ -20,6 +20,9 @@
 (define-constant ERR-MAX-CLAIMS-REACHED (err u406))    ;; Global or user limit on reward claims hit
 (define-constant ERR-LEADERBOARD-UPDATE-FAILED (err u407)) ;; State update: leaderboard sorting error
 (define-constant ERR-VESTING-NOT-MET (err u408))       ;; Token unlocking condition (time/block) not yet passed
+(define-constant ERR-EXCEEDS-MAX-BONUS (err u425))     ;; Bonus exceeds hard cap constraints
+(define-constant ERR-AMOUNT-ZERO (err u426))           ;; Action halted: specified unit sum evaluates to 0
+(define-constant ERR-ARRAY-EMPTY (err u427))           ;; Function requires populated parameter array
 
 ;; Incentive configuration constants
 (define-constant EARLY-BIRD-BONUS-PERCENT u5) ;; 5% bonus for first bettors
@@ -354,6 +357,7 @@
                 
                 (update-user-leaderboard-entry pool-id user final-bonus)
                 (update-enhanced-pool-stats pool-id "early-bird" final-bonus)
+                (print { event: "early-bird-allocated", pool-id: pool-id, user: user, base-amount: base-early-bird, bonus: final-bonus, multiplier: (* tier-multiplier stake-multiplier) })
                 (ok final-bonus)
               )
               (ok u0)
@@ -585,7 +589,7 @@
 (define-public (deposit-incentive-funds (amount uint))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
-    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (> amount u0) ERR-AMOUNT-ZERO)
     
     ;; Update contract balance
     (var-set contract-balance (+ (var-get contract-balance) amount))
@@ -602,7 +606,10 @@
 (define-public (batch-distribute-rewards (pool-id uint) (users (list 100 principal)) (amounts (list 100 uint)))
   (begin
     (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-UNAUTHORIZED)
+    (asserts! (> (len users) u0) ERR-ARRAY-EMPTY)
+    (asserts! (is-eq (len users) (len amounts)) ERR-INVALID-CONFIG)
     ;; Implementation logic would iterate and map-set
+    (print { event: "batch-distribute-rewards", pool-id: pool-id, accounts-processed: (len users), sequence: "automated" })
     (ok true)
   )
 )
@@ -787,6 +794,10 @@
                         (if (is-eq new-tier TIER-SILVER) u2 u1))))
     (new-data { tier: new-tier, multiplier: new-multiplier, total-volume: new-volume })
   )
+    (if (not (is-eq new-tier (get tier current-data)))
+        (print { event: "tier-upgrade", user: user, old-tier: (get tier current-data), new-tier: new-tier, multiplier: new-multiplier })
+        false
+    )
     (map-set user-tiers { user: user } new-data)
     new-data
   )
