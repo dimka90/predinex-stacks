@@ -26,7 +26,7 @@ export default function Card({
     const baseClasses = 'rounded-[2rem] transition-all duration-500 overflow-hidden';
 
     const variantClasses = {
-        glass: 'glass-card backdrop-blur-2xl bg-black/20 border border-white/5 relative z-10',
+        glass: 'glass-card backdrop-blur-2xl bg-black/20 border border-white/5 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
         outline: 'border border-white/10 bg-black/40 relative z-10 backdrop-blur-md shadow-inner',
         flat: 'bg-black/10 border border-transparent backdrop-blur-sm relative z-10',
     };

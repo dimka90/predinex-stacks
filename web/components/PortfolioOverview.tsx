@@ -47,7 +47,8 @@ export default function PortfolioOverview() {
             </div>
 
             {/* Decorative background element */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[120px] rounded-full -mr-32 -mt-32 animate-pulse" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[120px] rounded-full -mr-32 -mt-32 animate-[pulse_3s_infinite] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none mix-blend-overlay" />
         </div>
     );
 }

@@ -6,15 +6,15 @@
 
 (define-constant ERR-UNAUTHORIZED u401)
 (define-constant ERR-ATTACK-DETECTED u500)
+(define-constant ERR-HEARTBEAT-FAILED u501)
 
-;; Attack detection patterns
+(define-constant MIN-HEARTBEAT-THRESHOLD u10)
+
+;; Attack detection patterns (compressed multidimensional representation)
 (define-map attack-patterns
   { pattern-id: uint }
   {
-    pattern-type: (string-ascii 32),
-    severity: uint,
-    auto-response: bool,
-    detected-count: uint
+    threat-tuple: (string-ascii 64)
   })
 
 ;; Collusion detection
@@ -22,6 +22,7 @@
   (let ((identical-count (length (filter (lambda (x) (is-eq x (unwrap-panic (element-at submission-data u0)))) submission-data))))
     (if (> identical-count u5)
         (begin
+          (print { event: "high-priority-alert", type: "collusion-detected", severity: "critical", related-providers: provider-ids })
           (unwrap-panic (contract-call? .predinex-oracle-registry trigger-circuit-breaker "Collusion detected" u1000))
           (ok true))
         (ok false))))
@@ -30,13 +31,14 @@
 (define-map performance-metrics
   { metric-id: uint }
   {
-    response-times: (list 100 uint),
-    accuracy-rates: (list 100 uint),
-    uptime-percentage: uint
+    uptime-percentage: uint,
+    consecutive-failures: uint
   })
 
 (define-public (update-performance-metrics (provider-id uint) (response-time uint) (accuracy uint))
-  (ok true))
+  (begin
+    (asserts! (>= accuracy MIN-HEARTBEAT-THRESHOLD) (err ERR-HEARTBEAT-FAILED))
+    (ok true)))
 
 ;; Circuit breaker implementation
 (define-data-var emergency-mode bool false)
@@ -44,4 +46,5 @@
 (define-public (activate-emergency-mode (reason (string-ascii 128)))
   (begin
     (var-set emergency-mode true)
+    (print { event: "circuit-breaker-activated", reason: reason })
     (ok true)))

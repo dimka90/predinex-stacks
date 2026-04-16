@@ -27,12 +27,18 @@ export default function Tabs({
     className = ''
 }: TabsProps) {
     return (
-        <div className={`flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner w-fit ${className}`}>
+        <div role="tablist" aria-orientation="horizontal" aria-label="Content Tabs" className={`flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner w-fit ${className}`}>
             {tabs.map((tab) => {
                 const isActive = tab.id === activeTab;
                 return (
                     <button
                         key={tab.id}
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`panel-${tab.id}`}
+                        id={`tab-${tab.id}`}
+                        aria-label={`Switch to ${tab.label} tab`}
+                        tabIndex={isActive ? 0 : -1}
                         onClick={() => onChange(tab.id)}
                         onKeyDown={(e) => {
                             const currentIndex = tabs.findIndex(t => t.id === activeTab);
@@ -45,7 +51,7 @@ export default function Tabs({
                             }
                         }}
                         className={`
-              flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95
+              flex items-center gap-2.5 px-6 py-4 md:py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-black
               ${isActive
                                 ? 'bg-primary text-white shadow-[0_5px_20px_rgba(79,70,229,0.4)] scale-[1.02] border border-white/10'
                                 : 'text-muted-foreground/60 hover:text-white hover:bg-white/5 border border-transparent'

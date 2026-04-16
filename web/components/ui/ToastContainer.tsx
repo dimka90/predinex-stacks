@@ -16,7 +16,7 @@ interface ToastContainerProps {
 
 export default function ToastContainer({ toasts, onClose }: ToastContainerProps) {
     return (
-        <div className="fixed bottom-8 right-8 z-[100] flex flex-col gap-4 max-w-sm w-full pointer-events-none">
+        <div role="status" aria-live="polite" className="fixed bottom-8 right-8 z-[100] flex flex-col gap-4 max-w-sm w-full pointer-events-none">
             {toasts.map((toast) => (
                 <div
                     key={toast.id}

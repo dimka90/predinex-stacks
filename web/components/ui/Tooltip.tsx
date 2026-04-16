@@ -7,10 +7,12 @@ interface TooltipProps {
 }
 
 /**
- * Tooltip - Hover information component
- * @param content The text to display in the tooltip
- * @param children The element that triggers the tooltip
- * @param position Tooltip position relative to children
+ * Tooltip - Hover-dependent absolute portal component contextualizing data nodes.
+ * Explicitly binds `aria-describedby` links and forces 200ms `zoom-in-95` GPU transforms.
+ * 
+ * @param {string} content - Explanatory text injected into the portal container
+ * @param {ReactNode} children - Hover target boundary that controls element visibility tracking
+ * @param {'top'|'bottom'|'left'|'right'} position - Relative coordinate anchor
  */
 export default function Tooltip({
     content,
@@ -33,14 +35,16 @@ export default function Tooltip({
             onMouseLeave={() => setIsVisible(false)}
             onFocus={() => setIsVisible(true)}
             onBlur={() => setIsVisible(false)}
+            tabIndex={0}
             aria-describedby={isVisible ? "tooltip-content" : undefined}
+            role="doc-tip"
         >
             {children}
             {isVisible && (
                 <div
                     id="tooltip-content"
                     role="tooltip"
-                    className={`absolute z-50 px-5 py-3 text-[10px] uppercase tracking-[0.2em] font-black text-white bg-black/80 backdrop-blur-[20px] rounded-2xl border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.6)] whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}
+                    className={`absolute z-50 px-5 py-3 text-[10px] uppercase tracking-[0.3em] font-black text-white bg-black/90 backdrop-blur-[30px] rounded-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 ${positionClasses[position]}`}
                 >
                     {content}
                     {/* Arrow */}

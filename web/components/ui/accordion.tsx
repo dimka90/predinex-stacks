@@ -31,7 +31,7 @@ const AccordionTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex flex-1 items-center justify-between py-5 font-black uppercase tracking-widest text-sm transition-all hover:text-primary group border-b border-transparent hover:border-white/5",
+      "flex flex-1 items-center justify-between py-5 font-black uppercase tracking-widest text-sm transition-all hover:text-primary group border-b border-transparent hover:border-white/5 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
       className
     )}
     {...(props as any)}

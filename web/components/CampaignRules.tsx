@@ -15,7 +15,7 @@ export default function CampaignRules() {
 
             <div className="space-y-8">
                 <div className="relative pl-10 group">
-                    <div className="absolute left-0 top-0 h-full w-px bg-border group-hover:bg-primary transition-colors duration-500"></div>
+                    <div className="absolute left-0 top-0 h-full w-[2px] bg-border group-hover:bg-primary transition-colors duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"></div>
                     <div className="absolute left-[-4px] top-1.5 h-2 w-2 rounded-full bg-primary shadow-[0_0_15px_rgba(79,70,229,0.8)] animate-pulse" />
                     <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-primary mb-2 flex items-center gap-2">
                         <Code className="h-3.5 w-3.5" />

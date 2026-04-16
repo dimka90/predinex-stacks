@@ -10,6 +10,15 @@ interface ToastProps {
     onClose: () => void;
 }
 
+/**
+ * Toast - Ephemeral systemic feedback node mapping protocol output boundaries.
+ * Bounded by strict 700ms `cubic-bezier` trajectory coordinates for institutional-grade visual timing.
+ * 
+ * @param {string} message - Primary feedback string emitted from server operations
+ * @param {ToastType} type - Predefined state vector resolving discrete icon and background palettes
+ * @param {number} duration - Temporal constraint triggering component dismount logic
+ * @param {function} onClose - Cleanup handler executed post-animation
+ */
 export default function Toast({
     message,
     type = 'info',
@@ -44,7 +53,7 @@ export default function Toast({
     };
 
     return (
-        <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-500 ease-out transform ${isVisible ? 'translate-x-0 opacity-100 animate-in slide-in-from-right-10 duration-500' : 'translate-x-20 opacity-0'} ${bgClasses[type]} min-w-[320px] fixed bottom-8 right-8 z-[100]`}>
+        <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${isVisible ? 'translate-x-0 opacity-100 animate-in slide-in-from-right-10 duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]' : 'translate-x-20 opacity-0'} ${bgClasses[type]} min-w-[320px] fixed bottom-8 right-8 z-[100]`}>
             <div className="shrink-0">{icons[type]}</div>
             <p className="text-sm font-bold tracking-tight flex-1">{message}</p>
             <button

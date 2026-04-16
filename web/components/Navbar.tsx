@@ -11,7 +11,7 @@ export default function Navbar() {
   return (
     <nav aria-label="Main navigation" className="sticky top-0 w-full z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
       <div className="container mx-auto px-6 h-28 flex items-center justify-between relative">
-        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_15px_rgba(79,70,229,0.5)]" />
 
         <Link href="/" className="flex items-center gap-3 font-black text-2xl hover:text-primary transition-all duration-500 group relative z-10">
           <div className="p-2 bg-gradient-to-br from-primary via-indigo-500 to-purple-600 text-white rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group-hover:rotate-[15deg] transition-all duration-500 border border-white/20">
@@ -46,22 +46,25 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-4 relative z-10">
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            aria-label="Toggle navigation menu"
             className="p-3 bg-white/5 text-muted-foreground hover:text-white rounded-xl transition-all border border-white/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(79,70,229,0.2)] active:scale-95"
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Content */}
-      <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="flex flex-col p-6 gap-4">
+      <div className={`md:hidden absolute top-20 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="flex flex-col p-6 gap-6">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="text-lg font-bold p-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+              className="text-lg font-bold py-5 px-6 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all active:scale-[0.98] border border-transparent hover:border-primary/20"
             >
               {link.label}
             </Link>

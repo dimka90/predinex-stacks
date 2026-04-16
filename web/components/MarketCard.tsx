@@ -4,6 +4,14 @@ import { TrendingUp, Clock, ChevronRight } from 'lucide-react';
 import MarketCardHeader from './ui/MarketCardHeader';
 import ClaimWinningsButton from './ClaimWinningsButton';
 
+/**
+ * MarketCard - Primary institutional data structure visualizing pool vectors.
+ * Encapsulates dynamic status pulses, glass-morphic backdrop blurs, and hover scaling.
+ * Embedded ARIA structures explicitly link interactive limits for WCAG compliance.
+ * 
+ * @param {Pool} market - Complex generic object defining Stacks pool parameters
+ * @param {number} index - Render iteration index targeting cascading animation delays
+ */
 export default function MarketCard({ market, index = 0 }: { market: Pool, index?: number }) {
     // In a real app, we would check if the user has a winning bet.
     const canClaim = market.status === 'settled';
@@ -14,11 +22,11 @@ export default function MarketCard({ market, index = 0 }: { market: Pool, index?
         <div className="group block h-full rounded-3xl relative animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
             <Link
                 href={`/markets/${market.id}`}
-                className="block h-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-3xl"
+                className="block h-full focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-3xl"
                 aria-label={`View details for market: ${market.title}`}
             >
                 <div
-                    className="p-8 rounded-[2rem] border border-white/5 bg-black/20 backdrop-blur-2xl hover:bg-black/40 hover:border-primary/40 transition-all duration-500 h-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.15)] relative overflow-hidden group/card"
+                    className="p-8 rounded-[2rem] border border-white/5 bg-black/20 backdrop-blur-2xl hover:bg-black/40 hover:border-primary/40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] h-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.15)] relative overflow-hidden group/card"
                     role="article"
                 >
                     {/* Status Badge */}
@@ -46,16 +54,18 @@ export default function MarketCard({ market, index = 0 }: { market: Pool, index?
                             <div
                                 className="flex flex-col gap-1 cursor-help"
                                 title="Total 24h trading volume in STX"
+                                aria-label={`Trading volume: ${(market.totalA + market.totalB).toLocaleString()} STX`}
                             >
-                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Volume</span>
+                                <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest" aria-hidden="true">Volume</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">
-                                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                                     <span>{(market.totalA + market.totalB).toLocaleString()} STX</span>
                                 </div>
                             </div>
                             <div
                                 className="flex flex-col gap-1 cursor-help"
                                 title={`This market expires at Stacks block height ${market.expiry}`}
+                                aria-label={`Expires at block ${market.expiry}`}
                             >
                                 <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Expiry</span>
                                 <div className="flex items-center gap-1.5 font-bold text-sm">

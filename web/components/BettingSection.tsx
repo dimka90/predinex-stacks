@@ -32,7 +32,9 @@ export default function BettingSection({ pool, poolId }: { pool: Pool, poolId: n
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full px-6 py-6 rounded-2xl bg-black/20 backdrop-blur-md border border-white/5 group-hover/input:border-white/10 focus:ring-4 focus:ring-primary/20 focus:border-primary focus:bg-primary/5 outline-none transition-all font-black text-3xl tabular-nums placeholder:text-muted-foreground/30 shadow-inner"
+                        className={`w-full px-6 py-6 rounded-2xl bg-black/20 backdrop-blur-md border border-white/5 group-hover/input:border-white/10 focus:ring-4 focus:outline-none transition-all font-black text-3xl tabular-nums shadow-inner ${Number(amount) <= 0 && amount !== '' ? 'border-red-500/50 focus:border-red-500 focus:bg-red-500/5 focus:ring-red-500/20 text-red-400 placeholder:text-red-400/30' : 'focus:border-primary focus:bg-primary/5 focus:ring-primary/20 text-white placeholder:text-muted-foreground/30'}`}
+                        aria-invalid={Number(amount) <= 0 && amount !== ''}
+                        aria-errormessage={Number(amount) <= 0 && amount !== '' ? 'Sanity validation failed: Amount must be greater than zero.' : undefined}
                     />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground tracking-[0.2em]">STX MIN.</span>
                 </div>

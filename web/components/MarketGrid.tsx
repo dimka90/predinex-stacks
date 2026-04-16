@@ -15,8 +15,11 @@ interface Props {
 export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilters }: Props) {
     if (isLoading) {
         return (
-            <div className="flex justify-center py-20">
-                <Spinner className="h-8 w-8" />
+            <div className="flex flex-col items-center justify-center py-32 glass-panel rounded-[2.5rem] border border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] -mr-16 -mt-16 pointer-events-none" />
+                <Spinner className="h-8 w-8 text-primary drop-shadow-[0_0_10px_rgba(79,70,229,0.8)] relative z-10" />
+                <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/70 relative z-10">Querying Blockchain state...</p>
+                <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-full animate-[shimmer_2s_infinite]" />
             </div>
         );
     }
@@ -52,7 +55,7 @@ export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilt
                 {hasFilters && (
                     <button
                         onClick={onRetry}
-                        className="mt-10 px-8 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all border border-primary/20 font-black uppercase tracking-[0.2em] text-xs hover:shadow-[0_0_20px_rgba(79,70,229,0.2)] active:scale-95 relative z-10"
+                        className="mt-10 px-8 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all duration-500 ease-out border border-primary/20 font-black uppercase tracking-[0.2em] text-xs hover:shadow-[0_0_20px_rgba(79,70,229,0.2)] active:scale-95 relative z-10"
                     >
                         Reset Protocol Filters
                     </button>
@@ -62,7 +65,7 @@ export default function MarketGrid({ markets, isLoading, error, onRetry, hasFilt
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 xl:gap-12 relative z-10 w-full max-w-full">
             {markets.map((market, index) => (
                 <MarketCard key={market.id} market={market} index={index} />
             ))}

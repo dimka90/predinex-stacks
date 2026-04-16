@@ -4,6 +4,11 @@
 ;; Standardized API endpoints and data serialization
 ;; ============================================
 
+;; Expected constants explicitly bridged 
+(define-constant ERR-GATEWAY-TIMEOUT (err u504))
+(define-constant ERR-INVALID-PAYLOAD (err u505))
+(define-constant ERR-UNAUTHORIZED-BRIDGE (err u506))
+
 ;; API response structures
 (define-map api-responses
   { request-id: uint }
@@ -17,10 +22,15 @@
 
 ;; Deterministic encoding functions
 (define-public (serialize-oracle-data (data {provider-id: uint, data-value: (string-ascii 256), confidence: uint}))
-  (let ((encoded (concat (uint-to-ascii (get provider-id data)) 
-                        (concat "|" (concat (get data-value data) 
-                                          (concat "|" (uint-to-ascii (get confidence data))))))))
-    (ok encoded)))
+  (begin 
+    (asserts! (> (len (get data-value data)) u0) ERR-INVALID-PAYLOAD)
+    (let ((encoded (concat (uint-to-ascii (get provider-id data)) 
+                          (concat "|" (concat (get data-value data) 
+                                            (concat "|" (uint-to-ascii (get confidence data))))))))
+      (ok encoded)
+    )
+  )
+)
 
 (define-public (deserialize-oracle-data (encoded-data (string-ascii 512)))
   (ok {provider-id: u1, data-value: "test", confidence: u80}))

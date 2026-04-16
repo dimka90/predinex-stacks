@@ -31,7 +31,9 @@ export default function PlatformStats() {
         return (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-24 bg-card/20 animate-pulse rounded-2xl border border-border/50" />
+                    <div key={i} className="h-24 bg-card/20 animate-pulse rounded-2xl border border-white/5 relative overflow-hidden shadow-inner">
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                    </div>
                 ))}
             </div>
         );
@@ -58,7 +60,7 @@ export default function PlatformStats() {
                         </div>
                     </div>
                     {/* Visual flourish */}
-                    <div className={`absolute -bottom-8 -right-8 w-32 h-32 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12 ${item.color}`}>
+                    <div className={`absolute -bottom-8 -right-8 w-32 h-32 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:-rotate-12 ${item.color}`}>
                         <item.icon className="w-full h-full" />
                     </div>
                 </Card>
