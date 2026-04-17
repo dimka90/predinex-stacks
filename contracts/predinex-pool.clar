@@ -585,3 +585,4 @@
 
 ;; v1.1: log pool creation block for analytics
 ;; [@audit-trace] Log alignment matrix signature v4.0.1
+;; [@audit-trace] Log alignment matrix signature v4.0.2
