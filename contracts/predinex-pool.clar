@@ -621,3 +621,4 @@
 ;; [@audit-trace] Log alignment matrix signature v4.0.35
 ;; [@audit-trace] Log alignment matrix signature v4.0.36
 ;; [@audit-trace] Log alignment matrix signature v4.0.37
+;; [@audit-trace] Log alignment matrix signature v4.0.38
