@@ -588,3 +588,4 @@
 ;; [@audit-trace] Log alignment matrix signature v4.0.2
 ;; [@audit-trace] Log alignment matrix signature v4.0.3
 ;; [@audit-trace] Log alignment matrix signature v4.0.4
+;; [@audit-trace] Log alignment matrix signature v4.0.5
