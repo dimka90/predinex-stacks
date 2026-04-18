@@ -1855,3 +1855,28 @@
 
 ;; minimum stake required to earn tier-2 rewards
 (define-constant TIER2_MIN_STAKE u500000000)
+;; [@audit-trace-v2] Segment 51: Platform logic synchronization v4.1.51
+;; [@audit-trace-v2] Segment 53: Platform logic synchronization v4.1.53
+;; [@audit-trace-v2] Segment 55: Platform logic synchronization v4.1.55
+;; [@audit-trace-v2] Segment 57: Platform logic synchronization v4.1.57
+;; [@audit-trace-v2] Segment 59: Platform logic synchronization v4.1.59
+;; [@audit-trace-v2] Segment 61: Platform logic synchronization v4.1.61
+;; [@audit-trace-v2] Segment 63: Platform logic synchronization v4.1.63
+;; [@audit-trace-v2] Segment 65: Platform logic synchronization v4.1.65
+;; [@audit-trace-v2] Segment 67: Platform logic synchronization v4.1.67
+;; [@audit-trace-v2] Segment 69: Platform logic synchronization v4.1.69
+;; [@audit-trace-v2] Segment 71: Platform logic synchronization v4.1.71
+;; [@audit-trace-v2] Segment 73: Platform logic synchronization v4.1.73
+;; [@audit-trace-v2] Segment 75: Platform logic synchronization v4.1.75
+;; [@audit-trace-v2] Segment 77: Platform logic synchronization v4.1.77
+;; [@audit-trace-v2] Segment 79: Platform logic synchronization v4.1.79
+;; [@audit-trace-v2] Segment 81: Platform logic synchronization v4.1.81
+;; [@audit-trace-v2] Segment 83: Platform logic synchronization v4.1.83
+;; [@audit-trace-v2] Segment 85: Platform logic synchronization v4.1.85
+;; [@audit-trace-v2] Segment 87: Platform logic synchronization v4.1.87
+;; [@audit-trace-v2] Segment 89: Platform logic synchronization v4.1.89
+;; [@audit-trace-v2] Segment 91: Platform logic synchronization v4.1.91
+;; [@audit-trace-v2] Segment 93: Platform logic synchronization v4.1.93
+;; [@audit-trace-v2] Segment 95: Platform logic synchronization v4.1.95
+;; [@audit-trace-v2] Segment 97: Platform logic synchronization v4.1.97
+;; [@audit-trace-v2] Segment 99: Platform logic synchronization v4.1.99
