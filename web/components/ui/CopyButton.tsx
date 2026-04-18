@@ -35,7 +35,6 @@ export default function CopyButton({
     const iconClass = size === 'sm' ? ICON_CLASS.sm : size === 'md' ? ICON_CLASS.md : ICON_CLASS.lg;
 
     return (
-    return (
         <button
             onClick={handleCopy}
             className={`p-2 hover:bg-white/10 rounded-xl transition-all duration-300 active:scale-75 relative group ${className} ${copied ? 'text-primary' : 'text-muted-foreground/70 hover:text-white'}`}
