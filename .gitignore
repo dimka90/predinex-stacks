@@ -18,3 +18,7 @@ MAKE_COMMITS.sh
 MAKE_ALL_COMMITS.sh# Local development ignores
 .DS_Store
 *.local
+predinex-army.json
+funding-log.txt
+unleash-log.txt
+unleash-retry-log.txt
