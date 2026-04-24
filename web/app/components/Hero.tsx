@@ -1,65 +1,68 @@
-import { ArrowRight, Trophy, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Trophy, Sparkles, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 /**
- * Hero - Institutional-grade landing section with premium typography.
+ * Hero - Institutional-grade landing section with V2 glassmorphism and ambient lighting.
  */
 export default function Hero() {
     return (
-        <div className="relative pt-32 pb-24 sm:pt-48 sm:pb-40 overflow-hidden">
-            {/* Soft background glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl opacity-40 pointer-events-none">
-                <div className="absolute top-[-10%] left-[5%] w-[600px] h-[600px] bg-primary/30 rounded-full blur-[160px] animate-float anim-delay-500" />
-                <div className="absolute bottom-[10%] right-[5%] w-[700px] h-[700px] bg-accent/20 rounded-full blur-[180px] animate-float-delayed" />
+        <div className="relative pt-32 pb-24 sm:pt-48 sm:pb-40 overflow-hidden bg-background">
+            {/* V2 Ambient Lighting */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-primary/20 rounded-full blur-[160px] animate-pulse-glow" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[140px] animate-float-delayed opacity-50" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,transparent_0%,var(--background)_80%)]" />
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-primary/20 bg-primary/5 text-[10px] font-black tracking-[0.2em] text-primary mb-12 uppercase animate-pulse-subtle">
-                    <Sparkles size={14} className="animate-spin-slow" />
-                    Protocol Live on Stacks Mainnet
+                <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 bg-zinc-900/40 backdrop-blur-md text-[10px] font-black tracking-[0.4em] text-white mb-16 uppercase drop-shadow-xl">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    Stacks Mainnet Infrastructure Active
                 </div>
 
-                <h1 className="text-[12vw] sm:text-7xl md:text-9xl font-black tracking-tighter mb-10 leading-[0.85] uppercase drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                    Predict <span className="gradient-text">Reality</span>.
-                    <br />
-                    Secure <span className="text-foreground">Yield</span>.
+                <h1 className="text-[12vw] sm:text-7xl md:text-[10rem] font-black tracking-tighter mb-12 leading-[0.8] uppercase flex flex-col items-center">
+                    <span className="shimmer-text italic opacity-60">Architect</span>
+                    <span className="bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent drop-shadow-2xl">Forecasting</span>
                 </h1>
 
-                <p className="max-w-3xl mx-auto text-xl md:text-2xl text-muted-foreground/80 mb-16 leading-relaxed font-medium tracking-tight">
+                <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground font-bold mb-16 leading-relaxed tracking-wider uppercase opacity-80 italic">
                     The institutional-grade prediction architecture for the Stacks ecosystem.
-                    Scalable, trustless settlement, and 1:1 Bitcoin security.
+                    <span className="block mt-2 text-[10px] tracking-[0.4em] text-primary">1:1 Bitcoin Security // Trustless Settlement</span>
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-24">
                     <Link
                         href="/markets"
-                        className="btn-primary flex items-center gap-4 group px-12 py-6 text-base font-black tracking-widest relative overflow-hidden institutional-shadow"
+                        className="group relative px-12 py-6 bg-primary text-white font-black tracking-[0.2em] text-sm uppercase rounded-full overflow-hidden hover:shadow-[0_0_40px_rgba(var(--primary-rgb),0.6)] transition-all hover:scale-105 active:scale-95"
                     >
-                        <span className="relative z-10">EXPLORE TERMINAL</span>
-                        <TrendingUp className="w-5 h-5 relative z-10 group-hover:translate-y-[-2px] group-hover:translate-x-[2px] transition-transform" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                        <span className="relative z-10 flex items-center gap-3">
+                            Launch Terminal <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     </Link>
                     <Link
                         href="/create"
-                        className="glass-panel px-12 py-6 flex items-center gap-4 text-base font-black tracking-widest hover:bg-white/10 active:scale-95 transition-all border-white/10 backdrop-blur-2xl"
+                        className="glass-panel px-12 py-6 flex items-center gap-4 text-sm font-black tracking-[0.2em] uppercase rounded-full hover:bg-white/10 transition-all border-white/10 backdrop-blur-3xl group"
                     >
-                        <Trophy className="w-5 h-5 text-accent animate-pulse" />
-                        INITIATE POOL
+                        Initialize Pool <Shield size={18} className="text-accent group-hover:rotate-12 transition-transform" />
                     </Link>
                 </div>
 
-                {/* Protocol metrics summary */}
-                <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                {/* Protocol metrics summary - High Fidelity V2 */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
                     {[
-                        { label: 'Total Volume', value: '1.2M STX', icon: TrendingUp },
-                        { label: 'Active Markets', value: '840+', icon: TrendingUp },
-                        { label: 'Total Payouts', value: '850K STX', icon: Trophy },
-                        { label: 'Reputation', value: '99.9%', icon: Sparkles },
+                        { label: 'Total Volume', value: '1.2M STX', icon: BarChart3, color: 'text-primary' },
+                        { label: 'Active Markets', value: '840+', icon: TrendingUp, color: 'text-accent' },
+                        { label: 'Total Payouts', value: '850K STX', icon: Trophy, color: 'text-success' },
+                        { label: 'Global Uptime', value: '99.9%', icon: Globe, color: 'text-primary' },
                     ].map((stat, i) => (
-                        <div key={i} className="p-6 rounded-2xl glass-card border-white/5 text-left">
-                            <stat.icon size={16} className="text-primary mb-3" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</p>
-                            <p className="text-xl font-black tabular-nums">{stat.value}</p>
+                        <div key={i} className="p-8 rounded-[2rem] glass-panel border-white/5 text-left group hover:bg-white/[0.05] relative overflow-hidden">
+                            <div className="absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <stat.icon size={80} />
+                            </div>
+                            <stat.icon size={20} className={`${stat.color} mb-4`} />
+                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">{stat.label}</p>
+                            <p className="text-2xl font-black tabular-nums tracking-tighter">{stat.value}</p>
                         </div>
                     ))}
                 </div>
@@ -67,3 +70,21 @@ export default function Hero() {
         </div>
     );
 }
+
+const Globe = ({ size, className }: { size: number, className?: string }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+);
