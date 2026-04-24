@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-    --background: #050505;
-    --foreground: #fafafa;
+    --background: #030303;
+    --foreground: #ffffff;
     --primary: #8b5cf6;
-    --accent: #22d3ee;
-    --muted: #121212;
-    --muted-foreground: #a3a3a3;
-    --border: #1e1e1e;
+    --accent: #0ea5e9;
+    --success: #10b981;
+    --muted: #0a0a0a;
+    --muted-foreground: #94a3b8;
+    --border: #1a1a1a;
 
-    /* Primary RGB for shadows */
+    /* Primary RGB for reactive lighting */
     --primary-rgb: 139, 92, 246;
+    --accent-rgb: 14, 165, 233;
 }
 
 @theme {
@@ -18,52 +20,42 @@
     --color-foreground: var(--foreground);
     --color-primary: var(--primary);
     --color-accent: var(--accent);
+    --color-success: var(--success);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
     --color-border: var(--border);
 
     --animate-float: float 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    --animate-pulse-subtle: pulse-subtle 4s ease-in-out infinite;
+    --animate-pulse-glow: glow 4s ease-in-out infinite;
 }
 
 body {
     background: var(--background);
+    background-image:
+        radial-gradient(circle at 0% 0%, rgba(var(--primary-rgb), .081) 0%, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(var(--accent-rgb), 0.05) 0%, transparent 40%);
     color: var(--foreground);
-    font-family: var(--font-geist-sans), sans-serif;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui;
     overflow-x: hidden;
-    transition: background-color 0.4s ease, color 0.4s ease;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Premium Glassmorphism */
+/* Institutional Design System V2 */
 .glass {
-    background: rgba(10, 10, 10, 0.4);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    @apply bg-black/40 backdrop-blur-3xl border border-white/5 shadow-2xl;
 }
 
 .glass-panel {
-    @apply bg-background/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    @apply bg-zinc-950/60 backdrop-blur-2xl border border-white/10 shadow-2xl;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
-}
-
-.shimmer-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white/50 to-white bg-[length:200%_auto] animate-shimmer;
-}
-
-@keyframes shimmer {
-    to {
-        background-position: 200% center;
-    }
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/5 shadow-inner;
 }
 
 .institutional-gradient {
-    @apply bg-[radial-gradient(circle_at_top_left, rgba(139, 92, 246, 0.15), transparent_40%), radial-gradient(circle_at_bottom_right, rgba(34, 211, 238, 0.05), transparent_40%)];
+    @apply bg-gradient-to-br from-primary/10 via-transparent to-accent/5;
 }
 
 .glass-panel:hover {
