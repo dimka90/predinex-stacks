@@ -80,7 +80,7 @@ async function main() {
         console.log(`🚀 PHASE 2: UNLEASHING 60-USER ARMY ON ${CONTRACT_NAME}`);
         for (const user of army) {
             console.log(`   User ${user.address} performing interactions...`);
-            for (let i = 0; i < 1; i++) { // Changed to 1 to maximize duration to 17+ days
+            for (let i = 0; i < 5; i++) { // Increased back to 5 for Day 3 Volume Surge
                 const txOptions = {
                     contractAddress: CONTRACT_ADDRESS,
                     contractName: CONTRACT_NAME,
@@ -88,7 +88,7 @@ async function main() {
                     functionArgs: [uintCV(i), uintCV(0), uintCV(1000)],
                     senderKey: user.subKey,
                     nonce: i,
-                    fee: 10000,
+                    fee: 20000,
                     anchorMode: AnchorMode.Any,
                     postConditionMode: PostConditionMode.Allow,
                 };

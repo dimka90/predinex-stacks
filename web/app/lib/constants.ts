@@ -38,6 +38,7 @@ export const CONTRACT_ADDRESS = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
 export const CONTRACT_NAME = "predinex-pool";
 
 export const STACKS_EXPLORER_BASE = "https://explorer.hiro.so";
+export const DEFAULT_NETWORK = "mainnet";
 
 export function getExplorerTxUrl(txId: string, network = "mainnet"): string {
   return `${STACKS_EXPLORER_BASE}/txid/${txId}?chain=${network}`;

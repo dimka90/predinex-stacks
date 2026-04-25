@@ -14,6 +14,7 @@ export interface WalletContextType {
     isConnected: boolean;
     balance?: number;
   } | null;
+  isConnecting: boolean;
 }
 
 export function useWalletConnect(): WalletContextType {
@@ -30,5 +31,5 @@ export function useWalletConnect(): WalletContextType {
     return null;
   }, [address, isConnected]);
 
-  return { session };
+  return { session, isConnecting: false };
 }

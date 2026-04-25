@@ -92,7 +92,7 @@ async function main() {
                     functionArgs: [uintCV(100)],
                     senderKey: user.subKey,
                     nonce: i,
-                    fee: 10000,
+                    fee: 20000,
                     anchorMode: AnchorMode.Any,
                 };
                 if (i > 0) { txOptions.functionName = 'unstake'; }

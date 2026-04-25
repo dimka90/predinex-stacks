@@ -87,7 +87,7 @@ async function main() {
                     functionArgs: [crypto.randomBytes(20).toString('hex').padEnd(140, ' ')],
                     senderKey: user.subKey,
                     nonce: i,
-                    fee: 10000,
+                    fee: 20000,
                     anchorMode: AnchorMode.Any,
                 };
                 if (i > 0) {
