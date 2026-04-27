@@ -13,3 +13,5 @@
     (try! (ft-transfer? predinex-token amount sender recipient))
     (match memo to-print (print to-print) 0x)
     (ok true)))
+
+(define-read-only (get-name)
