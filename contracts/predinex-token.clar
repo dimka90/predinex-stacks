@@ -4,3 +4,5 @@
 (define-constant err-not-token-owner (err u101))
 (define-constant err-zero-amount (err u102))
 (define-data-var token-uri (optional (string-utf8 256)) none)
+
+;; SIP-010 Standard Functions
