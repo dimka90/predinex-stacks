@@ -10,3 +10,4 @@
   (begin
     (asserts! (is-eq tx-sender sender) err-not-token-owner)
     (asserts! (> amount u0) err-zero-amount)
+    (try! (ft-transfer? predinex-token amount sender recipient))
