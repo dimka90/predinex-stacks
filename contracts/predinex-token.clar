@@ -19,3 +19,5 @@
 
 (define-read-only (get-symbol)
   (ok "PDNX"))
+
+(define-read-only (get-decimals)
