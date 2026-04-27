@@ -34,3 +34,4 @@
 
 ;; Minting function
 (define-public (mint (amount uint) (recipient principal))
+  (begin
