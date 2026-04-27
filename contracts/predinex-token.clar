@@ -18,3 +18,4 @@
   (ok "Predinex Token"))
 
 (define-read-only (get-symbol)
+  (ok "PDNX"))
