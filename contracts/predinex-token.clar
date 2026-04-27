@@ -27,3 +27,4 @@
   (ok (ft-get-balance predinex-token who)))
 
 (define-read-only (get-total-supply)
+  (ok (ft-get-supply predinex-token)))
