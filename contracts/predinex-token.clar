@@ -30,3 +30,4 @@
   (ok (ft-get-supply predinex-token)))
 
 (define-read-only (get-token-uri)
+  (ok (var-get token-uri)))
