@@ -24,3 +24,4 @@
   (ok u6))
 
 (define-read-only (get-balance (who principal))
+  (ok (ft-get-balance predinex-token who)))
