@@ -16,3 +16,5 @@
 
 (define-read-only (get-name)
   (ok "Predinex Token"))
+
+(define-read-only (get-symbol)
