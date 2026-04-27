@@ -88,3 +88,19 @@ const Globe = ({ size, className }: { size: number, className?: string }) => (
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
 );
+/* Activity Pass 1: Mon Apr 27 09:40:38 AM WAT 2026 */
+/* Activity Pass 3: Mon Apr 27 09:40:38 AM WAT 2026 */
+/* Activity Pass 7: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 8: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 13: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 14: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 15: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 17: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 26: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 30: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 41: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 43: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 44: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 45: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 47: Mon Apr 27 09:40:39 AM WAT 2026 */
+/* Activity Pass 48: Mon Apr 27 09:40:39 AM WAT 2026 */
