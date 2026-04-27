@@ -15,3 +15,4 @@
     (ok true)))
 
 (define-read-only (get-name)
+  (ok "Predinex Token"))
