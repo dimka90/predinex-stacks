@@ -33,3 +33,4 @@
   (ok (var-get token-uri)))
 
 ;; Minting function
+(define-public (mint (amount uint) (recipient principal))
