@@ -22,3 +22,5 @@
 
 (define-read-only (get-decimals)
   (ok u6))
+
+(define-read-only (get-balance (who principal))
