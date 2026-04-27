@@ -31,3 +31,5 @@
 
 (define-read-only (get-token-uri)
   (ok (var-get token-uri)))
+
+;; Minting function
