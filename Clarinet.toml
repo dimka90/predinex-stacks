@@ -40,3 +40,8 @@ callee_filter = false
 [repl.remote_data]
 enabled = false
 api_url = 'https://api.hiro.so'
+
+[contracts.predinex-token]
+path = 'contracts/predinex-token.clar'
+clarity_version = 2
+epoch = 'latest'
