@@ -6,3 +6,4 @@
 (define-data-var token-uri (optional (string-utf8 256)) none)
 
 ;; SIP-010 Standard Functions
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
