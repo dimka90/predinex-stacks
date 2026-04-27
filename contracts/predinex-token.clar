@@ -38,3 +38,4 @@
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (asserts! (> amount u0) err-zero-amount)
     (try! (ft-mint? predinex-token amount recipient))
+    (ok true)))
