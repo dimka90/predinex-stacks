@@ -215,3 +215,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute counter increments after each new dispute created
 
 // stacks: evidence-hash is optional buff 32 in create-dispute
+
+// stacks: ERR-DISPUTE-NOT-FOUND is u441 in resolution engine
