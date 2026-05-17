@@ -795,7 +795,7 @@
     (new-data { tier: new-tier, multiplier: new-multiplier, total-volume: new-volume })
   )
     (if (not (is-eq new-tier (get tier current-data)))
-        (print { event: "tier-upgrade", user: user, old-tier: (get tier current-data), new-tier: new-tier, multiplier: new-multiplier })
+        (begin (print { event: "tier-upgrade", user: user, old-tier: (get tier current-data), new-tier: new-tier, multiplier: new-multiplier }) true)
         false
     )
     (map-set user-tiers { user: user } new-data)
@@ -835,26 +835,6 @@
 ;; ---------------------------------------------------------
 ;; Read-only Helpers
 ;; ---------------------------------------------------------
-
-;; @desc Fetches aggregated participation and reward history for a specific principal
-;; @param user (principal): Target wallet address
-(define-read-only (get-user-incentive-totals (user principal))
-  (ok (default-to 
-    { total-pools-participated: u0, total-bets-placed: u0, total-incentives-earned: u0, total-incentives-claimed: u0 }
-    (map-get? user-loyalty-history { user: user })
-  ))
-)
-
-;; @desc Provides high-level protocol metrics including distribution and active pool counts
-(define-read-only (get-contract-stats)
-  (ok {
-    total-distributed: (var-get total-incentives-distributed),
-    total-claimed: (var-get total-incentives-claimed),
-    active-pools: (var-get active-pools-with-incentives),
-    contract-balance: (var-get contract-balance),
-    total-users: (var-get total-unique-users)
-  })
-)
 
 (define-public (unstake-incentives)
   (let ((stake (unwrap! (map-get? user-stakes { user: tx-sender }) ERR-STAKE-NOT-FOUND)))

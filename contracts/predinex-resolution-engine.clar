@@ -133,6 +133,16 @@
 (define-data-var dispute-counter uint u0)
 (define-data-var circuit-breaker-active bool false)
 
+;; Security monitoring map
+(define-map security-monitoring
+  { pool-id: uint }
+  {
+    suspicious-activity: bool,
+    last-check: uint,
+    threat-level: uint
+  }
+)
+
 ;; Private helpers to check oracle validity via Registry
 (define-private (validate-single-oracle (oracle-id uint) (is-valid bool))
   (if is-valid
@@ -543,7 +553,7 @@
                          (ok (get result aggregation-result))
                          (err ERR-CONFIDENCE-TOO-LOW))))
                (err ERR-DEADLINE-MISSED))
-    (err ERR-RESOLUTION-CONFIG-NOT-FOUND)))
+      (err ERR-RESOLUTION-CONFIG-NOT-FOUND))))
 
 ;; @desc Security: Flag a pool for suspicious activity and increase the threat level
 ;; @param pool-id (uint): The identifier of the flagged pool

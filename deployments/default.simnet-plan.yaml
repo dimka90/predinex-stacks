@@ -83,4 +83,9 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/predinex-resolution-engine.clar
             clarity-version: 2
+        - emulated-contract-publish:
+            contract-name: predinex-token
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/predinex-token.clar
+            clarity-version: 2
       epoch: "3.3"
