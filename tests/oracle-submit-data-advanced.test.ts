@@ -222,3 +222,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: circuit breaker halts all oracle submissions when active
 
 // stacks: provider must support data type before submitting
+
+// stacks: deactivated provider cannot submit data until reactivated
