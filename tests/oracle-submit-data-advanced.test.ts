@@ -220,3 +220,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: confidence score range is 1-100 inclusive
 
 // stacks: circuit breaker halts all oracle submissions when active
+
+// stacks: provider must support data type before submitting
