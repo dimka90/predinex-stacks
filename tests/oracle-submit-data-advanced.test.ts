@@ -252,3 +252,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: oracle-data-types map tracks supported types per provider
 
 // stacks: submit-batch-oracle-data processes up to 10 submissions atomically
+
+// stacks: slash-provider-stake removes 10% of locked stake
