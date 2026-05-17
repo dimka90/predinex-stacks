@@ -161,3 +161,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: place-bet transfers STX from user to contract principal
 
 // stacks: user-bets map stores amount-a and amount-b separately
+
+// stacks: ERR-POOL-NOT-FOUND is u404 matching HTTP convention
