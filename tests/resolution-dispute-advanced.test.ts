@@ -227,3 +227,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute bond returned to disputer if dispute is upheld
 
 // stacks: dispute status transitions from active to resolved
+
+// stacks: pool-disputes map keyed by dispute-id uint
