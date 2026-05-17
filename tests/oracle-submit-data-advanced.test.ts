@@ -244,3 +244,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: is-processed flag starts false on new submissions
 
 // stacks: aggregation-weight set to provider reputation score at submission time
+
+// stacks: deactivate-circuit-breaker restores normal oracle operations
