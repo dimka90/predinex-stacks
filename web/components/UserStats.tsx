@@ -13,9 +13,10 @@ interface StatItemProps {
 
 function StatItem({ label, value, icon, trend, isLoading }: StatItemProps) {
     if (isLoading) return (
-        <div className="flex flex-col gap-2 p-5 bg-card/10 backdrop-blur-md rounded-2xl border border-white/5 animate-pulse shadow-inner">
-            <div className="h-2 w-12 bg-white/10 rounded mb-2" />
-            <div className="h-8 w-24 bg-white/10 rounded" />
+        <div className="flex flex-col gap-2 p-5 bg-black/20 backdrop-blur-md rounded-[1.25rem] border border-white/5 relative overflow-hidden group shadow-inner">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
+            <div className="h-2 w-12 bg-white/10 rounded mb-2 relative z-10 shadow-inner" />
+            <div className="h-8 w-24 bg-white/10 rounded relative z-10 shadow-inner" />
         </div>
     );
     const formattedValue = label.toLowerCase().includes('points') ? formatPoints(value) : value;

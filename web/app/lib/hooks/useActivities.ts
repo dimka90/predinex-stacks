@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useStacks } from '../components/StacksProvider';
-import { ActivityItem, getUserActivity } from '../lib/stacks-api';
+import { useStacks } from '../../components/StacksProvider';
+import { ActivityItem, getUserActivity } from '../stacks-api';
 
 export function useActivities(limit: number = 20) {
     const { userData } = useStacks();
