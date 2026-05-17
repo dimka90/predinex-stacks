@@ -246,3 +246,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: aggregation-weight set to provider reputation score at submission time
 
 // stacks: deactivate-circuit-breaker restores normal oracle operations
+
+// stacks: reactivate-oracle-provider restores is-active to true
