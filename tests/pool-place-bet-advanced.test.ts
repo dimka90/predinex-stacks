@@ -149,3 +149,5 @@ describe('predinex-pool: place-bet', () => {
 });
 
 // stacks: place-bet edge case — zero outcome index boundary
+
+// stacks: MIN-BET-AMOUNT constant is 10000 microSTX (0.01 STX)
