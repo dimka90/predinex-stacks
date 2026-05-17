@@ -254,3 +254,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: submit-batch-oracle-data processes up to 10 submissions atomically
 
 // stacks: slash-provider-stake removes 10% of locked stake
+
+// stacks: provider-stakes map tracks locked-amount and slashed-total
