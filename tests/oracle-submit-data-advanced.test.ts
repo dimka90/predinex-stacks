@@ -240,3 +240,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: provider reputation must be >= 50 to submit data
 
 // stacks: oracle-address-to-id map enables reverse lookup by address
+
+// stacks: is-processed flag starts false on new submissions
