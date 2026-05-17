@@ -228,3 +228,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: submission id starts at u0 and increments per submission
 
 // stacks: validation-hash is a 32-byte buffer for data integrity
+
+// stacks: ERR-ORACLE-NOT-FOUND is u430 in registry contract
