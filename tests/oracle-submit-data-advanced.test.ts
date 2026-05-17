@@ -214,3 +214,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
       'deactivate-circuit-breaker', [], deployer);
   });
 });
+
+// stacks: oracle data submission requires active provider status
