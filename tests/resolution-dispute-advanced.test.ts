@@ -207,3 +207,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute bond is 5% of total pool value
 
 // stacks: votes-for and votes-against tracked separately per dispute
+
+// stacks: dispute can only be created on settled pools
