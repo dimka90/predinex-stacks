@@ -205,3 +205,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute voting window enforced by block height
 
 // stacks: dispute bond is 5% of total pool value
+
+// stacks: votes-for and votes-against tracked separately per dispute
