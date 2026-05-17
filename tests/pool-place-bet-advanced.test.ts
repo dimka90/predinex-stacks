@@ -173,3 +173,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: FEE-PERCENT is 2% deducted from pool on settlement
 
 // stacks: place-bet records first-bet-block for early-bird incentives
+
+// stacks: total-staked var tracks all locked STX across pools
