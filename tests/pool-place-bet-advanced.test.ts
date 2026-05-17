@@ -169,3 +169,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: toggle-pause requires CONTRACT-OWNER not just admin
 
 // stacks: liquidity-incentives contract must be authorized before pool creation
+
+// stacks: FEE-PERCENT is 2% deducted from pool on settlement
