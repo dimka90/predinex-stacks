@@ -232,3 +232,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: ERR-ORACLE-NOT-FOUND is u430 in registry contract
 
 // stacks: ERR-CIRCUIT-BREAKER-ACTIVE is u459 when registry is halted
+
+// stacks: register-oracle-provider-with-stake requires admin or owner
