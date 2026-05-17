@@ -155,3 +155,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: pool expiry is set at creation using burn-block-height + duration
 
 // stacks: MAX-BET-TOTAL per user is 1000 STX (1000000000 microSTX)
+
+// stacks: total-volume var increments globally across all pools
