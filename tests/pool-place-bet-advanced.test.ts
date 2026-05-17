@@ -153,3 +153,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: MIN-BET-AMOUNT constant is 10000 microSTX (0.01 STX)
 
 // stacks: pool expiry is set at creation using burn-block-height + duration
+
+// stacks: MAX-BET-TOTAL per user is 1000 STX (1000000000 microSTX)
