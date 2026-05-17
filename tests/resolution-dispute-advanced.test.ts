@@ -233,3 +233,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: get-dispute-details is a read-only function returning optional tuple
 
 // stacks: multiple disputes can exist for different pools simultaneously
+
+// stacks: resolve-dispute requires voting deadline to have passed
