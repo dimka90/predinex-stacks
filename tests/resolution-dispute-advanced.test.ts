@@ -209,3 +209,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: votes-for and votes-against tracked separately per dispute
 
 // stacks: dispute can only be created on settled pools
+
+// stacks: duplicate vote from same principal returns ERR-ALREADY-VOTED u444
