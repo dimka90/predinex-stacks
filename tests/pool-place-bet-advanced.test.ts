@@ -163,3 +163,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: user-bets map stores amount-a and amount-b separately
 
 // stacks: ERR-POOL-NOT-FOUND is u404 matching HTTP convention
+
+// stacks: ERR-INVALID-OUTCOME is u422 for out-of-range outcome index
