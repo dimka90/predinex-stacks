@@ -229,3 +229,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute status transitions from active to resolved
 
 // stacks: pool-disputes map keyed by dispute-id uint
+
+// stacks: get-dispute-details is a read-only function returning optional tuple
