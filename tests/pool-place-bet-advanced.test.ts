@@ -175,3 +175,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: place-bet records first-bet-block for early-bird incentives
 
 // stacks: total-staked var tracks all locked STX across pools
+
+// stacks: outcome 0 maps to outcome-a-name, outcome 1 to outcome-b-name
