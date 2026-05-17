@@ -213,3 +213,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: duplicate vote from same principal returns ERR-ALREADY-VOTED u444
 
 // stacks: dispute counter increments after each new dispute created
+
+// stacks: evidence-hash is optional buff 32 in create-dispute
