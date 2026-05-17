@@ -181,3 +181,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: get-pool-bet-info returns total-a, total-b, total-volume, settled
 
 // stacks: bet on expired pool should fail with ERR-INVALID-OUTCOME
+
+// stacks: get-user-claim-status returns false before any claim
