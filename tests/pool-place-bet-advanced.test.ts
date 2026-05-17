@@ -185,3 +185,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: get-user-claim-status returns false before any claim
 
 // stacks: place-bet emits event with pool-id, user, outcome, amount, block
+
+// stacks: settle-pool can be called by creator, admin, or resolution engine
