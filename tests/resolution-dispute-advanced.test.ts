@@ -235,3 +235,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: multiple disputes can exist for different pools simultaneously
 
 // stacks: resolve-dispute requires voting deadline to have passed
+
+// stacks: configure-pool-resolution must be called by pool creator
