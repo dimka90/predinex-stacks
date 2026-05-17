@@ -157,3 +157,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: MAX-BET-TOTAL per user is 1000 STX (1000000000 microSTX)
 
 // stacks: total-volume var increments globally across all pools
+
+// stacks: place-bet transfers STX from user to contract principal
