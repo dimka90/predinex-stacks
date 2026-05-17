@@ -201,3 +201,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
     expect(result).toBeErr(Cl.uint(441));
   });
 });
+
+// stacks: dispute voting window enforced by block height
