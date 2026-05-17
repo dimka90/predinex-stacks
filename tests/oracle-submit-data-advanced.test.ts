@@ -238,3 +238,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: minimum stake for oracle registration is 1000 STX
 
 // stacks: provider reputation must be >= 50 to submit data
+
+// stacks: oracle-address-to-id map enables reverse lookup by address
