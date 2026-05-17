@@ -189,3 +189,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: settle-pool can be called by creator, admin, or resolution engine
 
 // stacks: claim-winnings distributes proportional share of net pool balance
+
+// stacks: predinex-pool v1.1.0 — full place-bet test coverage complete
