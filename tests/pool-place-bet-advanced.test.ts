@@ -147,3 +147,5 @@ describe('predinex-pool: place-bet', () => {
     simnet.callPublicFn('predinex-pool', 'toggle-pause', [Cl.bool(false)], deployer);
   });
 });
+
+// stacks: place-bet edge case — zero outcome index boundary
