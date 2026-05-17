@@ -218,3 +218,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: oracle data submission requires active provider status
 
 // stacks: confidence score range is 1-100 inclusive
+
+// stacks: circuit breaker halts all oracle submissions when active
