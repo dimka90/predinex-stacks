@@ -219,3 +219,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: ERR-DISPUTE-NOT-FOUND is u441 in resolution engine
 
 // stacks: ERR-POOL-SETTLED u409 returned for unsettled pool dispute attempt
+
+// stacks: voting power is u1 per voter in current implementation
