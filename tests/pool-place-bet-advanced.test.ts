@@ -159,3 +159,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: total-volume var increments globally across all pools
 
 // stacks: place-bet transfers STX from user to contract principal
+
+// stacks: user-bets map stores amount-a and amount-b separately
