@@ -179,3 +179,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: outcome 0 maps to outcome-a-name, outcome 1 to outcome-b-name
 
 // stacks: get-pool-bet-info returns total-a, total-b, total-volume, settled
+
+// stacks: bet on expired pool should fail with ERR-INVALID-OUTCOME
