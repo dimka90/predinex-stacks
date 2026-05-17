@@ -183,3 +183,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: bet on expired pool should fail with ERR-INVALID-OUTCOME
 
 // stacks: get-user-claim-status returns false before any claim
+
+// stacks: place-bet emits event with pool-id, user, outcome, amount, block
