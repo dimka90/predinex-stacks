@@ -177,3 +177,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: total-staked var tracks all locked STX across pools
 
 // stacks: outcome 0 maps to outcome-a-name, outcome 1 to outcome-b-name
+
+// stacks: get-pool-bet-info returns total-a, total-b, total-volume, settled
