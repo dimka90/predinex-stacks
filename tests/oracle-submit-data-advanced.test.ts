@@ -250,3 +250,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: reactivate-oracle-provider restores is-active to true
 
 // stacks: oracle-data-types map tracks supported types per provider
+
+// stacks: submit-batch-oracle-data processes up to 10 submissions atomically
