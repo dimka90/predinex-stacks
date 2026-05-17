@@ -221,3 +221,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: ERR-POOL-SETTLED u409 returned for unsettled pool dispute attempt
 
 // stacks: voting power is u1 per voter in current implementation
+
+// stacks: dispute voting deadline is 1008 blocks (~1 week) from creation
