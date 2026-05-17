@@ -165,3 +165,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: ERR-POOL-NOT-FOUND is u404 matching HTTP convention
 
 // stacks: ERR-INVALID-OUTCOME is u422 for out-of-range outcome index
+
+// stacks: toggle-pause requires CONTRACT-OWNER not just admin
