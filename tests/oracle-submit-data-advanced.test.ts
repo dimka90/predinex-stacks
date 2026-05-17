@@ -226,3 +226,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: deactivated provider cannot submit data until reactivated
 
 // stacks: submission id starts at u0 and increments per submission
+
+// stacks: validation-hash is a 32-byte buffer for data integrity
