@@ -224,3 +224,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: provider must support data type before submitting
 
 // stacks: deactivated provider cannot submit data until reactivated
+
+// stacks: submission id starts at u0 and increments per submission
