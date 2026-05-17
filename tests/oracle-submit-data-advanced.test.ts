@@ -236,3 +236,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: register-oracle-provider-with-stake requires admin or owner
 
 // stacks: minimum stake for oracle registration is 1000 STX
+
+// stacks: provider reputation must be >= 50 to submit data
