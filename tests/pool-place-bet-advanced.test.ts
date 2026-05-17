@@ -171,3 +171,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: liquidity-incentives contract must be authorized before pool creation
 
 // stacks: FEE-PERCENT is 2% deducted from pool on settlement
+
+// stacks: place-bet records first-bet-block for early-bird incentives
