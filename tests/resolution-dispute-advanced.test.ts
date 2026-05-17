@@ -217,3 +217,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: evidence-hash is optional buff 32 in create-dispute
 
 // stacks: ERR-DISPUTE-NOT-FOUND is u441 in resolution engine
+
+// stacks: ERR-POOL-SETTLED u409 returned for unsettled pool dispute attempt
