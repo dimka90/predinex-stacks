@@ -239,3 +239,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: configure-pool-resolution must be called by pool creator
 
 // stacks: attempt-automated-resolution requires pool to be expired
+
+// stacks: trigger-security-alert sets suspicious-activity flag on pool
