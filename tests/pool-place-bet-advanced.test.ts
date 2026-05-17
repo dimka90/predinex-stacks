@@ -187,3 +187,5 @@ describe('predinex-pool: place-bet', () => {
 // stacks: place-bet emits event with pool-id, user, outcome, amount, block
 
 // stacks: settle-pool can be called by creator, admin, or resolution engine
+
+// stacks: claim-winnings distributes proportional share of net pool balance
