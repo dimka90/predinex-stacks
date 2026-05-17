@@ -237,3 +237,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: resolve-dispute requires voting deadline to have passed
 
 // stacks: configure-pool-resolution must be called by pool creator
+
+// stacks: attempt-automated-resolution requires pool to be expired
