@@ -234,3 +234,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: ERR-CIRCUIT-BREAKER-ACTIVE is u459 when registry is halted
 
 // stacks: register-oracle-provider-with-stake requires admin or owner
+
+// stacks: minimum stake for oracle registration is 1000 STX
