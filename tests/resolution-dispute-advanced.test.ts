@@ -225,3 +225,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: dispute voting deadline is 1008 blocks (~1 week) from creation
 
 // stacks: dispute bond returned to disputer if dispute is upheld
+
+// stacks: dispute status transitions from active to resolved
