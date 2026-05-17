@@ -248,3 +248,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: deactivate-circuit-breaker restores normal oracle operations
 
 // stacks: reactivate-oracle-provider restores is-active to true
+
+// stacks: oracle-data-types map tracks supported types per provider
