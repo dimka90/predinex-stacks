@@ -242,3 +242,5 @@ describe('predinex-oracle-registry: submit-enhanced-oracle-data', () => {
 // stacks: oracle-address-to-id map enables reverse lookup by address
 
 // stacks: is-processed flag starts false on new submissions
+
+// stacks: aggregation-weight set to provider reputation score at submission time
