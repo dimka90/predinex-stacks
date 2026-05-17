@@ -196,6 +196,7 @@
     )
   )
 )
+)
 
 ;; Cancel an empty pool
 ;; @param pool-id: The ID of the pool to cancel
@@ -278,6 +279,7 @@
          )
     (err ERR-POOL-NOT-FOUND)
   )
+)
 )
 
 ;; @desc Settle a prediction pool and declare the definitive winner
@@ -560,6 +562,17 @@
 ;; @returns (ok (list pools)): List of optional pool objects
 (define-read-only (get-active-pools (start-id uint) (count uint))
   (ok (map get-pool-details (list-pool-ids start-id count)))
+)
+
+;; Private helper: record oracle fee claim for a single provider
+(define-private (distribute-fee-to-oracle (provider-id uint) (acc { pool-id: uint, fee-amount: uint }))
+  (begin
+    (map-insert oracle-fee-claims
+      { provider-id: provider-id, pool-id: (get pool-id acc) }
+      { fee-amount: (get fee-amount acc), is-claimed: false, claimed-at: none }
+    )
+    acc
+  )
 )
 
 ;; @desc Private recursive-ready helper to generate a sequence of IDs

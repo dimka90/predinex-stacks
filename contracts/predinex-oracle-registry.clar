@@ -468,7 +468,9 @@
         provider (let (
           (current-reputation (get reputation-score provider))
           (new-reputation (if (>= accuracy-delta 0)
-                             (min REPUTATION-SCALE (+ current-reputation (to-uint accuracy-delta)))
+                             (if (>= (+ current-reputation (to-uint accuracy-delta)) REPUTATION-SCALE)
+                                 REPUTATION-SCALE
+                                 (+ current-reputation (to-uint accuracy-delta)))
                              (if (>= current-reputation (to-uint (- 0 accuracy-delta)))
                                  (- current-reputation (to-uint (- 0 accuracy-delta)))
                                  u0)))
@@ -509,7 +511,7 @@
               (map-set enhanced-oracle-providers { provider-id: provider-id }
                 (merge provider { 
                   slashed-amount: (+ (get slashed-amount provider) slash-amount),
-                  reputation-score: (max u0 (- (get reputation-score provider) u100))
+                  reputation-score: (if (>= (get reputation-score provider) u100) (- (get reputation-score provider) u100) u0)
                 }))
               ;; Update total staked amount
               (var-set total-staked-amount (- (var-get total-staked-amount) slash-amount))
@@ -650,15 +652,18 @@
     (result (if (> total-weight u0) (/ weighted-sum total-weight) u0))
     (variance (calculate-variance valid-submissions result))
     (avg-confidence (if (> (len valid-submissions) u0) 
-                       (/ (fold + (map get confidence) valid-submissions) (len valid-submissions)) 
+                       (/ (fold sum-confidence valid-submissions u0) (len valid-submissions)) 
                        u0))
   )
     {
       result: result,
       confidence: avg-confidence,
       variance: variance,
-      consensus-reached: (< variance u20) ;; Less than 20% variance indicates consensus
+      consensus-reached: (< variance u20)
     }))
+
+(define-private (sum-confidence (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) (acc uint))
+  (+ acc (get confidence s)))
 
 ;; Helper functions for consensus calculation
 (define-private (is-valid-submission (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}))
@@ -670,10 +675,18 @@
 (define-private (calculate-weighted-value (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}))
   (* (get data-value submission) (get-submission-weight submission)))
 
+(define-private (square-diff (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) (mean uint))
+  (let ((d (abs-diff (get data-value s) mean)))
+    (* d d)))
+
+(define-private (sum-square-diff-with-mean 
+  (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) 
+  (acc-mean {acc: uint, mean: uint}))
+  {acc: (+ (get acc acc-mean) (square-diff s (get mean acc-mean))), mean: (get mean acc-mean)})
+
 (define-private (calculate-variance (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})) (mean uint))
   (if (> (len submissions) u1)
-      (let ((squared-diffs (map (lambda (s) (pow (abs-diff (get data-value s) mean) u2)) submissions)))
-        (/ (fold + squared-diffs u0) (len submissions)))
+      (/ (get acc (fold sum-square-diff-with-mean submissions {acc: u0, mean: mean})) (len submissions))
       u0))
 
 (define-private (abs-diff (a uint) (b uint))
@@ -693,19 +706,28 @@
         (submissions-data (map get-submission-for-aggregation submission-ids))
         (valid-submissions (filter is-valid-submission submissions-data))
         (mean-value (calculate-mean valid-submissions))
-        (outliers (filter (lambda (s) (is-outlier s mean-value threshold-percentage)) valid-submissions))
+        (outlier-count (fold count-outliers valid-submissions {count: u0, mean: mean-value, threshold: threshold-percentage}))
       )
         (ok {
-          outliers: (map get provider-id outliers),
-          outlier-count: (len outliers),
+          outlier-count: (get count outlier-count),
           mean-value: mean-value
         }))
       (err ERR-UNAUTHORIZED)))
 
+(define-private (count-outliers 
+  (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})
+  (acc {count: uint, mean: uint, threshold: uint}))
+  (if (is-outlier s (get mean acc) (get threshold acc))
+      (merge acc {count: (+ (get count acc) u1)})
+      acc))
+
 (define-private (calculate-mean (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})))
   (if (> (len submissions) u0)
-      (/ (fold + (map get data-value) submissions) (len submissions))
+      (/ (fold sum-data-value submissions u0) (len submissions))
       u0))
+
+(define-private (sum-data-value (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) (acc uint))
+  (+ acc (get data-value s)))
 
 (define-private (is-outlier (submission {provider-id: uint, data-value: uint, confidence: uint, reputation: uint}) (mean uint) (threshold uint))
   (let ((deviation (abs-diff (get data-value submission) mean)))
@@ -718,24 +740,29 @@
   (let (
     (submissions-data (map get-submission-for-aggregation submission-ids))
     (valid-submissions (filter is-valid-submission submissions-data))
-    (confidence-scores (map get confidence valid-submissions))
+    (total-confidence (fold sum-confidence valid-submissions u0))
     (weighted-confidence (calculate-weighted-confidence valid-submissions))
   )
     (ok {
-      average-confidence: (if (> (len confidence-scores) u0) 
-                            (/ (fold + confidence-scores u0) (len confidence-scores)) 
+      average-confidence: (if (> (len valid-submissions) u0) 
+                            (/ total-confidence (len valid-submissions)) 
                             u0),
       weighted-confidence: weighted-confidence,
       submission-count: (len valid-submissions)
     })))
 
+(define-private (sum-weighted-confidence 
+  (s {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})
+  (acc {wsum: uint, wcount: uint}))
+  {wsum: (+ (get wsum acc) (* (get confidence s) (get reputation s))),
+   wcount: (+ (get wcount acc) (get reputation s))})
+
 (define-private (calculate-weighted-confidence 
   (submissions (list 10 {provider-id: uint, data-value: uint, confidence: uint, reputation: uint})))
   (let (
-    (total-weight (fold + (map get reputation) submissions) u0)
-    (weighted-sum (fold + (map (lambda (s) (* (get confidence s) (get reputation s))) submissions) u0))
+    (result (fold sum-weighted-confidence submissions {wsum: u0, wcount: u0}))
   )
-    (if (> total-weight u0) (/ weighted-sum total-weight) u0)))
+    (if (> (get wcount result) u0) (/ (get wsum result) (get wcount result)) u0)))
 
 ;; ---------------------------------------------------------
 ;; Read-only functions for aggregation results
@@ -765,9 +792,7 @@
 
 ;; Gas optimization for storage
 (define-private (optimize-storage-write (data (string-ascii 512)))
-  (if (> (len data) u256)
-      (substring data u0 u256)
-      data))
+  data)
 
 ;; Immediate confirmation system
 (define-public (provide-immediate-confirmation (submission-id uint))
