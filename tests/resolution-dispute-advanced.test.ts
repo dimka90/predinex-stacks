@@ -241,3 +241,5 @@ describe('predinex-resolution-engine: vote-on-dispute', () => {
 // stacks: attempt-automated-resolution requires pool to be expired
 
 // stacks: trigger-security-alert sets suspicious-activity flag on pool
+
+// stacks: manual-settle-fallback available 144 blocks after fallback trigger
